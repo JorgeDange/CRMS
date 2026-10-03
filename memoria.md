@@ -19,7 +19,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 
 | Sprint PROMPT_MASTER | Estado | Commit | Observação |
 |---|---|---|---|
-| Sprint 0 — Preparação | ✅ Concluído | *(ver `git log`)* | `adg/` criado, stack conforme §5 |
+| Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` | `adg/` criado, stack conforme §5 |
 | Sprint 1 — Fundação | ⛔ Não iniciado | — | Próximo |
 | Sprint 1.1 — UI/UX Base | ⛔ Não iniciado | — | |
 | Sprint 2 — Pipeline | ⛔ Não iniciado | — | |
