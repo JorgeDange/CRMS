@@ -24,8 +24,11 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = fake()->unique()->name();
+
         return [
-            'name' => fake()->name(),
+            'name' => $name,
+            'username' => strtolower(str($name)->replaceMatches('/[^a-zA-Z0-9]/', '')->limit(30, '')->rtrim(' ')).fake()->unique()->numberBetween(1, 9999),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),

@@ -17,7 +17,8 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('pages.auth.login');
+            ->assertSeeVolt('pages.auth.login')
+            ->assertSee('auth-cover-wrapper');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
@@ -25,7 +26,24 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $component = Volt::test('pages.auth.login')
-            ->set('form.email', $user->email)
+            ->set('form.login', $user->email)
+            ->set('form.password', 'password');
+
+        $component->call('login');
+
+        $component
+            ->assertHasNoErrors()
+            ->assertRedirect(route('dashboard', absolute: false));
+
+        $this->assertAuthenticated();
+    }
+
+    public function test_users_can_authenticate_using_username(): void
+    {
+        $user = User::factory()->create();
+
+        $component = Volt::test('pages.auth.login')
+            ->set('form.login', $user->username)
             ->set('form.password', 'password');
 
         $component->call('login');
@@ -42,7 +60,7 @@ class AuthenticationTest extends TestCase
         $user = User::factory()->create();
 
         $component = Volt::test('pages.auth.login')
-            ->set('form.email', $user->email)
+            ->set('form.login', $user->email)
             ->set('form.password', 'wrong-password');
 
         $component->call('login');
@@ -64,7 +82,9 @@ class AuthenticationTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSeeVolt('layout.navigation');
+            ->assertSee('nxl-navigation')
+            ->assertSee('nxl-header')
+            ->assertSee('Conciliações');
     }
 
     public function test_users_can_logout(): void
@@ -73,14 +93,15 @@ class AuthenticationTest extends TestCase
 
         $this->actingAs($user);
 
-        $component = Volt::test('layout.navigation');
+        $response = $this->post('/logout');
 
-        $component->call('logout');
-
-        $component
-            ->assertHasNoErrors()
-            ->assertRedirect('/');
+        $response->assertRedirect('/');
 
         $this->assertGuest();
+    }
+
+    public function test_registration_is_closed(): void
+    {
+        $this->get('/register')->assertNotFound();
     }
 }

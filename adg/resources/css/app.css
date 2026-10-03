@@ -1,11 +1,27 @@
-/* Tipografia Inter — mesma fonte do protótipo (theme.min.css carrega do Google Fonts) */
+/* =========================================================================
+   ADG — folha de estilos principal
+   Estrategia (PROMPT_MASTER sec.4/5):
+     1. Bootstrap 5.3 (base, npm)          4. Tailwind 4 (utilitarios)
+     2. Cores do prototipo (diff)          5. Layout + icones do prototipo
+   Nada do theme.min.css e importado directamente — so o extraido (sec.4.6).
+   ========================================================================= */
+
+/* 1. Tipografia Inter — mesma fonte do prototipo */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-/* Bootstrap 5.3 — framework principal (PROMPT_MASTER §4.2) */
+/* 2. Bootstrap 5.3 — framework principal (sec.4.2 / sec.5) */
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* Tailwind CSS 4 — utilitários pontuais (PROMPT_MASTER §4.2) */
+/* 3. Cores do prototipo por cima do Bootstrap (sec.3 — #3454d1, #283c50, ...) */
+@import './prototype/bootstrap-diff.css';
+
+/* 4. Tailwind CSS 4 — utilitarios pontuais (sec.4.2) */
 @import 'tailwindcss';
+
+/* 5. Layout e icones extraidos do prototipo (sec.4.6) */
+@import './prototype/theme-extract.css';
+@import './prototype/icons-extract.css';
+
 @plugin '@tailwindcss/forms';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
@@ -13,9 +29,8 @@
 @source '../../resources/views/**/*.blade.php';
 
 /* --------------------------------------------------------------- */
-/* Identidade visual — extraída do protótipo (PROMPT_MASTER §3)      */
-/* theme.min.css não contém variáveis próprias (apenas 7 --bs-*),    */
-/* por isso os tokens são recriados aqui conforme §4.6.              */
+/* Identidade visual — tokens p/ utilitarios Tailwind (sec.3)        */
+/* (o fundo do body e #f3f4f6, definido no theme-extract do prototipo) */
 /* --------------------------------------------------------------- */
 @theme {
     --color-primary: #3454d1;
@@ -33,13 +48,16 @@
     --font-sans: 'Inter', sans-serif;
 }
 
-html,
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #eff0f6;
-}
-
-/* Sobrescritas mínimas do theme.min.css que o protótipo aplica sobre o Bootstrap */
+/* Acentos de tabela do prototipo (theme.min.css) */
 :root {
     --bs-table-accent-bg: rgb(244 244 249);
 }
+
+/* Correccoes de layout do <style> inline do index.html do prototipo */
+.nxl-header { top: 0 }
+.nxl-content { padding-top: 0 }
+.nxl-container .nxl-content { padding-top: 0 }
+.footer { position: relative; z-index: 10 }
+
+/* Alpine: esconder ate ao JS (submenu/overlay/botoes do sidebar) */
+[x-cloak] { display: none !important }

@@ -26,46 +26,45 @@ new #[Layout('layouts.guest')] class extends Component
 
 <div>
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @if (session('status'))
+        <div class="alert alert-success" role="alert">
+            {{ session('status') }}
+        </div>
+    @endif
 
+    {{-- Formulario copiado de crm-prototipo/auth-login-cover.html (PROMPT_MASTER sec.2/8.1) --}}
     <form wire:submit="login">
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="form.email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('form.email')" class="mt-2" />
+        <div class="mb-4">
+            <input wire:model="form.login" type="text"
+                   class="form-control @error('form.login') is-invalid @enderror"
+                   placeholder="Email ou username" id="login" name="login"
+                   required autofocus autocomplete="username">
+            @error('form.login')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
-
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input wire:model="form.password" id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('form.password')" class="mt-2" />
+        <div class="mb-3">
+            <input wire:model="form.password" type="password"
+                   class="form-control @error('form.password') is-invalid @enderror"
+                   placeholder="Palavra-passe" id="password" name="password"
+                   required autocomplete="current-password">
+            @error('form.password')
+                <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
         </div>
-
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember" class="inline-flex items-center">
-                <input wire:model="form.remember" id="remember" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-            </label>
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="custom-control custom-checkbox">
+                <input wire:model="form.remember" type="checkbox" class="custom-control-input" id="rememberMe" name="remember">
+                <label class="custom-control-label c-pointer" for="rememberMe">Lembrar-me</label>
+            </div>
+            <div>
+                @if (Route::has('password.request'))
+                    <a href="{{ route('password.request') }}" class="fs-11 text-primary" wire:navigate>Esqueceu a password?</a>
+                @endif
+            </div>
         </div>
-
-        <div class="flex items-center justify-end mt-4">
-            @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}" wire:navigate>
-                    {{ __('Forgot your password?') }}
-                </a>
-            @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
+        <div class="mt-5">
+            <button type="submit" class="btn btn-lg btn-primary w-100">Entrar</button>
         </div>
     </form>
 </div>
