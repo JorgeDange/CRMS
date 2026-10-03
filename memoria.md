@@ -21,8 +21,8 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 |---|---|---|---|
 | Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` + `56072b6` | `adg/` criado, stack conforme §5 |
 | Sprint 1 — Fundação | ✅ Concluído | `0aa7f8d` | Enums, auth username, seeders, layouts do protótipo, CSS extraído |
-| Sprint 1.1 — UI/UX Base | ⛔ Não iniciado | — | Próximo |
-| Sprint 2 — Pipeline | ⛔ Não iniciado | — | |
+| Sprint 1.1 — UI/UX Base | ✅ Concluído | `9066d59` | 10 componentes Blade + página de validação `/ui` |
+| Sprint 2 — Pipeline | ⛔ Não iniciado | — | Próximo |
 | Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | |
 | Sprint 4 — Importação Excel | ⛔ Não iniciado | — | |
 | Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | |
@@ -33,7 +33,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 1.1 — UI/UX Base.
+**Próximo sprint a executar:** Sprint 2 — Pipeline.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -178,6 +178,28 @@ O teste `AuthenticationTest:34` falhava com `form.email` → corrigido para `for
 
 ---
 
+## 5B. SPRINT 1.1 — COMPONENTES (§9)
+
+Em `adg/resources/views/components/ui/` — markup exacto do protótipo com props Blade:
+
+| Componente | Origem no protótipo | Props principais |
+|---|---|---|
+| `button` | `btn btn-*` (index, leads-create) | variant, size (xs/sm/lg), icon, icon-only, href, type |
+| `badge` | variants soft/solid/gray/border (customers, index) | variant, color, header (nxl-h-badge) |
+| `form-input` / `form-select` / `form-textarea` | leads-create (select usa `form-control`, não `form-select`) | label, required, error; resto via `$attributes` (wire:model…) |
+| `modal` | apps-notes (fade, data-bs-keyboard=false, header/body/footer) | id, title, size, centered, scrollable; slot `footer` |
+| `stat-card` | index (card stretch + avatar-text + progress) | icon, value, title, footer-*, progress |
+| `page-header` | index (h5 m-b-10 + breadcrumb Início/…) | title, breadcrumb; slot `right` |
+| `data-table` | customers (`table-responsive` + `table table-hover`) | id; slot `thead`; slot default = linhas |
+| `alert-badge` | header (`badge bg-* nxl-h-badge`) | variant (cor sólida) |
+
+- **Layout:** `sidebar`/`header` concluídos no Sprint 1 (checklist §9 fechada).
+- **Validação:** página **`/ui`** (rota `ui.demo`, auth) mostra todos os componentes —
+  comparar lado a lado com `index.html`/`leads-create.html`/`customers.html`.
+- **Testes:** `UiComponentsTest` (2) → suite total **28 testes, 103 assertions, pint passed**.
+
+---
+
 ## 6. PONTOS EM ABERTO (PROMPT §19 — NÃO AVANÇAR SEM RESPOSTA)
 
 - [ ] Lista completa e ordem das fases do pipeline
@@ -211,7 +233,7 @@ npm run dev                                                    # Vite
 npm run build                                                  # build produção
 
 php artisan migrate:fresh --seed
-php artisan test                                               # 26 testes (Sprint 1)
+php artisan test                                               # 28 testes (Sprint 1.1)
 php vendor/bin/pint                                            # formatação
 php vendor/bin/pint --test                                     # verificar sem alterar
 php artisan config:clear
@@ -232,3 +254,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 |---|---|
 | 2026-10-03 | **Reescrito do zero** — histórico git apagado, `crm-pessoal/` eliminado, Sprint 0 cumprido em `adg/` conforme PROMPT_MASTER |
 | 2026-10-03 | **Sprint 1 concluído** (`0aa7f8d`) — enums, auth por username, layouts do protótipo, extração CSS (§4.6), menu agrupado, header simplificado; 26 testes a passar |
+| 2026-10-03 | **Sprint 1.1 concluído** (`9066d59`) — 10 componentes Blade extraídos do protótipo + galeria `/ui` + `UiComponentsTest`; 28 testes |
