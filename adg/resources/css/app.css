@@ -1,0 +1,45 @@
+/* Tipografia Inter — mesma fonte do protótipo (theme.min.css carrega do Google Fonts) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* Bootstrap 5.3 — framework principal (PROMPT_MASTER §4.2) */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Tailwind CSS 4 — utilitários pontuais (PROMPT_MASTER §4.2) */
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../resources/views/**/*.blade.php';
+
+/* --------------------------------------------------------------- */
+/* Identidade visual — extraída do protótipo (PROMPT_MASTER §3)      */
+/* theme.min.css não contém variáveis próprias (apenas 7 --bs-*),    */
+/* por isso os tokens são recriados aqui conforme §4.6.              */
+/* --------------------------------------------------------------- */
+@theme {
+    --color-primary: #3454d1;
+    --color-primary-dark: #2b46b5;
+    --color-primary-soft: #eaeefb;
+    --color-sidebar: #283c50;
+    --color-sidebar-dark: #1b2436;
+    --color-sidebar-text: #91a1b6;
+    --color-surface: #eff0f6;
+    --color-success: #17c666;
+    --color-danger: #ea4d4d;
+    --color-warning: #ffa21d;
+    --color-info: #3dc7be;
+
+    --font-sans: 'Inter', sans-serif;
+}
+
+html,
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #eff0f6;
+}
+
+/* Sobrescritas mínimas do theme.min.css que o protótipo aplica sobre o Bootstrap */
+:root {
+    --bs-table-accent-bg: rgb(244 244 249);
+}
