@@ -19,9 +19,9 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 
 | Sprint PROMPT_MASTER | Estado | Commit | Observação |
 |---|---|---|---|
-| Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` | `adg/` criado, stack conforme §5 |
-| Sprint 1 — Fundação | ⛔ Não iniciado | — | Próximo |
-| Sprint 1.1 — UI/UX Base | ⛔ Não iniciado | — | |
+| Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` + `56072b6` | `adg/` criado, stack conforme §5 |
+| Sprint 1 — Fundação | ✅ Concluído | `0aa7f8d` | Enums, auth username, seeders, layouts do protótipo, CSS extraído |
+| Sprint 1.1 — UI/UX Base | ⛔ Não iniciado | — | Próximo |
 | Sprint 2 — Pipeline | ⛔ Não iniciado | — | |
 | Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | |
 | Sprint 4 — Importação Excel | ⛔ Não iniciado | — | |
@@ -33,7 +33,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 1 — Fundação.
+**Próximo sprint a executar:** Sprint 1.1 — UI/UX Base.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -91,34 +91,90 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 
 ---
 
-## 4. CONFIGURAÇÃO DO FRONTEND (§4 — estratégia CSS)
+## 4. CONFIGURAÇÃO DO FRONTEND (§4 — estratégia CSS) — actualizado no Sprint 1
 
-`adg/resources/css/app.css`:
-1. `@import url(...Inter...)` — Google Fonts (igual ao `theme.min.css` do protótipo)
-2. `@import 'bootstrap/dist/css/bootstrap.min.css'` — **framework principal (§4.2)**
-3. `@import 'tailwindcss'` + `@plugin '@tailwindcss/forms'` + `@source ...` (Tailwind 4)
-4. Bloco `@theme` com as **cores exactas do protótipo (§3)**:
-   `--color-primary #3454d1`, `#2b46b5`, `#eaeefb`, sidebar `#283c50`/`#1b2436`/`#91a1b6`,
-   superfície `#eff0f6`, `#17c666`, `#ea4d4d`, `#ffa21d`, `#3dc7be`
-5. `body` → fonte Inter + `bg #eff0f6`
+`adg/resources/css/app.css` (cascata por ordem):
+1. `@import url(...Inter...)` — Google Fonts
+2. `@import 'bootstrap/dist/css/bootstrap.min.css'` — **framework principal (§4.2)**, npm 5.3.8
+3. `@import './prototype/bootstrap-diff.css'` — **diff de cores** proto-vs-5.3 (403 regras):
+   `:root{--bs-primary:#3454d1, --bs-light:#eff0f6, --bs-dark:#283c50, success/warning/danger/info}`,
+   `.btn-primary`, focus rings `rgba(52,84,209)`, etc.
+4. `@import 'tailwindcss'` + `@plugin '@tailwindcss/forms'` + `@source ...` (Tailwind 4)
+5. `@import './prototype/theme-extract.css'` — 1107 regras do `theme.min.css`
+   (whitelist `.nxl-`, page-header, auth-cover, custom-control, utilitários…); body `#f3f4f6`
+6. `@import './prototype/icons-extract.css'` — 4652 regras (`@font-face` + `.feather-*`, `.bi-*`, `.fa-*`)
+7. `@theme` tokens (Tailwind) → `:root{--bs-table-accent-bg}` → fixes do `<style>` inline do protótipo
+   (`.nxl-header{top:0}`, `.nxl-content{padding-top:0}`, `.footer{z-index:10}`) → `[x-cloak]`
 
-`adg/resources/js/app.js`: `bootstrap` (JS bundle c/ Popper) + Alpine.
+> ⚠️ Corpo real do protótipo = `#f3f4f6` (theme.min.css), **não** `#eff0f6` como diz o §3 do MD
+> (`#eff0f6` = `.bg-gray-100`/`--bs-light`). Prevalece o protótipo (§22).
+
+`adg/resources/js/app.js`: `bootstrap` (bundle c/ Popper) + Alpine + `Alpine.data('sidebar')`
+(substitui o jQuery `minimenu`/`mob-navigation-active` do protótipo; localStorage igual:
+key `nexel-classic-dashboard-menu-mini-theme` = `menu-mini-theme`).
 `vite.config.js`: plugins `laravel` + `tailwindcss`.
-**Removidos:** `postcss.config.js`, `tailwind.config.js`, `autoprefixer`, `postcss` (Tailwind 4 não os usa).
 
-**Decisão §4.6 (theme.min.css):** o ficheiro **não tem variáveis CSS próprias**
-(apenas 7 overrides `--bs-*` minúsculos) — não há nada para extrair; tokens recriados no `@theme`.
-`theme.min.css` **não** é importado (conforme §4.6). As 7 sobrescritas `--bs-*` ficam
-por investigar quando se migrarem as views (Sprint 1.1).
+### Extração §4.6 (concluída no Sprint 1)
+
+- **Script reprodutível:** `tools/extract-prototype-css.ps1` (PowerShell, ASCII+BOM;
+  re-executar se o protótipo mudar). Whitelists `$themeKeep`/`$vendorsKeep`/`$brandRe`.
+- **Saídas em `adg/resources/css/prototype/`:** `theme-extract.css` (144.9KB),
+  `icons-extract.css` (194.7KB), `bootstrap-diff.css` (73.2KB, 403 regras).
+- **Fonts:** 14 ficheiros → `adg/public/fonts/` (feather, bootstrap-icons, fontawesome).
+- **Validações:** 0 classes de `index.html`+`auth-login-cover.html` sem estilo;
+  todas as 99 classes de ícones usadas cobertas; URLs `../fonts/` → `/fonts/`.
+- `theme.min.css` **não** é importado directamente (§4.6) — só as regras extraídas.
+- `bootstrap.min.css` do protótipo = Bootstrap **5.2.0-beta1 recolorido por cor**;
+  o diff cobre as diferenças face ao 5.3 npm.
 
 ---
 
-## 5. O QUE FALTA DO SPRINT 0 / PENDENTE
+## 5. VALIDAÇÃO DO SPRINT 1 (§16)
 
-- [ ] **Commit inicial** deste estado (feito no final do Sprint 0)
-- [ ] MySQL como serviço persistente (pedir admin para `sc config MySQL80 start= demand`)
-- [ ] Opcional: confirmar com utilizador que a BD `adg` substitui a antiga `crm_pessoal`
-- [ ] `.env.example` ajustado a MySQL (vem com sqlite por omissão)
+- ✅ `php artisan test` → **26 testes, 79 assertions, 0 falhas**
+  (incl. login por **username**, login por email, registo fechado 404, logout via POST `/logout`,
+  dashboard com `nxl-navigation`/`nxl-header`/`Conciliações`)
+- ✅ `vendor/bin/pint` → **passed**
+- ✅ `npm run build` → OK: CSS **645.71KB** (gzip 101.82KB) + JS 189.12KB
+- ✅ Bundle contém: `--bs-primary:#3454d1`, `.nxl-navigation{`, `font-family:feather`,
+  `#f3f4f6`, `.auth-cover-wrapper{`, `.btn-primary{`
+- ✅ HTTP (`php artisan serve --port=8099 --no-reload`):
+  `/login` **200** com `auth-cover-wrapper` + `images/logo-d.png` + link CSS Vite;
+  `/` **200**; CSS servido 645KB
+- ✅ `migrate:fresh --seed` (MySQL `adg`) — `UserSeeder` + `SettingSeeder`
+- ⚠️ **Pendente:** validação visual lado a lado com o protótipo (§11) — utilizador deve rever
+  `/login` e `/dashboard` no browser (`http://127.0.0.1:8099`)
+- ⚠️ Warnings benignos do build: `a::hover` (typo herdado do theme.min), flag svgs
+  do language dropdown (dropdown removido — nunca será resolvido)
+
+### Pendências gerais
+- MySQL como serviço persistente (pedir admin para `sc config MySQL80 start= demand`)
+- Opcional: confirmar com utilizador que a BD `adg` substitui a antiga `crm_pessoal`
+- `.env.example` ajustado a MySQL (vem com sqlite por omissão)
+
+### Problema conhecido (Sprint 0) — corrigido no Sprint 1
+O teste `AuthenticationTest:34` falhava com `form.email` → corrigido para `form.login`
+(`LoginForm` recebe `login` email OU username).
+
+---
+
+## 5A. DECISÕES DO UTILIZADOR (Sprint 1 — Q&A 2026-10-03)
+
+1. **Menu §7 agrupado como no protótipo** (Oportunidades ▸ sub-opções), com ordem
+   **Nova Oportunidade 1º, Pipeline 2º** (utilizador sobrepois ao §7 do MD, que dizia Pipeline primeiro).
+2. **Os 9 itens do menu estão todos visíveis** desde o Sprint 1; os não criados ficam
+   inactivos com badge **"Em breve"** (cursor-not-allowed, sem link).
+3. **Sidebar/header seguem o protótipo**, não o §3 do MD: o CSS real tem sidebar **branca
+   280px** e header **80px** (pele clara em todas as páginas) — o §3 descreve sidebar escura
+   `#283c50`/256px/64px que **não existe** no protótipo. §22/§4.6 mandam copiar o protótipo.
+4. **Header simplificado** — removidos por não serem features documentadas em §7-§10:
+   mega menu, search, language, fullscreen, dark/light mode, timesheets;
+   notifications (bell) **volta no Sprint 9**; badge "GESTOR"/status do utilizador removido
+   (não há roles); "Definições da conta" removido (sem rota). Header mantém: hamburger,
+   botões de colapso, dropdown utilizador (avatar + Meu perfil + Terminar sessão).
+5. **Registo fechado** (utilizador único) — rota/view/`RegisteredUserController`/`RegistrationTest`
+   removidos; welcome navigation sem link Register; teste `GET /register` → 404.
+6. **`auth-login-minimal.html` eliminado** (§2: "Remover").
 
 ---
 
@@ -155,10 +211,13 @@ npm run dev                                                    # Vite
 npm run build                                                  # build produção
 
 php artisan migrate:fresh --seed
-php artisan test                                               # 26 testes (Sprint 0)
+php artisan test                                               # 26 testes (Sprint 1)
 php vendor/bin/pint                                            # formatação
 php vendor/bin/pint --test                                     # verificar sem alterar
 php artisan config:clear
+
+# Extração CSS do protótipo (Sprint 1, §4.6 — re-executar se o protótipo mudar)
+powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 
 # MySQL (serviço DISABLED — arrancar directamente)
 & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqld.exe" --defaults-file="C:\ProgramData\MySQL\MySQL Server 8.0\my.ini"
@@ -172,3 +231,4 @@ php artisan config:clear
 | Data | Alteração |
 |---|---|
 | 2026-10-03 | **Reescrito do zero** — histórico git apagado, `crm-pessoal/` eliminado, Sprint 0 cumprido em `adg/` conforme PROMPT_MASTER |
+| 2026-10-03 | **Sprint 1 concluído** (`0aa7f8d`) — enums, auth por username, layouts do protótipo, extração CSS (§4.6), menu agrupado, header simplificado; 26 testes a passar |
