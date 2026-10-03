@@ -34,6 +34,7 @@
             <x-ui.page-header :title="$pageTitle">
                 <x-slot name="right">{{ $pageHeaderRight ?? '' }}</x-slot>
             </x-ui.page-header>
+            {{ $pageHeaderBelow ?? '' }}
             <!-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
             <div class="main-content">

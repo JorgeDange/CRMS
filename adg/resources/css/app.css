@@ -61,3 +61,14 @@
 
 /* Alpine: esconder ate ao JS (submenu/overlay/botoes do sidebar) */
 [x-cloak] { display: none !important }
+
+/* Kanban do pipeline — copiado do <style> do leads.html (Sprint 2),
+   data-stage renomeado para as fases do PROMPT_MASTER */
+.kanban-board { align-items: flex-start; }
+.kanban-col-header { position: sticky; top: 0; z-index: 1; }
+.kanban-card { cursor: grab; border: 1px solid #eef0f3; transition: box-shadow .15s ease, transform .15s ease; }
+.kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); transform: translateY(-2px); }
+.kanban-card.dragging { opacity: .5; cursor: grabbing; }
+.kanban-col-body.drag-over { outline: 2px dashed #6366f1; outline-offset: -4px; background-color: #eef2ff !important; }
+.kanban-column[data-stage="aprovado"] .kanban-col-body.drag-over { outline-color: #10b981; background-color: #d1fae5 !important; }
+.kanban-column[data-stage="nao_aprovado"] .kanban-col-body.drag-over { outline-color: #f43f5e; background-color: #ffe4e6 !important; }

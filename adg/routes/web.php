@@ -12,6 +12,10 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
+Route::view('pipeline', 'opportunities.pipeline')
+    ->middleware(['auth', 'verified'])
+    ->name('pipeline');
+
 Route::view('ui', 'ui-demo')
     ->middleware(['auth', 'verified'])
     ->name('ui.demo');
