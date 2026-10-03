@@ -31,24 +31,9 @@
     <main class="nxl-container">
         <div class="nxl-content">
             <!-- [ page-header ] start -->
-            <div class="page-header">
-                <div class="page-header-left d-flex align-items-center">
-                    <div class="page-header-title">
-                        <h5 class="m-b-10">{{ $pageTitle }}</h5>
-                    </div>
-                    <ul class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="{{ route('dashboard') }}" wire:navigate>Início</a></li>
-                        <li class="breadcrumb-item">{{ $pageTitle }}</li>
-                    </ul>
-                </div>
-                <div class="page-header-right ms-auto">
-                    <div class="page-header-right-items">
-                        <div class="d-flex align-items-center gap-2 page-header-right-items-wrapper">
-                            {{ $pageHeaderRight ?? '' }}
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <x-ui.page-header :title="$pageTitle">
+                <x-slot name="right">{{ $pageHeaderRight ?? '' }}</x-slot>
+            </x-ui.page-header>
             <!-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
             <div class="main-content">
