@@ -22,7 +22,8 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` + `56072b6` | `adg/` criado, stack conforme §5 |
 | Sprint 1 — Fundação | ✅ Concluído | `0aa7f8d` | Enums, auth username, seeders, layouts do protótipo, CSS extraído |
 | Sprint 1.1 — UI/UX Base | ✅ Concluído | `9066d59` | 10 componentes Blade + página de validação `/ui` |
-| Sprint 2 — Pipeline | ⛔ Não iniciado | — | Próximo |
+| Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
+| Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | Próximo |
 | Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | |
 | Sprint 4 — Importação Excel | ⛔ Não iniciado | — | |
 | Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | |
@@ -33,7 +34,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 2 — Pipeline.
+**Próximo sprint a executar:** Sprint 3 — Nova Oportunidade + Detalhe.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -174,7 +175,42 @@ O teste `AuthenticationTest:34` falhava com `form.email` → corrigido para `for
    botões de colapso, dropdown utilizador (avatar + Meu perfil + Terminar sessão).
 5. **Registo fechado** (utilizador único) — rota/view/`RegisteredUserController`/`RegistrationTest`
    removidos; welcome navigation sem link Register; teste `GET /register` → 404.
-6. **`auth-login-minimal.html` eliminado** (§2: "Remover").
+ 6. **`auth-login-minimal.html` eliminado** (§2: "Remover").
+ 7. **Schema `opportunities`** (2026-10-03): acrescentar **`titulo`, `probabilidade`
+    (tinyint 0-100) e `data_fecho`** ao §8.2 — o protótipo mostra título, badge de %
+    e data nos cartões e o formulário leads-create (Sprint 3) tem esses campos.
+ 8. **Fases do pipeline** (2026-10-03): Leads → Visitas → Aprovação → Aprovado /
+    Não Aprovado (confirmado pelo utilizador; coluna "Estado" e kanban renomeados;
+    rótulo "Ganho (mês)" do protótipo renomeado para **"Aprovado (mês)"** — §6 proíbe
+    "Ganho/Perdido").
+
+---
+
+## 5C. SPRINT 2 — PIPELINE (§8.2, §8.3, Sprint 2)
+
+- **Migrations:** `opportunities` (§8.2 + decisão 7; índices uuid/fase/email/telefone/…)
+  e `opportunity_stage_history` (§8.3, tabela singular — `protected $table` no model).
+- **Models:** `Opportunity` (SoftDeletes, cast `fase_atual`→enum, uuid automático,
+  `scopeStage`) e `OpportunityStageHistory` (`UPDATED_AT = null`).
+- **`OpportunityService::changeStage`** — grava histórico (`user_id` = auth ou único
+  utilizador) e estados finais: Aprovado → probabilidade 100 + `data_aprovacao`;
+  Não Aprovado → probabilidade 0. `formatKz()` = formato do protótipo (`Kz 110.400.000`).
+- **Livewire:** `Opportunities\Pipeline` (constante `COLUMNS` com classes por fase,
+  filtros search/estado, `move()` via drag&drop Alpine→`$wire.move`, evento
+  `opportunity-moved`) e `Opportunities\Stats` (4 cartões do collapseOne: Pipeline
+  Aberto, Aprovado (mês), Ponderado = Σ valor×%, Taxa Conversão 30 dias).
+- **Página `/pipeline`** (rota `pipeline`): copiada de `leads.html` — page-header com
+  botão de estatísticas (collapse), dropdown de fases, "Nova Oportunidade"
+  (placeholder `javascript:void(0)` até Sprint 3), filtro de kanban e board;
+  CSS inline do kanban em `app.css` (data-stage renomeados). Nova slot de layout
+  **`pageHeaderBelow`** para o accordion `collapseOne`. Dropdown de gestores do
+  protótipo **removido** (schema sem responsável — não inventar pessoas).
+- **Sidebar:** item **Pipeline activo** (`wire:navigate`); submenu abre automaticamente.
+- **`OpportunitySeeder`:** os 11 cartões do leads.html (contas por coluna exactas:
+  23,3M / 33,6M / 53,5M / 14,8M / 15M).
+- **Testes:** `PipelineTest` (9) → suite **37 testes, 142 assertions**; pint; build 649KB.
+- **Validação visual pendente:** abrir `http://127.0.0.1:8099/pipeline` e comparar com
+  `leads.html` (colunas renomeadas).
 
 ---
 
@@ -202,9 +238,13 @@ Em `adg/resources/views/components/ui/` — markup exacto do protótipo com prop
 
 ## 6. PONTOS EM ABERTO (PROMPT §19 — NÃO AVANÇAR SEM RESPOSTA)
 
-- [ ] Lista completa e ordem das fases do pipeline
-- [ ] Se "Aprovado/Não Aprovado" são fases ou estados finais
-- [ ] Se uma oportunidade pode voltar atrás de fase
+- [x] ~~Lista completa e ordem das fases do pipeline~~ → **respondido 2026-10-03:**
+  Leads → Visitas → Aprovação → Aprovado / Não Aprovado (fases do protótipo)
+- [x] ~~Se "Aprovado/Não Aprovado" são fases ou estados finais~~ → **fases do enum
+  `OpportunityStage`** (coluna `fase_atual`), estados finais com regras próprias
+  (Aprovado: probabilidade 100 + data_aprovacao; Não Aprovado: probabilidade 0)
+- [ ] Se uma oportunidade pode voltar atrás de fase (em aberto; **por omissão está
+  livre** — o drag&drop do protótipo deixa arrastar para qualquer coluna)
 - [ ] Definição do módulo **Conciliações** → Sprint 6 bloqueado
 - [ ] Definição do módulo **Contratos** → Sprint 7 bloqueado
 - [ ] Relação dos **Produtos** com oportunidades e contratos
@@ -233,7 +273,7 @@ npm run dev                                                    # Vite
 npm run build                                                  # build produção
 
 php artisan migrate:fresh --seed
-php artisan test                                               # 28 testes (Sprint 1.1)
+php artisan test                                               # 37 testes (Sprint 2)
 php vendor/bin/pint                                            # formatação
 php vendor/bin/pint --test                                     # verificar sem alterar
 php artisan config:clear
@@ -255,3 +295,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-03 | **Reescrito do zero** — histórico git apagado, `crm-pessoal/` eliminado, Sprint 0 cumprido em `adg/` conforme PROMPT_MASTER |
 | 2026-10-03 | **Sprint 1 concluído** (`0aa7f8d`) — enums, auth por username, layouts do protótipo, extração CSS (§4.6), menu agrupado, header simplificado; 26 testes a passar |
 | 2026-10-03 | **Sprint 1.1 concluído** (`9066d59`) — 10 componentes Blade extraídos do protótipo + galeria `/ui` + `UiComponentsTest`; 28 testes |
+| 2026-10-03 | **Sprint 2 concluído** (`b27ba30`) — pipeline kanban 5 fases com drag&drop, stats, schema +titulo/probabilidade/data_fecho (decisão do utilizador), fases confirmadas no §19; 37 testes |
