@@ -74,6 +74,10 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
   ```
 - **Login:** páginas Breeze/Volt; validar via `php artisan test` (AuthenticationTest),
   não via POST directo (formulário Livewire).
+- **BD de testes:** `phpunit.xml` define `DB_DATABASE=adg_test` — o `RefreshDatabase`
+  faz `migrate:fresh` e **apagava os dados da `adg`** (utilizador seedado sumiu em
+  2026-10-03 e o login falhava com "credenciais erradas"). Criada `adg_test` via mysql.
+  Se correr `php artisan test` sem esse env, repovar depois com `php artisan migrate:fresh --seed`.
 
 ---
 
