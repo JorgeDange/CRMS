@@ -23,9 +23,8 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 1 — Fundação | ✅ Concluído | `0aa7f8d` | Enums, auth username, seeders, layouts do protótipo, CSS extraído |
 | Sprint 1.1 — UI/UX Base | ✅ Concluído | `9066d59` | 10 componentes Blade + página de validação `/ui` |
 | Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
-| Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | Próximo |
-| Sprint 3 — Nova Oportunidade + Detalhe | ⛔ Não iniciado | — | |
-| Sprint 4 — Importação Excel | ⛔ Não iniciado | — | |
+| Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `91d3514` | Create/View/VisitReport, visit_reports, 52 testes |
+| Sprint 4 — Importação Excel | ⛔ Não iniciado | — | Próximo |
 | Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | |
 | Sprint 6 — Conciliações | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 7 — Contratos | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
@@ -34,7 +33,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 3 — Nova Oportunidade + Detalhe.
+**Próximo sprint a executar:** Sprint 4 — Importação Excel.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -78,6 +77,12 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
   faz `migrate:fresh` e **apagava os dados da `adg`** (utilizador seedado sumiu em
   2026-10-03 e o login falhava com "credenciais erradas"). Criada `adg_test` via mysql.
   Se correr `php artisan test` sem esse env, repovar depois com `php artisan migrate:fresh --seed`.
+- **Novas migrations:** os testes só criam tabelas na `adg_test`; a BD dev `adg` precisa
+  de `php artisan migrate` à mão (Sprint 3: `visit_reports` deu 500 em `/pipeline/{id}`
+  até correr a migration na `adg`).
+- **Servidor com config obsoleta:** se o `artisan serve` foi arrancado antes de mudar
+  `.env`/config (ex.: `APP_NAME`), o processo pode continuar a servir valores antigos
+  ("Entrar || Laravel" no `<title>`, cookie `laravel_session`) — **reiniciar o serve**.
 
 ---
 
@@ -240,6 +245,53 @@ Em `adg/resources/views/components/ui/` — markup exacto do protótipo com prop
 
 ---
 
+## 5D. SPRINT 3 — NOVA OPORTUNIDADE + DETALHE (Sprint 3, commit `91d3514`)
+
+- **Migration `visit_reports` (§8.5):** uuid, opportunity_id/user_id (cascade),
+  data_visita, objectivo, pessoas_presentes, assuntos_tratados*, resultado,
+  proxima_accao, anexos (json). **Model** `VisitReport` (+`HasFactory`, casts date/array,
+  uuid no `creating`) e **`VisitReportFactory`**. Relação `Opportunity::visitReports()`.
+  Campo `anexos` **sem UI** (sem definição de upload — pendente).
+- **`OpportunityService::create(array)`:** aplica estados finais na criação (Aprovado →
+  prob 100 + `data_aprovacao`; Não Aprovado → 0) e grava histórico com `fase_anterior = null`.
+- **Livewire `Opportunities\OpportunityCreate`** + view copiada de `leads-create.html`:
+  Cliente (obrigatório), Título, Valor, Estado (5 fases via `Pipeline::COLUMNS`), Probabilidade
+  10-100%, Data de fecho, Descrição; cards laterais "Pipeline" (fases renomeadas) e "Dicas";
+  `id="oppForm"` + `wire:submit="save"` → redirect `/pipeline`. Header: "Guardar rascunho"
+  (placeholder) e "Criar Oportunidade" (`requestSubmit()` via `onclick`, pois o header fica
+  fora do DOM do componente Livewire).
+- **Livewire `Opportunities\OpportunityView`** + view de `leads-view.html`:
+  - Tabs **Resumo / Proposta / Actividades / Notas / Relatório de Visita** (nova, última).
+    A barra de tabs vive no slot **`pageHeaderBelow`** (posição exacta do protótipo) e
+    sincroniza com o componente via script `setOppTab()` → `Livewire.find(wire:id).set('activeTab', …)`;
+    o componente re-renderiza os `tab-pane` com a classe `active` correcta (mantém a aba
+    após eventos como `visit-report-added`).
+  - Resumo: dados reais (valor/ponderado via `formatKz`, responsável = utilizador logado,
+    criada em). Subtítulo "Descrição" do protótipo colapsou no card **Descrição** (`interesse`).
+  - Dropdown do header (Editar/Agendar/Marcar/Eliminar) = **placeholders** `javascript:void(0)`
+    (fiel ao protótipo; moves fazem-se no kanban — Sprint 2).
+- **Livewire `Activities\VisitReportForm`:** formulário §8.5 (valida `data_visita` e
+  `assuntos_tratados`), `user_id` = auth, dispatch `visit-report-added`; lista de relatórios
+  no `OpportunityView` (`#[On]` re-render).
+- **Rotas:** `pipeline/nova` (`opportunities.create`, **antes** do binding) e
+  `pipeline/{opportunity}` (closure view, `opportunities.show`, 404 para id inexistente).
+- **Breadcrumb:** layout passa `:pageHeaderBreadcrumb` (array via atributo PHP do componente)
+  ao `x-ui.page-header` — create = `['Nova']`, show = `['Oportunidades', titulo]`, default `[title]`.
+- **Sidebar:** "Nova Oportunidade" deixou de ser "Em breve" → link activo, **1ª opção**
+  (corrige ordem que ficou invertida no Sprint 1); submenu abre também em `opportunities.*`.
+- **Kanban:** título do cartão é agora `<a wire:navigate>` para o detalhe.
+- **Decisões de mapeamento (sem inventar dados):** campo "Responsável" do formulário
+  **removido** (schema sem responsável); "Cliente" = input + `<datalist>` com empresas
+  existentes (não há módulo de clientes); "Descrição" → coluna `interesse`; `nome` e `empresa`
+  recebem o mesmo valor do Cliente.
+- **Testes:** `OpportunityCreateTest` (7) + `OpportunityViewTest` (8) → **52 testes,
+  228 assertions**; pint passed; build OK (sem mudanças de CSS); validação HTTP manual:
+  `/pipeline/nova` 200 (form, breadcrumb, datalist), `/pipeline` 200 (link do cartão),
+  `/pipeline/{id}` 200 (tabs, resumo, form de relatório, `setOppTab`, `Kz 12.000.000`/
+  `Kz 3.600.000`, empty states), `/pipeline/99999` **404**.
+
+---
+
 ## 6. PONTOS EM ABERTO (PROMPT §19 — NÃO AVANÇAR SEM RESPOSTA)
 
 - [x] ~~Lista completa e ordem das fases do pipeline~~ → **respondido 2026-10-03:**
@@ -277,7 +329,7 @@ npm run dev                                                    # Vite
 npm run build                                                  # build produção
 
 php artisan migrate:fresh --seed
-php artisan test                                               # 37 testes (Sprint 2)
+php artisan test                                               # 52 testes (Sprint 3)
 php vendor/bin/pint                                            # formatação
 php vendor/bin/pint --test                                     # verificar sem alterar
 php artisan config:clear
@@ -300,3 +352,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-03 | **Sprint 1 concluído** (`0aa7f8d`) — enums, auth por username, layouts do protótipo, extração CSS (§4.6), menu agrupado, header simplificado; 26 testes a passar |
 | 2026-10-03 | **Sprint 1.1 concluído** (`9066d59`) — 10 componentes Blade extraídos do protótipo + galeria `/ui` + `UiComponentsTest`; 28 testes |
 | 2026-10-03 | **Sprint 2 concluído** (`b27ba30`) — pipeline kanban 5 fases com drag&drop, stats, schema +titulo/probabilidade/data_fecho (decisão do utilizador), fases confirmadas no §19; 37 testes |
+| 2026-10-04 | **Sprint 3 concluído** (`91d3514`) — create/view do leads-create/leads-view, tabela `visit_reports` + relatório de visita, rotas `opportunities.create/show`, sidebar "Nova Oportunidade" activa, cartões do kanban clicáveis; 52 testes |
