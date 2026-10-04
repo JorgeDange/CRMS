@@ -152,12 +152,21 @@ $themeKeep = `
     '\.dropdown|\.modal|\.offcanvas|\.btn|\.form-|\.input-group|\.card|\.badge|\.table|\.alert|' + `
     '\.breadcrumb|\.nav\b|\.nav-|\.list-group|\.progress|\.pagination|\.tooltip|\.accordion|\.popover|' + `
     '\.text-muted|\.text-dark|\.text-primary|\.text-success|\.text-danger|\.text-warning|\.text-info|' + `
+    '\.text-teal|\.text-purple|\.text-indigo|' + `
     '\.text-uppercase|\.text-center|\.text-end|\.text-truncate|\.text-reset|\.text-decoration|' + `
     '\.fs-\d|\.wd-\d|\.ht-\d|\.fw-|\.font-body|\.c-pointer|\.footer|\.m-b-10|\.hstack|\.vstack|' + `
     '\.border-bottom-dashed|\.bg-soft-|\.bg-gray|\.border-gray|\.text-gray|\.search-form|' + `
     '\.notifications-|\.select-language|\.language[_-]|\.text-spacing|\.scroll-menu|' + `
     '\.bg-primary|\.bg-success|\.bg-danger|\.bg-warning|\.bg-secondary|\.rounded-circle|\.img-fluid|' + `
-    '\.stretch|\.border-dashed|\.team-progress'
+    '\.stretch|\.border-dashed|\.team-progress|' + `
+    '\.calendar-|\.menu-navi|\.single-task-list|' + `
+    '(^a\b|a:hover|a:not\(|^:focus$|^b$|^strong$)'
+
+# tui-theme.min.css (assets/vendors/css): sidebar do calendario (lnb-calendars,
+# checkbox da legenda), #renderRange e botoes das views de apps-calendar.html.
+$tuiKeep = `
+    '\.lnb-|#lnb\b|#renderRange|\.calendar-icon|\.calendar-bar|\.calendar-name|' + `
+    '\.weekday-grid|\.schedule-time|\.render-range|\.tui-full-calendar-checkbox-round'
 
 # vendors.min.css: apenas iconografia (feather, bootstrap-icons, FA) + fontes.
 $vendorsKeep = `
@@ -170,6 +179,7 @@ $brandRe = '#3454d1|#eff0f6|#283c50|#17c666|#ea4d4d|#ffa21d|#3dc7be|#64748b|#4b5
     '100, ?116, ?139|75, ?85, ?99|240, ?242, ?248|229, ?231, ?235'
 
 Extract-Css (Join-Path $Repo 'assets\css\theme.min.css')        (Join-Path $OutDir 'theme-extract.css')   $themeKeep
+Extract-Css (Join-Path $Repo 'assets\vendors\css\tui-theme.min.css') (Join-Path $OutDir 'tui-theme-extract.css') $tuiKeep
 Extract-Css (Join-Path $Repo 'assets\vendors\css\vendors.min.css') (Join-Path $OutDir 'icons-extract.css') $vendorsKeep -AllFontFaces
 Extract-BootstrapDiff (Join-Path $Repo 'assets\css\bootstrap.min.css') `
     (Join-Path $Repo 'adg\node_modules\bootstrap\dist\css\bootstrap.min.css') `

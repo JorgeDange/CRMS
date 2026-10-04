@@ -20,6 +20,7 @@
 
 /* 5. Layout e icones extraidos do prototipo (sec.4.6) */
 @import './prototype/theme-extract.css';
+@import './prototype/tui-theme-extract.css';
 @import './prototype/icons-extract.css';
 
 @plugin '@tailwindcss/forms';
@@ -72,3 +73,32 @@
 .kanban-col-body.drag-over { outline: 2px dashed #6366f1; outline-offset: -4px; background-color: #eef2ff !important; }
 .kanban-column[data-stage="aprovado"] .kanban-col-body.drag-over { outline-color: #10b981; background-color: #d1fae5 !important; }
 .kanban-column[data-stage="nao_aprovado"] .kanban-col-body.drag-over { outline-color: #f43f5e; background-color: #ffe4e6 !important; }
+
+/* --------------------------------------------------------------- */
+/* Agenda Comercial (Sprint 5) — apps-tasks / apps-notes / apps-calendar */
+/* --------------------------------------------------------------- */
+
+/* No prototipo o scroll de .content-area/.content-sidebar e feito pelo
+   PerfectScrollbar (common-init.min.js, data-scrollbar-target). Aqui o
+   content-area e que faz de contentor de scroll, com header fixo e
+   rodape no fim — mesma estrutura do markup das apps-*.html. */
+.main-content .content-area { display: flex; flex-direction: column; overflow-y: auto; }
+.main-content .content-area > .content-area-header { flex-shrink: 0; }
+.main-content .content-area > .content-area-body { flex: 1 1 auto; }
+.main-content .content-area > .footer { flex-shrink: 0; }
+
+/* Grelha propria que substitui o TUI Calendar (tui-calendar-init.min.js) */
+.agenda-calendar { display: flex; flex-direction: column; height: 100%; }
+.agenda-calendar-head { display: grid; grid-template-columns: repeat(var(--agenda-cols, 7), minmax(0, 1fr)); background-color: #fff; border-bottom: 1px solid #e5e7eb; }
+.agenda-calendar-head-cell { padding: 12px 8px; font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; text-align: center; color: #283c50; border-right: 1px solid #e5e7eb; }
+.agenda-calendar-grid { flex: 1; display: grid; grid-template-columns: repeat(var(--agenda-cols, 7), minmax(0, 1fr)); grid-auto-rows: minmax(110px, 1fr); }
+.agenda-calendar-cell { position: relative; min-height: 110px; padding: 30px 6px 6px; background-color: #fff; border-right: 1px solid #e5e7eb; border-bottom: 1px solid #e5e7eb; overflow: hidden; }
+.agenda-calendar-cell.is-other { background-color: #f9fafb; }
+.agenda-calendar-cell.is-other .agenda-day-num { color: #9ca3af; }
+.agenda-day-num { position: absolute; top: 5px; left: 7px; min-width: 20px; height: 20px; padding: 0 4px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #283c50; border-radius: 50%; }
+.agenda-calendar-cell.is-today .agenda-day-num { background-color: #3454d1; color: #fff; }
+.agenda-event { display: flex; align-items: baseline; gap: 5px; margin-top: 4px; padding: 2px 5px; font-size: 12px; font-weight: 500; line-height: 1.4; color: #fff; text-decoration: none; border-left: 3px solid rgba(0, 0, 0, .2); border-radius: 2px; background-color: var(--agenda-event-color, #3454d1); }
+.agenda-event:hover { color: #fff; filter: brightness(1.08); }
+.agenda-event-time { flex-shrink: 0; font-size: 11px; font-weight: 700; }
+.agenda-event-title { min-width: 0; }
+

@@ -37,6 +37,20 @@ Route::get('pipeline/{opportunity}', function (Opportunity $opportunity) {
     return view('opportunities.show', ['opportunity' => $opportunity]);
 })->middleware(['auth', 'verified'])->name('opportunities.show');
 
+// Agenda Comercial (Sprint 5) — apps-tasks / apps-notes / apps-calendar.
+Route::view('agenda', 'agenda.index')
+    ->middleware(['auth', 'verified'])
+    ->name('agenda');
+
+// 'agenda/nova' DEVE vir antes de qualquer rota parametrizada.
+Route::view('agenda/nova', 'agenda.create')
+    ->middleware(['auth', 'verified'])
+    ->name('agenda.create');
+
+Route::view('agenda/calendario', 'agenda.calendar')
+    ->middleware(['auth', 'verified'])
+    ->name('agenda.calendar');
+
 Route::view('ui', 'ui-demo')
     ->middleware(['auth', 'verified'])
     ->name('ui.demo');

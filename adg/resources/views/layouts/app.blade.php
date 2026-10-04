@@ -28,31 +28,26 @@
     <x-layout.header />
 
     <!--! [Start] Main Content !-->
-    <main class="nxl-container">
-        <div class="nxl-content">
+    <main class="nxl-container {{ $attributes->get('containerClass') }}">
+        <div class="nxl-content {{ $attributes->get('contentClass') }}">
             <!-- [ page-header ] start -->
-            <x-ui.page-header :title="$pageTitle" :breadcrumb="$attributes->get('pageHeaderBreadcrumb')">
-                <x-slot name="right">{{ $pageHeaderRight ?? '' }}</x-slot>
-            </x-ui.page-header>
-            {{ $pageHeaderBelow ?? '' }}
+            @unless($attributes->get('hidePageHeader'))
+                <x-ui.page-header :title="$pageTitle" :breadcrumb="$attributes->get('pageHeaderBreadcrumb')">
+                    <x-slot name="right">{{ $pageHeaderRight ?? '' }}</x-slot>
+                </x-ui.page-header>
+                {{ $pageHeaderBelow ?? '' }}
+            @endunless
             <!-- [ page-header ] end -->
             <!-- [ Main Content ] start -->
-            <div class="main-content">
+            <div class="main-content {{ $attributes->get('mainClass') }}">
                 {{ $slot }}
             </div>
             <!-- [ Main Content ] end -->
         </div>
         <!-- [ Footer ] start -->
-        <footer class="footer">
-            <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
-                <span>Copyright © {{ date('Y') }}</span>
-            </p>
-            <div class="d-flex align-items-center gap-4">
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Ajuda</a>
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Termos</a>
-                <a href="javascript:void(0);" class="fs-11 fw-semibold text-uppercase">Privacidade</a>
-            </div>
-        </footer>
+        @unless($attributes->get('hideFooter'))
+            <x-ui.footer />
+        @endunless
         <!-- [ Footer ] end -->
     </main>
     <!--! [End] Main Content !-->

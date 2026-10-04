@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             SettingSeeder::class,
             OpportunitySeeder::class,
+            ActivitySeeder::class,
         ]);
     }
 }

@@ -25,7 +25,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
 | Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `91d3514` | Create/View/VisitReport, visit_reports, 52 testes |
 | Sprint 4 — Importação Excel | ✅ Concluído | `6fb0330` | Upload→preview→relatório, duplicados, template, 63 testes |
-| Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | Próximo |
+| Sprint 5 — Agenda Comercial | ✅ Concluído | `<hash>` | apps-tasks/apps-notes/apps-calendar → Blade/Livewire; enum ActivityType/Status, Activity model + service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda/nova/agenda/calendario, sidebar acordeão, 20 testes, CSS grelha agenda-calendar + extração tui-theme; 83 testes suite |
 | Sprint 6 — Conciliações | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 7 — Contratos | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 8 — Produtos | ⛔ Não iniciado | — | |
@@ -33,7 +33,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 5 — Agenda Comercial.
+**Próximo sprint a executar:** Sprint 6 — Conciliações.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -408,6 +408,107 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysqld.exe" --defaults-file="C:\ProgramData\MySQL\MySQL Server 8.0\my.ini"
 & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -e "..."
 ```
+
+---
+
+## 5F. SPRINT 5 — AGENDA COMERCIAL (Sprint 5, commit `<hash>`)
+
+- **Objetivo:** migrar `apps-tasks.html`, `apps-notes.html`, `apps-calendar.html` do
+  protótipo para Blade/Livewire **sem alterar o visual** (§4.4: grelha própria no
+  calendário a substituir TUI Calendar).
+- **Enums:** `ActivityType` (visita/chamada/reuniao/proposta/cobrança — 5 tipos; labels,
+  plurais, cores da legenda `#5485e4`/`#25b865`/`#d13b4c`/`#17a2b8`/`#e49e3d`,
+  badges `bg-soft-sky/purple/indigo/teal/danger`, ícones `feather-map-pin/phone/users/file-text/dollar-sign`)
+  e `ActivityStatus` (pendente/concluida/cancelada — labels, badges
+  `bg-soft-warning/success/secondary`).
+- **Migration `activities` (§8.4 + decisões):**
+  - `opportunity_id` **não nullable** (regra de negócio: actividade tem de ter cliente).
+  - Sem `SoftDeletes` (esquema 8.4); `hora` como `string` `H:i`; uuid automático no `creating`.
+- **Model `Activity`:** casts `tipo/status`→enum, `data/proxima_accao_prazo`→date, `hora`→string;
+  `horaCurta()` → `08:00`; scopes `pending`/`overdue`/`upcoming`.
+- **`ActivityService`:** `create` (user=auth, status default Pendente), `update`, `toggleStatus`
+  (Pendente↔Concluida), `setStatus`, `remove` (hard delete).
+- **Livewire `Activities\ActivityForm`** + view `activity-form.blade.php` (cópia de `apps-notes.html`):
+  - Props: `tipo`, `opportunity_id`, `descricao`, `resultado`, `proxima_accao`,
+    `proxima_accao_prazo`, `status`, `data`.
+  - `mount()` lê `?atividade={uuid}` para edição (UUID → model via `where('uuid')`).
+  - Regras: obrigatórios `tipo`, `opportunity_id`, `descricao`, `proxima_accao`,
+    `proxima_accao_prazo`, `data`; `tipo/status` in enum values.
+  - `save()` → valida → `ActivityService::create/update` → `redirect(route('agenda'), navigate: true)`.
+  - View: estrutura completa `content-sidebar` (apps-notes: "Nova Actividade" +
+    filtros Tipo/Estado) + `content-area` (header com dropdown "Nova Actividade"
+    → Ver todas/Calendário, botões Lista/Calendário) + body `row` col-lg-8 formulário
+    (card "Próxima acção" obrigatório com badge) + col-lg-4 legenda de tipos
+    + regras.
+- **Livewire `Activities\ActivityList`** + view `activity-list.blade.php` (cópia de `apps-tasks.html`):
+  - Filtros `statusFilter`/`typeFilter` via query string (`mount` valida com
+    `array_column`); `search` (descricao/proxima_accao/opportunity.nome);
+  - `sort` asc/desc; `toggle(id)` → `ActivityService::toggleStatus`;
+    `remove(id)` → service + `dispatch('activity-removed')`.
+  - `render()` → agrupamento por data com rótulos "Hoje"/"Ontem"/"d M, Y".
+  - View: raiz única `d-flex flex-grow-1 x-data={sidebarOpen}`; sidebar Estado
+    (Todas/Pendentes/Concluídas/Canceladas + ícones) + Tipo (5); header
+    (open-trigger, dropdown Estado, search Alpine `x-show`+`x-cloak`, sort);
+    cards colapsáveis por data; itens `single-task-list` com checkbox `wire:click=toggle`,
+    link para editar, badge tipo/prazo, dropdown Editar/Eliminar (confirm JS +
+    `$wire.remove`); estado vazio com botão Nova Actividade; `<x-ui.footer />`.
+- **Livewire `Activities\ActivityCalendar`** + view `activity-calendar.blade.php`
+  (cópia de `apps-calendar.html`, grelha própria):
+  - Views estáticas PT: Diária/Semanal/Semanas (2)/Semanas (3)/Mensal com ícones
+    `feather-list/umbrella/sliders/framer/grid`; `DAY_NAMES` = Dom..Sáb.
+  - Estado: `$view`, `$cursor`, `$allVisible` (checkbox "Ver todas"),
+    `$types[]` (checkboxes legenda); `updatedAllVisible`/`updatedTypes`
+    sincronizam sem ciclos.
+  - `range()`: day/week/weeks2/weeks3 = addDays; **month = 6 semanas fixas**
+    (`isAlways6Week` do TUI: `startOfMonth()->startOfWeek(Sunday)` + 41 dias).
+  - `days()`, `rangeLabel()` com formatos TUI exactos: `d.m.y` (day/month) e
+    `d/m/Y ~ d/m/Y` (week/weeks2/weeks3).
+  - Eventos filtrados por `$types` no range; `upcoming` = próximas 4 (sem filtro
+    de tipo, igual ao protótipo).
+  - View: sidebar `lnb-calendars` (checkbox allVisible + legenda tipos com
+    `tui-full-calendar-checkbox-round` + `background-color` dynamic via
+    `in_array($tipo->value, $types)` + eventos próximos `schedule-item`); header
+    (open-trigger, dropdown views com ícones, botão Hoje, `#renderRange`,
+    prev/next); grid CSS `agenda-calendar` (`--agenda-cols`), chips `agenda-event`
+    (`--agenda-event-color: $tipo->color()`, `border-left:3px solid rgba(0,0,0,.2)`,
+    tempo + título), `+N` (`.weekday-grid-more-schedules`); footer.
+- **CSS nova agenda** (`adg/resources/css/app.css`): `.content-area` flex col
+  (header sticky, body `flex:1 1 auto`, footer shrink) + grelha
+  `.agenda-calendar*` + `.agenda-event` + `.agenda-day-num` + utilitários
+  `.text-teal/.text-purple/.text-indigo` (extraídos do theme.min.css).
+- **Extracção CSS §4.6 (actualizada):** `$themeKeep` alargado
+  (`\.text-teal|\.text-purple|\.text-indigo`, `\.calendar-`, `\.menu-navi`,
+  `\.single-task-list`, `(^a\b|a:hover|a:not\(|^:focus$|^b$|^strong$)`) para
+  capturar regras de links globais `a{color:#283c50...}` e utilitários `b,strong`.
+  Novo `$tuiKeep` para `tui-theme.min.css` (`\.lnb-|#lnb\b|#renderRange|\.calendar-icon|...`
+  `\.tui-full-calendar-checkbox-round`) → gera `tui-theme-extract.css` importado
+  em `app.css` depois de `theme-extract.css`.
+- **Vistas Blade:**
+  - `agenda/index.blade.php` → `@livewire('activities.activity-list')`
+    (`containerClass="apps-container apps-tasks" contentClass="without-header nxl-full-content" mainClass="d-flex" hidePageHeader hideFooter`).
+  - `agenda/create.blade.php` → `@livewire('activities.activity-form')` (mesmo container `apps-notes`).
+  - `agenda/calendar.blade.php` → `@livewire('activities.activity-calendar')` (container `apps-calendar`).
+- **Rotas** (`web.php`): `agenda` (GET), `agenda/nova` (GET — **antes** de qualquer
+  rota parametrizada), `agenda/calendario` (GET); middleware `auth,verified`.
+- **Sidebar:** item "Agenda Comercial" transformado em **acordeão** (igual a
+  Oportunidades) com sub-opções: Calendário, Actividades, Actividade (ordem do
+  protótipo); abre automaticamente nas rotas `agenda*`.
+- **`ActivitySeeder`:** 10 actividades de demo baseadas nos cards de `apps-tasks.html`
+  (Videoconferência Kinaxixi, Reunião objectivos, Análise tendências, Enviar proposta,
+  Marcar demonstração, Visita técnica, Proposta cimento, Cobrança 2.ª prestação,
+  Visita acompanhamento, Reunião fecho obra) distribuídas em Hoje/Ontem/−2/−1/+1/+3/+5.
+- **Testes:** `AgendaTest` (20) — auth redirects, sidebar acordeão, list structure,
+  empty state, filtros status/tipo via query string, inválidos ignorados, search,
+  toggle/remove, create page structure, edição via `?atividade=`, validação
+  obrigatórios (cliente, descrição, próxima acção), criação pendente, calendar
+  structure, grelha 42 células (6 semanas), troca de views (day=1, week=7,
+  weeks2=14, month=42), fallback bogus→month, eventos no grid, filtros tipo
+  (`set('types')`/`set('allVisible')` — não se chama `updatedTypes` directamente
+  por bloqueio Livewire 3).
+- **Validação:** `pint --test` **passed**; `npm run build` **OK** (warnings
+  benignos `a::hover` do theme.min + svgs flags); `php artisan test` → **83 testes,
+  399 assertions, 0 falhas**; HTTP manual (8099): `/agenda`/`agenda/nova`/`agenda/calendario`
+  302 sem auth (correto), 200 com auth (validado via test suite).
 
 ---
 

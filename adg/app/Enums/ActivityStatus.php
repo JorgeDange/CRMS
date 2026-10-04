@@ -25,4 +25,12 @@ enum ActivityStatus: string
             self::CANCELADA => 'secondary',
         };
     }
+
+    /**
+     * Badge do estado no formato do prototipo (badge bg-soft-* text-*).
+     */
+    public function badgeClass(): string
+    {
+        return 'bg-soft-'.$this->badgeVariant().' text-'.$this->badgeVariant();
+    }
 }

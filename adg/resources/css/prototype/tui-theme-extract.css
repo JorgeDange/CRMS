@@ -1,0 +1,22 @@
+/* EXTRAIDO do prototipo ? gerado por tools/extract-prototype-css.ps1 (PROMPT_MASTER 4.6) */
+.calendar-icon{width:20px;height:14px}
+.calendar-icon span{font-weight:600}
+#lnb{top:49px;bottom:0;width:200px;padding:12px 10px;position:absolute;background:#fafafa;border-right:1px solid #e5e7eb}
+#lnb label{margin-bottom:0;cursor:pointer}
+.lnb-new-schedule{padding-bottom:12px;border-bottom:1px solid #e5e7eb}
+.lnb-new-schedule-btn{border:0;height:100%;font-size:14px;color:#fff;font-weight:700;padding:10px 20px;border-radius:25px;background-color:#ff6618}
+.lnb-new-schedule-btn:hover{border:0;height:100%;font-size:14px;color:#fff;font-weight:700;padding:10px 20px;border-radius:25px;background-color:#3454d1}
+.lnb-new-schedule-btn:active{border:0;height:100%;font-size:14px;color:#fff;font-weight:700;padding:10px 20px;border-radius:25px;background-color:#3454d1}
+.lnb-calendars>div{padding:25px 30px;border-bottom:1px solid #e5e7eb}
+.lnb-calendars-d1{padding-left:10px}
+.lnb-calendars-item{cursor:pointer;padding:10px 0}
+.lnb-calendars-item label{cursor:pointer}
+.lnb-footer{bottom:12px;color:#283c50;font-size:11px;position:absolute;padding-left:16px}
+#renderRange{color:#283c50;font-size:16px;font-weight:700;margin-right:10px}
+.calendar-bar{width:16px;height:16px;margin-right:5px;display:inline-block;vertical-align:middle;border:1px solid #e5e7eb}
+.calendar-name{font-size:14px;font-weight:700;vertical-align:middle}
+.schedule-time{color:#3454d1}
+.weekday-grid-more-schedules{height:18px;float:right;color:#283c50;padding:0 5px;font-size:12px;margin-top:4px;line-height:17px;margin-right:6px;text-align:center;border-radius:3px;border:1px solid #e5e7eb}
+.lnb-calendars-item label{display:flex;cursor:pointer;color:#283c50;font-weight:600;align-items:center}
+input[type=checkbox].tui-full-calendar-checkbox-round+span{width:18px;height:18px;border:solid 2px;margin-right:12px;border-radius:3px;position:relative}
+input[type=checkbox].tui-full-calendar-checkbox-round+span:before{top:.5px;left:1.5px;color:#fff;font-size:10px;content:"\f272";position:absolute;font-family:bootstrap-icons!important}
