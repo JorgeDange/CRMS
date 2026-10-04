@@ -19,7 +19,7 @@
                         <span class="nxl-mtext">Dashboard</span>
                     </a>
                 </li>
-                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['pipeline', 'opportunities.create', 'opportunities.show']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
+                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['pipeline', 'opportunities.create', 'opportunities.import', 'opportunities.show']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
                     <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
                         <span class="nxl-micon"><i class="feather-bar-chart-2"></i></span>
                         <span class="nxl-mtext">Oportunidades</span>

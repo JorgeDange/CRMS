@@ -2,6 +2,10 @@
     <x-slot name="header">Nova Oportunidade</x-slot>
 
     <x-slot name="pageHeaderRight">
+        <a href="{{ route('opportunities.import') }}" class="btn btn-light-brand" wire:navigate>
+            <i class="feather-upload me-2"></i>
+            <span>Importar Excel</span>
+        </a>
         <a href="javascript:void(0);" class="btn btn-light-brand">
             <i class="feather-layers me-2"></i>
             <span>Guardar rascunho</span>
