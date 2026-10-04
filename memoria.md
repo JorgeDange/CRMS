@@ -25,7 +25,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
 | Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `91d3514` | Create/View/VisitReport, visit_reports, 52 testes |
 | Sprint 4 — Importação Excel | ✅ Concluído | `6fb0330` | Upload→preview→relatório, duplicados, template, 63 testes |
-| Sprint 5 — Agenda Comercial | ✅ Concluído | `<hash>` | apps-tasks/apps-notes/apps-calendar → Blade/Livewire; enum ActivityType/Status, Activity model + service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda/nova/agenda/calendario, sidebar acordeão, 20 testes, CSS grelha agenda-calendar + extração tui-theme; 83 testes suite |
+| Sprint 5 — Agenda Comercial | ✅ Concluído | `49c2225` | apps-tasks/apps-notes/apps-calendar → Blade/Livewire; enum ActivityType/Status, Activity model + service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda/nova/agenda/calendario, sidebar acordeão, 20 testes, CSS grelha agenda-calendar + extração tui-theme; 83 testes suite |
 | Sprint 6 — Conciliações | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 7 — Contratos | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 8 — Produtos | ⛔ Não iniciado | — | |
@@ -522,3 +522,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-03 | **Sprint 2 concluído** (`b27ba30`) — pipeline kanban 5 fases com drag&drop, stats, schema +titulo/probabilidade/data_fecho (decisão do utilizador), fases confirmadas no §19; 37 testes |
 | 2026-10-04 | **Sprint 3 concluído** (`91d3514`) — create/view do leads-create/leads-view, tabela `visit_reports` + relatório de visita, rotas `opportunities.create/show`, sidebar "Nova Oportunidade" activa, cartões do kanban clicáveis; 52 testes |
 | 2026-10-04 | **Sprint 4 concluído** (`6fb0330`) — importação Excel (maatwebsite/excel 4): template, preview com validação, duplicados (BD+ficheiro), relatório; entrada "Importar Excel" na Nova Oportunidade; 63 testes |
+| 2026-10-04 | **Sprint 5 concluído** (`49c2225`) — Agenda Comercial: apps-tasks/apps-notes/apps-calendar migrados para Livewire; ActivityType/Status enums, Activity model/service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda.nova/agenda.calendario, sidebar acordeão, grelha agenda-calendar (6 semanas), CSS + extração tui-theme, ActivitySeeder, 20 testes AgendaTest; suite 83 testes, pint, build OK |
