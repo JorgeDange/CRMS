@@ -24,8 +24,8 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 1.1 — UI/UX Base | ✅ Concluído | `9066d59` | 10 componentes Blade + página de validação `/ui` |
 | Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
 | Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `91d3514` | Create/View/VisitReport, visit_reports, 52 testes |
-| Sprint 4 — Importação Excel | ⛔ Não iniciado | — | Próximo |
-| Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | |
+| Sprint 4 — Importação Excel | ✅ Concluído | `6fb0330` | Upload→preview→relatório, duplicados, template, 63 testes |
+| Sprint 5 — Agenda Comercial | ⛔ Não iniciado | — | Próximo |
 | Sprint 6 — Conciliações | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 7 — Contratos | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
 | Sprint 8 — Produtos | ⛔ Não iniciado | — | |
@@ -33,7 +33,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
 | Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
 
-**Próximo sprint a executar:** Sprint 4 — Importação Excel.
+**Próximo sprint a executar:** Sprint 5 — Agenda Comercial.
 **Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
 
 ---
@@ -53,7 +53,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Build | **Vite 7** (`laravel-vite-plugin@2`) | 7.3.6 | ✅ |
 | Testes | **PHPUnit** | 11.5.56 | ✅ |
 | Queue/Session/Cache | database | — | ✅ |
-| Excel / Gráficos / Backup | — | — | ⏳ sprints seguintes (§5) |
+| Excel / Gráficos / Backup | **maatwebsite/excel** 4.0 (Sprint 4) | 4.0 | ⏳ gráficos/backup nos sprints seguintes (§5) |
 
 ### Notas de ambiente (importante para não perder contexto)
 
@@ -83,6 +83,18 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 - **Servidor com config obsoleta:** se o `artisan serve` foi arrancado antes de mudar
   `.env`/config (ex.: `APP_NAME`), o processo pode continuar a servir valores antigos
   ("Entrar || Laravel" no `<title>`, cookie `laravel_session`) — **reiniciar o serve**.
+- **maatwebsite/excel 4.0 (Sprint 4):** o trait `Exportable` está em
+  `Maatwebsite\Excel\Concerns` (não `Maatwebsite\Excel\`); as constantes `XLSX`/`CSV`
+  são da classe `Maatwebsite\Excel\Excel` — **não existem no Facade** (`Excel::XLSX`
+  dá "Undefined constant"); `Excel::toCollection(null, $path)` lê linhas cruas sem
+  classe de import; num teste, `BinaryFileResponse::getContent()` devolve `false` —
+  ler `baseResponse->getFile()->getPathname()`.
+- **Uploads em testes Livewire:** `Testable::upload` exige `$file->name` → usar
+  `UploadedFile::fake()->createWithContent(nome, binario)` (a classe `Testing\File`
+  tem `public $name`); `new UploadedFile(...)` cru rebenta. O fileinfo detecta
+  `.xlsx` correctamente nesta máquina → regra `mimes:xlsx` funciona.
+- **PowerShell `Set-Content -Encoding UTF8` (PS 5.1) mete BOM** em ficheiros sem BOM —
+  remover com `[IO.File]::WriteAllText($p, $t, (New-Object Text.UTF8Encoding $false))`.
 
 ---
 
@@ -292,6 +304,61 @@ Em `adg/resources/views/components/ui/` — markup exacto do protótipo com prop
 
 ---
 
+## 5E. SPRINT 4 — IMPORTAÇÃO EXCEL (Sprint 4, commit `6fb0330`)
+
+- **`maatwebsite/excel ^4.0`** instalado via composer (PHP 8.3+, Laravel 12 ✓).
+- **Template (`app/Exports/OpportunityTemplateExport`):** só cabeçalhos, 1ª linha a
+  negrito (`WithStyles`), auto-largura; descarregável em
+  `GET /pipeline/importar/template` (`Excel::download`) → `template-oportunidades.xlsx`.
+  Colunas = `ExcelImportService::HEADINGS`: Cliente, Título, Valor (Kz), Estado,
+  Probabilidade, Data de fecho, Descrição (**sem linha de exemplo**, para não importar lixo).
+- **`ExcelImportService` (checklist "Service"):**
+  - `parse()`: `Excel::toCollection(null, path)` (linhas cruas); mapeia cabeçalhos
+    normalizados (sem acentos/maiúsculas; aceita aliases `Valor (Kz)`/`Montante`,
+    `Data de fecho`/`Data`, `Descrição`/`Interesse`…) e **falha se faltarem
+    Cliente/Título/Valor**; ignora linhas vazias; cap de **1000 linhas**.
+  - Validação por linha (mesmas regras do formulário): Cliente/Título ≤255;
+    Valor aceita `12000000`, `12.000.000`, `12,000,000`, `12,5`, texto `Kz`;
+    Estado aceita labels do pipeline (`Pipeline::COLUMNS`), valores do enum ou vazio
+    (= Leads; **termos proibidos §6 não são aceites**); Probabilidade 0–100 (`30%` ok,
+    vazio = 30 por omissão); Data de fecho: serial de Excel, `DD/MM/AAAA`, `YYYY-MM-DD`.
+  - **Duplicados:** mesmo `Título` + `Cliente` — contra a BD (query única com
+    `whereIn`, SoftDeletes excluídos) e dentro do ficheiro (linha repetida → indica
+    a 1ª linha). Linhas com erro não entram na checagem.
+  - `import()`: **`DB::transaction`**; por linha: erro → `erros++`; duplicada → `duplicadas++`;
+    re-verifica a BD (estado pode mudar depois do preview); senão cria via
+    **`OpportunityService::create`** (histórico inicial + estados finais) → `criadas++`.
+    Devolve `rows` (com `estado_importacao`) + `report{total,criadas,duplicadas,erros}`.
+- **Livewire `Opportunities\OpportunityImport`** (checklist "Componente"):
+  `WithFileUploads` (`file` validado em `preview()`: `required|mimes:xlsx,xls|max:10240`);
+  fluxo `updatedFile` (limpa estado) → `preview()` → `import()` (apaga o temporário,
+  null o ficheiro) → `startOver()` (não usar `reset` — é método do Component).
+- **Página `GET /pipeline/importar`** (`opportunities.import`, **antes** do binding):
+  header com "Nova Oportunidade" + "Descarregar template"; breadcrumb
+  `['Nova Oportunidade', 'Importar Excel']`. Montada só com primitivas do protótipo
+  (cards, `form-control`, `btn`, badges, `alert alert-warning` de projects-create.html,
+  tabela `table-hover align-middle` + `thead.bg-light` de analytics.html) — **não há
+  página de importação no protótipo** (§22: não inventar, reaproveitar).
+- **Fluxo na UI:** card "Importar de Excel" (ficheiro + Pré-visualizar + template);
+  **Pré-visualização** (tabela: Linha/Cliente/Título/Valor/Estado/Prob./Fecho/Situação
+  com badges Pronta·Duplicada·Erro + motivo/erros por linha) + botões
+  "Importar N oportunidade(s)" (desactivado se N=0) e "Descartar"; após confirmar,
+  card **"Relatório de importação"** (badges Criadas/Duplicadas/Erros/Total +
+  "Nova importação"). Coluna lateral "Como importar" (5 passos) + "Pipeline" (copiado
+  do create).
+- **Entrada no fluxo do §1:** botão **"Importar Excel"** no header de `/pipeline/nova`
+  (1º, antes de "Guardar rascunho"/"Criar Oportunidade"); sidebar **sem item novo**
+  (menu = 9 itens fixos do §7) mas o submenu Oportunidades abre também em
+  `opportunities.import`.
+- **Testes:** `OpportunityImportTest` (11) → **63 testes, 300 assertions**; pint passed.
+  Validação HTTP manual (cookie de sessão existente):
+  `/pipeline/importar` **200** (título, form, "Como importar", "Pré-visualizar",
+  "Descarregar template"), `/pipeline/importar/template` **200** (zip `PK`, >5KB,
+  cabeçalhos = HEADINGS), `/pipeline/nova` **200** (link `/pipeline/importar`),
+  sem cookie → **302**.
+
+---
+
 ## 6. PONTOS EM ABERTO (PROMPT §19 — NÃO AVANÇAR SEM RESPOSTA)
 
 - [x] ~~Lista completa e ordem das fases do pipeline~~ → **respondido 2026-10-03:**
@@ -329,7 +396,7 @@ npm run dev                                                    # Vite
 npm run build                                                  # build produção
 
 php artisan migrate:fresh --seed
-php artisan test                                               # 52 testes (Sprint 3)
+php artisan test                                               # 63 testes (Sprint 4)
 php vendor/bin/pint                                            # formatação
 php vendor/bin/pint --test                                     # verificar sem alterar
 php artisan config:clear
@@ -353,3 +420,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-03 | **Sprint 1.1 concluído** (`9066d59`) — 10 componentes Blade extraídos do protótipo + galeria `/ui` + `UiComponentsTest`; 28 testes |
 | 2026-10-03 | **Sprint 2 concluído** (`b27ba30`) — pipeline kanban 5 fases com drag&drop, stats, schema +titulo/probabilidade/data_fecho (decisão do utilizador), fases confirmadas no §19; 37 testes |
 | 2026-10-04 | **Sprint 3 concluído** (`91d3514`) — create/view do leads-create/leads-view, tabela `visit_reports` + relatório de visita, rotas `opportunities.create/show`, sidebar "Nova Oportunidade" activa, cartões do kanban clicáveis; 52 testes |
+| 2026-10-04 | **Sprint 4 concluído** (`6fb0330`) — importação Excel (maatwebsite/excel 4): template, preview com validação, duplicados (BD+ficheiro), relatório; entrada "Importar Excel" na Nova Oportunidade; 63 testes |
