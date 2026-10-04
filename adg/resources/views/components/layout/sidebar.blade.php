@@ -19,7 +19,7 @@
                         <span class="nxl-mtext">Dashboard</span>
                     </a>
                 </li>
-                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['pipeline']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
+                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['pipeline', 'opportunities.create', 'opportunities.show']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
                     <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
                         <span class="nxl-micon"><i class="feather-bar-chart-2"></i></span>
                         <span class="nxl-mtext">Oportunidades</span>
@@ -27,11 +27,11 @@
                     </a>
                     {{-- Ordem das sub-opcoes: 1. Nova Oportunidade 2. Pipeline (decisao do cliente 2026-10-03) --}}
                     <ul class="nxl-submenu" x-show="open" x-cloak>
+                        <li class="nxl-item {{ request()->routeIs('opportunities.create') ? 'active' : '' }}">
+                            <a href="{{ route('opportunities.create') }}" class="nxl-link" wire:navigate>Nova Oportunidade</a>
+                        </li>
                         <li class="nxl-item {{ request()->routeIs('pipeline') ? 'active' : '' }}">
                             <a href="{{ route('pipeline') }}" class="nxl-link" wire:navigate>Pipeline</a>
-                        </li>
-                        <li class="nxl-item">
-                            <span class="nxl-link cursor-not-allowed">Nova Oportunidade <span class="badge bg-gray-200 text-dark rounded ms-1">Em breve</span></span>
                         </li>
                     </ul>
                 </li>

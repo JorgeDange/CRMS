@@ -55,7 +55,8 @@
                                      x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $opportunity->id }}'); $el.classList.add('dragging')"
                                      x-on:dragend="$el.classList.remove('dragging')">
                                     <div class="card-body p-3">
-                                        <span class="fw-bold d-block text-dark mb-1">{{ $opportunity->titulo }}</span>
+                                        <a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate
+                                           class="fw-bold d-block text-dark mb-1 text-decoration-none">{{ $opportunity->titulo }}</a>
                                         <span class="fs-12 text-muted d-block mb-2">{{ $opportunity->empresa ?? $opportunity->nome }}</span>
                                         <div class="d-flex align-items-center justify-content-between mb-2">
                                             <span class="fw-bold {{ $config['value'] }} fs-13">{{ OpportunityService::formatKz($opportunity->valor_estimado) }}</span>

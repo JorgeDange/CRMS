@@ -31,7 +31,7 @@
     <main class="nxl-container">
         <div class="nxl-content">
             <!-- [ page-header ] start -->
-            <x-ui.page-header :title="$pageTitle">
+            <x-ui.page-header :title="$pageTitle" :breadcrumb="$attributes->get('pageHeaderBreadcrumb')">
                 <x-slot name="right">{{ $pageHeaderRight ?? '' }}</x-slot>
             </x-ui.page-header>
             {{ $pageHeaderBelow ?? '' }}

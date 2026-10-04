@@ -1,7 +1,12 @@
 @props(['title', 'breadcrumb' => null])
 
 @php
-    $trail = $breadcrumb ?: [$title];
+    // breadcrumb: lista de itens APOS "Início" (array ou string única).
+    // Default: [title] — ex. Início / Oportunidades.
+    if (is_string($breadcrumb)) {
+        $breadcrumb = trim(strip_tags($breadcrumb)) !== '' ? [trim(strip_tags($breadcrumb))] : null;
+    }
+    $trail = is_array($breadcrumb) && $breadcrumb !== [] ? array_values($breadcrumb) : [$title];
 @endphp
 <div class="page-header">
     <div class="page-header-left d-flex align-items-center">

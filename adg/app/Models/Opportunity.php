@@ -63,6 +63,11 @@ class Opportunity extends Model
         return $this->hasMany(OpportunityStageHistory::class);
     }
 
+    public function visitReports(): HasMany
+    {
+        return $this->hasMany(VisitReport::class);
+    }
+
     public function scopeStage(Builder $query, OpportunityStage $stage): Builder
     {
         return $query->where('fase_atual', $stage);

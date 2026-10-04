@@ -53,6 +53,38 @@ class OpportunityService
     }
 
     /**
+     * Cria uma oportunidade (Sprint 3) aplicando as regras dos estados
+     * finais e registando a fase inicial no historico (8.3).
+     */
+    public function create(array $data): Opportunity
+    {
+        $stage = OpportunityStage::tryFrom($data['fase_atual'] ?? '')
+            ?? OpportunityStage::LEAD;
+
+        $data['fase_atual'] = $stage->value;
+
+        if ($stage === OpportunityStage::APROVADO) {
+            $data['probabilidade'] = 100;
+            $data['data_aprovacao'] = now();
+        }
+
+        if ($stage === OpportunityStage::NAO_APROVADO) {
+            $data['probabilidade'] = 0;
+        }
+
+        $opportunity = Opportunity::create($data);
+
+        OpportunityStageHistory::create([
+            'opportunity_id' => $opportunity->id,
+            'fase_anterior' => null,
+            'fase_nova' => $stage->value,
+            'user_id' => auth()->id() ?? User::query()->value('id'),
+        ]);
+
+        return $opportunity;
+    }
+
+    /**
      * Formato monetario do prototipo: Kz 110.400.000
      */
     public static function formatKz(float|int|string|null $value): string
