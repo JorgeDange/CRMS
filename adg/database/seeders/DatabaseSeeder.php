@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             OpportunitySeeder::class,
             ActivitySeeder::class,
             ConciliactionSeeder::class,
+            ContractSeeder::class,
         ]);
     }
 }

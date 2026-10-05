@@ -51,6 +51,20 @@ Route::view('agenda/calendario', 'agenda.calendar')
     ->middleware(['auth', 'verified'])
     ->name('agenda.calendar');
 
+// Contratos (Sprint 7) — projects.html / projects-create.html / projects-view.html.
+Route::view('contratos', 'contracts.index')
+    ->middleware(['auth', 'verified'])
+    ->name('contracts');
+
+// 'contratos/nova' DEVE vir antes de qualquer rota parametrizada.
+Route::view('contratos/nova', 'contracts.create')
+    ->middleware(['auth', 'verified'])
+    ->name('contracts.create');
+
+Route::view('contratos/{contract}', 'contracts.show')
+    ->middleware(['auth', 'verified'])
+    ->name('contracts.show');
+
 // Conciliações (Sprint 6) — payment.html.
 Route::view('conciliações', 'conciliactions.index')
     ->middleware(['auth', 'verified'])

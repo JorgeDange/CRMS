@@ -23,9 +23,24 @@ enum ContractStatus: string
     {
         return match ($this) {
             self::ACTIVO => 'success',
-            self::EXPIRADO => 'danger',
+            self::EXPIRADO => 'warning',
             self::RENOVADO => 'info',
-            self::CANCELADO => 'secondary',
+            self::CANCELADO => 'danger',
+        };
+    }
+
+    public function badgeClass(): string
+    {
+        return 'bg-soft-'.$this->badgeVariant().' text-'.$this->badgeVariant();
+    }
+
+    public function icon(): string
+    {
+        return match ($this) {
+            self::ACTIVO => 'feather-check-circle',
+            self::EXPIRADO => 'feather-alert-triangle',
+            self::RENOVADO => 'feather-refresh-cw',
+            self::CANCELADO => 'feather-x-circle',
         };
     }
 }
