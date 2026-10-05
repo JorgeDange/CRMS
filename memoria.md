@@ -22,19 +22,21 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 0 — Preparação | ✅ Concluído | `3f93c5e` + `56072b6` | `adg/` criado, stack conforme §5 |
 | Sprint 1 — Fundação | ✅ Concluído | `0aa7f8d` | Enums, auth username, seeders, layouts do protótipo, CSS extraído |
 | Sprint 1.1 — UI/UX Base | ✅ Concluído | `9066d59` | 10 componentes Blade + página de validação `/ui` |
-| Sprint 2 — Pipeline | ✅ Concluído | `b27ba30` | Kanban 5 fases, drag&drop, stats, 11 opps demo |
-| Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `91d3514` | Create/View/VisitReport, visit_reports, 52 testes |
-| Sprint 4 — Importação Excel | ✅ Concluído | `6fb0330` | Upload→preview→relatório, duplicados, template, 63 testes |
-| Sprint 5 — Agenda Comercial | ✅ Concluído | `49c2225` | apps-tasks/apps-notes/apps-calendar → Blade/Livewire; enum ActivityType/Status, Activity model + service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda/nova/agenda/calendario, sidebar acordeão, 20 testes, CSS grelha agenda-calendar + extração tui-theme; 83 testes suite |
-| Sprint 6 — Conciliações | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
-| Sprint 7 — Contratos | ⛔ Bloqueado | — | Aguarda definição do cliente (§19) |
-| Sprint 8 — Produtos | ⛔ Não iniciado | — | |
-| Sprint 9 — Alertas | ⛔ Não iniciado | — | |
-| Sprint 10 — Dashboard + Painel Executivo | ⛔ Não iniciado | — | |
-| Sprint 11 — Testes e Lançamento | ⛔ Não iniciado | — | |
+| Sprint 2 — Pipeline | ✅ Concluído* | `b27ba30` | *Kanban 5 fases (antigo). **Precisa actualização p/ 9 fases + novos campos** |
+| Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído* | `91d3514` | *Create/View/VisitReport. **Precisa actualização p/ novos campos + comercial + produto** |
+| Sprint 4 — Importação Excel | ✅ Concluído* | `6fb0330` | *Upload→preview→relatório. **Precisa actualização template p/ novas colunas** |
+| Sprint 5 — Agenda Comercial | ✅ Concluído* | `49c2225` | *Agenda completa. **Precisa command `agenda:reminder` 20h** |
+| Sprint 6 — Conciliações | ⛔ A implementar | — | Tabela `conciliactions`, list+form, view `payment.html` |
+| Sprint 7 — Contratos | ⛔ A implementar | — | Tabela `contracts`, list+form+view, `projects*.html` |
+| Sprint 8 — Produtos | ⛔ A implementar | — | Tabela `products`, list+form, view `customers.html` |
+| Sprint 9 — Comerciais | ⛔ A implementar | — | Tabela `commercials` (já no Sprint 2), list+form, vista carteira |
+| Sprint 10 — Alertas | ⛔ A implementar | — | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
+| Sprint 11 — Dashboard + Painel Executivo | ⛔ A implementar | — | 6 blocos, Chart.js, `index.html` + `analytics.html` |
+| Sprint 12 — Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
 
-**Próximo sprint a executar:** Sprint 6 — Conciliações.
-**Bloqueados à espera do cliente (§19):** Sprint 6 (Conciliações), Sprint 7 (Contratos).
+**Próximo sprint a executar:** Ajustes Sprint 2/3 (9 fases + novos campos) → Sprint 6 (Conciliações).
+**Conforme resposta.md §13:** não bloquear à espera do cliente — seguir suposições documentadas.
+**Ficheiro de plano:** `plano.md` (criado na raiz do projecto).
 
 ---
 
@@ -523,3 +525,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-04 | **Sprint 3 concluído** (`91d3514`) — create/view do leads-create/leads-view, tabela `visit_reports` + relatório de visita, rotas `opportunities.create/show`, sidebar "Nova Oportunidade" activa, cartões do kanban clicáveis; 52 testes |
 | 2026-10-04 | **Sprint 4 concluído** (`6fb0330`) — importação Excel (maatwebsite/excel 4): template, preview com validação, duplicados (BD+ficheiro), relatório; entrada "Importar Excel" na Nova Oportunidade; 63 testes |
 | 2026-10-04 | **Sprint 5 concluído** (`49c2225`) — Agenda Comercial: apps-tasks/apps-notes/apps-calendar migrados para Livewire; ActivityType/Status enums, Activity model/service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda.nova/agenda.calendario, sidebar acordeão, grelha agenda-calendar (6 semanas), CSS + extração tui-theme, ActivitySeeder, 20 testes AgendaTest; suite 83 testes, pint, build OK |
+| 2026-10-05 | **Plano criado** (`plano.md`) — Roadmap actualizado conforme `resposta.md` v4.0: ajustes Sprint 2/3 (9 fases, novos campos), Sprint 6 Conciliações, Sprint 7 Contratos, Sprint 8 Produtos, Sprint 9 Comerciais, Sprint 10 Alertas, Sprint 11 Dashboard, Sprint 12 Lançamento. Próximo: ajustes Sprint 2/3. |
