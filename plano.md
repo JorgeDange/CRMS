@@ -30,28 +30,28 @@
 ## ORDEM DE EXECUÇÃO IMEDIATA
 
 ### 1. AJUSTES SPRINT 2 — Pipeline (9 fases + novos campos)
-- [ ] Enum `OpportunityStage` → 9 valores (lead → cliente_nao_aprovado)
-- [ ] Migration `opportunities` → adicionar colunas: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector` (ex-segmento), `origem`, `codigo_sap`, `nif`, `motivo_nao_aprovacao`, `data_aprovacao`, `ultima_actividade_em`, `ultimo_contacto_em`, `deleted_at`
-- [ ] Migration `commercials` (nova tabela)
-- [ ] Migration `opportunity_product` (pivot nova)
-- [ ] Models `Opportunity`, `Commercial`, relações + pivot
-- [ ] Service `OpportunityService::changeStage` → actualizar para 9 fases
-- [ ] Livewire `Pipeline` → 9 colunas, classes CSS por fase
-- [ ] Views → Kanban 9 colunas (copiar de `leads.html`)
-- [ ] Seeders → `CommercialSeeder` (3 registos)
-- [ ] Testes → PipelineTest actualizado
+- [x] Enum `OpportunityStage` → 9 valores (lead → cliente_nao_aprovado)
+- [x] Migration `opportunities` → adicionar colunas: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector` (ex-segmento), `origem`
+- [x] Migration `commercials` (nova tabela)
+- [x] Migration `opportunity_product` (pivot nova)
+- [x] Models `Opportunity`, `Commercial`, relações + pivot
+- [x] Service `OpportunityService::changeStage` → actualizar para 9 fases
+- [x] Livewire `Pipeline` → 9 colunas, classes CSS por fase
+- [x] Views → Kanban 9 colunas (copiar de `leads.html`)
+- [x] Seeders → `CommercialSeeder` (3 registos)
+- [x] Testes → PipelineTest actualizado
 
 ### 2. AJUSTES SPRINT 3 — Nova Oportunidade + Detalhe
-- [ ] Formulário → adicionar campos: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector`, `origem`, `codigo_sap`, `nif`
-- [ ] View create → copiar de `leads-create.html` com novos campos
-- [ ] View show → copiar de `leads-view.html`, tabs actualizadas
-- [ ] Relação `opportunity_product` no create/view
-- [ ] Testes → OpportunityCreateTest + OpportunityViewTest actualizados
+- [x] Formulário → adicionar campos: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector`, `origem`, `codigo_sap`, `nif`
+- [x] View create → copiar de `leads-create.html` com novos campos
+- [x] View show → copiar de `leads-view.html`, tabs actualizadas
+- [x] Relação `opportunity_product` no create/view
+- [x] Testes → OpportunityCreateTest + OpportunityViewTest actualizados
 
 ### 3. AJUSTES SPRINT 4 — Importação Excel
-- [ ] Template → novas colunas no `OpportunityTemplateExport`
-- [ ] `ExcelImportService` → mapear novas colunas (aliases)
-- [ ] Testes → OpportunityImportTest actualizado
+- [x] Template → novas colunas no `OpportunityTemplateExport`
+- [x] `ExcelImportService` → mapear novas colunas (aliases)
+- [x] Testes → OpportunityImportTest actualizado
 
 ### 4. AJUSTES SPRINT 5 — Agenda Comercial
 - [ ] Command `agenda:reminder` → envia agenda do dia seguinte às 20h (email + notificação)
