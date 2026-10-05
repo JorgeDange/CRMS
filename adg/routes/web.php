@@ -65,6 +65,20 @@ Route::view('contratos/{contract}', 'contracts.show')
     ->middleware(['auth', 'verified'])
     ->name('contracts.show');
 
+// Produtos (Sprint 8) — customers.html.
+Route::view('produtos', 'products.index')
+    ->middleware(['auth', 'verified'])
+    ->name('products');
+
+// 'produtos/nova' DEVE vir antes de qualquer rota parametrizada.
+Route::view('produtos/nova', 'products.create')
+    ->middleware(['auth', 'verified'])
+    ->name('products.create');
+
+Route::view('produtos/{produto}', 'products.edit')
+    ->middleware(['auth', 'verified'])
+    ->name('products.edit');
+
 // Conciliações (Sprint 6) — payment.html.
 Route::view('conciliações', 'conciliactions.index')
     ->middleware(['auth', 'verified'])
