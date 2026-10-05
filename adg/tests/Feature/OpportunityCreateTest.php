@@ -43,8 +43,10 @@ class OpportunityCreateTest extends TestCase
             ->assertSee('Criar Oportunidade')
             ->assertSee('SIL – Sociedade Importadora')
             ->assertSee('>Leads<', false)
-            ->assertSee('Aprovado')
-            ->assertSee('Não Aprovado')
+            ->assertSee('Qualificação')
+            ->assertSee('Aprovação')
+            ->assertSee('Cliente Aprovado')
+            ->assertSee('Cliente Não Aprovado')
             ->assertSee('Dicas');
     }
 
@@ -120,7 +122,7 @@ class OpportunityCreateTest extends TestCase
         ]);
     }
 
-    public function test_creating_in_aprovado_applies_final_state(): void
+    public function test_creating_in_cliente_aprovado_applies_final_state(): void
     {
         $user = User::factory()->create();
         $this->actingAs($user);
@@ -129,7 +131,7 @@ class OpportunityCreateTest extends TestCase
             ->set('cliente', 'Maona Energy')
             ->set('titulo', 'Contrato aprovado')
             ->set('valor', '5000000')
-            ->set('fase_atual', 'aprovado')
+            ->set('fase_atual', 'cliente_aprovado')
             ->set('probabilidade', 30)
             ->call('save');
 

@@ -77,27 +77,27 @@ class OpportunityViewTest extends TestCase
         $this->actingAs($user)->get('/pipeline/99999')->assertNotFound();
     }
 
-    public function test_move_to_aprovado_updates_stage_and_history(): void
+    public function test_move_to_cliente_aprovado_updates_stage_and_history(): void
     {
         $user = User::factory()->create();
         $opportunity = Opportunity::factory()->create([
-            'fase_atual' => OpportunityStage::APROVACAO,
-            'probabilidade' => 60,
+            'fase_atual' => OpportunityStage::RESULTADO,
+            'probabilidade' => 90,
         ]);
         $this->actingAs($user);
 
         Livewire::test(OpportunityView::class, ['opportunity' => $opportunity])
-            ->call('moveTo', 'aprovado')
+            ->call('moveTo', 'cliente_aprovado')
             ->assertRedirect(route('opportunities.show', $opportunity));
 
         $opportunity->refresh();
-        $this->assertSame(OpportunityStage::APROVADO, $opportunity->fase_atual);
+        $this->assertSame(OpportunityStage::CLIENTE_APROVADO, $opportunity->fase_atual);
         $this->assertSame(100, $opportunity->probabilidade);
 
         $this->assertDatabaseHas('opportunity_stage_history', [
             'opportunity_id' => $opportunity->id,
-            'fase_anterior' => 'aprovacao',
-            'fase_nova' => 'aprovado',
+            'fase_anterior' => 'resultado',
+            'fase_nova' => 'cliente_aprovado',
         ]);
     }
 

@@ -13,21 +13,26 @@ class Stats extends Component
     /**
      * Cartoes de estatisticas do collapseOne (leads.html).
      * Recalcula quando o pipeline move uma oportunidade.
+     * Actualizado para 9 fases (resposta.md §5).
      */
     #[On('opportunity-moved')]
     public function render()
     {
         $open = fn () => Opportunity::query()->whereIn('fase_atual', [
             OpportunityStage::LEAD->value,
+            OpportunityStage::QUALIFICACAO->value,
             OpportunityStage::VISITA->value,
+            OpportunityStage::PROPOSTA_NEGOCIACAO->value,
             OpportunityStage::APROVACAO->value,
+            OpportunityStage::BILHETE->value,
+            OpportunityStage::RESULTADO->value,
         ]);
 
         $pipelineValor = (float) $open()->sum('valor_estimado');
         $pipelineCount = $open()->count();
 
         $ganhoMes = Opportunity::query()
-            ->stage(OpportunityStage::APROVADO)
+            ->stage(OpportunityStage::CLIENTE_APROVADO)
             ->where('data_aprovacao', '>=', now()->startOfMonth());
         $ganhoValor = (float) $ganhoMes->sum('valor_estimado');
         $ganhoCount = (clone $ganhoMes)->count();
@@ -37,10 +42,10 @@ class Stats extends Component
         );
 
         $finalizadas = Opportunity::query()
-            ->whereIn('fase_atual', [OpportunityStage::APROVADO->value, OpportunityStage::NAO_APROVADO->value])
+            ->whereIn('fase_atual', [OpportunityStage::CLIENTE_APROVADO->value, OpportunityStage::CLIENTE_NAO_APROVADO->value])
             ->where('updated_at', '>=', now()->subDays(30));
         $finalizadasCount = $finalizadas->count();
-        $aprovadasCount = (clone $finalizadas)->stage(OpportunityStage::APROVADO)->count();
+        $aprovadasCount = (clone $finalizadas)->stage(OpportunityStage::CLIENTE_APROVADO)->count();
         $conversao = $finalizadasCount > 0 ? (int) round($aprovadasCount / $finalizadasCount * 100) : 0;
 
         return view('livewire.opportunities.stats', [

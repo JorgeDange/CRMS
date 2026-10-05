@@ -3,12 +3,8 @@
 namespace Database\Factories;
 
 use App\Enums\OpportunityStage;
-use App\Models\Opportunity;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends Factory<Opportunity>
- */
 class OpportunityFactory extends Factory
 {
     public function definition(): array
@@ -22,7 +18,7 @@ class OpportunityFactory extends Factory
             'telefone' => $this->faker->numerify('+244 9## ### ###'),
             'email' => $this->faker->safeEmail(),
             'nif' => $this->faker->numerify('54#########'),
-            'segmento' => $this->faker->randomElement(['Distribuição', 'Indústria', 'Construção', 'Agricultura', 'Serviços']),
+            'sector' => $this->faker->randomElement(['Distribuição', 'Indústria', 'Construção', 'Agricultura', 'Serviços']),
             'localizacao' => $this->faker->randomElement(['Luanda', 'Benguela', 'Huíla', 'Namibe', 'Huambo']),
             'origem' => $this->faker->randomElement(['Recomendação', 'Feira', 'Website', 'Chamada fria']),
             'interesse' => $this->faker->sentence(8),
@@ -30,8 +26,8 @@ class OpportunityFactory extends Factory
             'probabilidade' => $this->defaultProbability($stage),
             'data_fecho' => $this->faker->dateTimeBetween('+7 days', '+180 days'),
             'fase_atual' => $stage,
-            'motivo_nao_aprovacao' => $stage === OpportunityStage::NAO_APROVADO ? $this->faker->sentence(5) : null,
-            'data_aprovacao' => $stage === OpportunityStage::APROVADO ? $this->faker->dateTimeBetween('-20 days') : null,
+            'motivo_nao_aprovacao' => $stage === OpportunityStage::CLIENTE_NAO_APROVADO ? $this->faker->sentence(5) : null,
+            'data_aprovacao' => $stage === OpportunityStage::CLIENTE_APROVADO ? $this->faker->dateTimeBetween('-20 days') : null,
             'ultima_actividade_em' => $this->faker->dateTimeBetween('-14 days'),
             'ultimo_contacto_em' => $this->faker->dateTimeBetween('-14 days'),
         ];
@@ -41,10 +37,14 @@ class OpportunityFactory extends Factory
     {
         return match ($stage) {
             OpportunityStage::LEAD => 20,
+            OpportunityStage::QUALIFICACAO => 30,
             OpportunityStage::VISITA => 40,
+            OpportunityStage::PROPOSTA_NEGOCIACAO => 50,
             OpportunityStage::APROVACAO => 60,
-            OpportunityStage::APROVADO => 100,
-            OpportunityStage::NAO_APROVADO => 0,
+            OpportunityStage::BILHETE => 70,
+            OpportunityStage::RESULTADO => 80,
+            OpportunityStage::CLIENTE_APROVADO => 100,
+            OpportunityStage::CLIENTE_NAO_APROVADO => 0,
         };
     }
 }

@@ -37,14 +37,23 @@ class PipelineTest extends TestCase
             ->assertSee('oppFilterBar')
             ->assertSee('id="collapseOne"', false)
             ->assertSee('data-stage="lead"', false)
+            ->assertSee('data-stage="qualificacao"', false)
             ->assertSee('data-stage="visita"', false)
+            ->assertSee('data-stage="proposta_negociacao"', false)
             ->assertSee('data-stage="aprovacao"', false)
-            ->assertSee('data-stage="aprovado"', false)
-            ->assertSee('data-stage="nao_aprovado"', false)
+            ->assertSee('data-stage="bilhete"', false)
+            ->assertSee('data-stage="resultado"', false)
+            ->assertSee('data-stage="cliente_aprovado"', false)
+            ->assertSee('data-stage="cliente_nao_aprovado"', false)
             ->assertSee('>Leads<', false)
+            ->assertSee('Qualificação')
             ->assertSee('Visitas')
+            ->assertSee('Proposta/Negociação')
             ->assertSee('Aprovação')
-            ->assertSee('Não Aprovado')
+            ->assertSee('Bilhete')
+            ->assertSee('Resultado')
+            ->assertSee('Cliente Aprovado')
+            ->assertSee('Cliente Não Aprovado')
             ->assertSee('Renovação contrato 2026')
             ->assertSee('Nova Oportunidade')
             ->assertSee('Pipeline Aberto')
@@ -58,18 +67,18 @@ class PipelineTest extends TestCase
         $this->actingAs($user);
 
         Livewire::test(Pipeline::class)
-            ->call('move', $opportunity->id, 'visita')
+            ->call('move', $opportunity->id, 'qualificacao')
             ->assertDispatched('opportunity-moved');
 
         $this->assertDatabaseHas('opportunities', [
             'id' => $opportunity->id,
-            'fase_atual' => 'visita',
+            'fase_atual' => 'qualificacao',
         ]);
 
         $this->assertDatabaseHas('opportunity_stage_history', [
             'opportunity_id' => $opportunity->id,
             'fase_anterior' => 'lead',
-            'fase_nova' => 'visita',
+            'fase_nova' => 'qualificacao',
             'user_id' => $user->id,
         ]);
     }
@@ -77,35 +86,35 @@ class PipelineTest extends TestCase
     public function test_moving_to_same_stage_does_not_change_anything(): void
     {
         $user = User::factory()->create();
-        $opportunity = Opportunity::factory()->create(['fase_atual' => OpportunityStage::VISITA]);
+        $opportunity = Opportunity::factory()->create(['fase_atual' => OpportunityStage::QUALIFICACAO]);
         $this->actingAs($user);
 
         Livewire::test(Pipeline::class)
-            ->call('move', $opportunity->id, 'visita')
+            ->call('move', $opportunity->id, 'qualificacao')
             ->assertDispatched('opportunity-moved');
 
         $this->assertSame(0, OpportunityStageHistory::count());
     }
 
-    public function test_moving_to_aprovado_sets_final_state(): void
+    public function test_moving_to_cliente_aprovado_sets_final_state(): void
     {
         $user = User::factory()->create();
         $opportunity = Opportunity::factory()->create([
-            'fase_atual' => OpportunityStage::APROVACAO,
-            'probabilidade' => 60,
+            'fase_atual' => OpportunityStage::RESULTADO,
+            'probabilidade' => 90,
             'data_aprovacao' => null,
         ]);
         $this->actingAs($user);
 
-        Livewire::test(Pipeline::class)->call('move', $opportunity->id, 'aprovado');
+        Livewire::test(Pipeline::class)->call('move', $opportunity->id, 'cliente_aprovado');
 
         $opportunity->refresh();
-        $this->assertSame(OpportunityStage::APROVADO, $opportunity->fase_atual);
+        $this->assertSame(OpportunityStage::CLIENTE_APROVADO, $opportunity->fase_atual);
         $this->assertSame(100, $opportunity->probabilidade);
         $this->assertNotNull($opportunity->data_aprovacao);
     }
 
-    public function test_moving_to_nao_aprovado_sets_final_state(): void
+    public function test_moving_to_cliente_nao_aprovado_sets_final_state(): void
     {
         $user = User::factory()->create();
         $opportunity = Opportunity::factory()->create([
@@ -114,10 +123,10 @@ class PipelineTest extends TestCase
         ]);
         $this->actingAs($user);
 
-        Livewire::test(Pipeline::class)->call('move', $opportunity->id, 'nao_aprovado');
+        Livewire::test(Pipeline::class)->call('move', $opportunity->id, 'cliente_nao_aprovado');
 
         $opportunity->refresh();
-        $this->assertSame(OpportunityStage::NAO_APROVADO, $opportunity->fase_atual);
+        $this->assertSame(OpportunityStage::CLIENTE_NAO_APROVADO, $opportunity->fase_atual);
         $this->assertSame(0, $opportunity->probabilidade);
         $this->assertNull($opportunity->data_aprovacao);
     }
@@ -145,8 +154,8 @@ class PipelineTest extends TestCase
             ->set('stageFilter', 'lead');
 
         $component->assertSee('data-stage="lead"', false);
-        $component->assertDontSee('data-stage="visita"', false);
-        $component->assertDontSee('data-stage="nao_aprovado"', false);
+        $component->assertDontSee('data-stage="qualificacao"', false);
+        $component->assertDontSee('data-stage="cliente_nao_aprovado"', false);
     }
 
     public function test_stats_component_renders(): void

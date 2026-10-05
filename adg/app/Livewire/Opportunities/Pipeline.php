@@ -15,8 +15,8 @@ class Pipeline extends Component
     public string $stageFilter = '';
 
     /**
-     * Colunas do kanban — leads.html do prototipo com as fases renomeadas
-     * (PROMPT_MASTER Sprint 2: Leads, Visitas, Aprovação, Aprovado, Não Aprovado).
+     * Colunas do kanban — 9 fases (resposta.md §5).
+     * Classes CSS baseadas no protótipo leads.html com adaptação de cores.
      */
     public const COLUMNS = [
         OpportunityStage::LEAD->value => [
@@ -30,6 +30,17 @@ class Pipeline extends Component
             'value' => 'text-primary',
             'prob' => 'bg-soft-info text-info',
         ],
+        OpportunityStage::QUALIFICACAO->value => [
+            'label' => 'Qualificação',
+            'dot' => 'info',
+            'header' => 'bg-soft-info',
+            'badge' => 'badge bg-info text-white',
+            'heading' => '',
+            'body' => 'bg-light',
+            'card' => '',
+            'value' => 'text-primary',
+            'prob' => 'bg-soft-primary text-primary',
+        ],
         OpportunityStage::VISITA->value => [
             'label' => 'Visitas',
             'dot' => 'primary',
@@ -40,6 +51,17 @@ class Pipeline extends Component
             'card' => '',
             'value' => 'text-primary',
             'prob' => 'bg-soft-warning text-warning',
+        ],
+        OpportunityStage::PROPOSTA_NEGOCIACAO->value => [
+            'label' => 'Proposta/Negociação',
+            'dot' => 'warning',
+            'header' => 'bg-soft-warning',
+            'badge' => 'badge bg-warning text-white',
+            'heading' => '',
+            'body' => 'bg-light',
+            'card' => '',
+            'value' => 'text-primary',
+            'prob' => 'bg-soft-danger text-danger',
         ],
         OpportunityStage::APROVACAO->value => [
             'label' => 'Aprovação',
@@ -52,8 +74,30 @@ class Pipeline extends Component
             'value' => 'text-primary',
             'prob' => 'bg-soft-danger text-danger',
         ],
-        OpportunityStage::APROVADO->value => [
-            'label' => 'Aprovado',
+        OpportunityStage::BILHETE->value => [
+            'label' => 'Bilhete',
+            'dot' => 'info',
+            'header' => 'bg-soft-info',
+            'badge' => 'badge bg-info text-white',
+            'heading' => '',
+            'body' => 'bg-light',
+            'card' => '',
+            'value' => 'text-primary',
+            'prob' => 'bg-soft-primary text-primary',
+        ],
+        OpportunityStage::RESULTADO->value => [
+            'label' => 'Resultado',
+            'dot' => 'primary',
+            'header' => 'bg-soft-primary',
+            'badge' => 'badge bg-primary text-white',
+            'heading' => '',
+            'body' => 'bg-light',
+            'card' => '',
+            'value' => 'text-primary',
+            'prob' => 'bg-soft-info text-info',
+        ],
+        OpportunityStage::CLIENTE_APROVADO->value => [
+            'label' => 'Cliente Aprovado',
             'dot' => 'success',
             'header' => 'bg-soft-success',
             'badge' => 'badge bg-success text-white',
@@ -63,8 +107,8 @@ class Pipeline extends Component
             'value' => 'text-success',
             'prob' => 'bg-soft-success text-success',
         ],
-        OpportunityStage::NAO_APROVADO->value => [
-            'label' => 'Não Aprovado',
+        OpportunityStage::CLIENTE_NAO_APROVADO->value => [
+            'label' => 'Cliente Não Aprovado',
             'dot' => 'danger',
             'header' => 'bg-soft-danger',
             'badge' => 'badge bg-danger text-white',

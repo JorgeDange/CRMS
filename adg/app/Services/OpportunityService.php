@@ -11,8 +11,10 @@ class OpportunityService
 {
     /**
      * Move a oportunidade de fase, regista o historico (8.3) e aplica as
-     * regras dos estados finais: Aprovado -> probabilidade 100 +
-     * data_aprovacao; Nao Aprovado -> probabilidade 0.
+     * regras dos estados finais:
+     * - Cliente Aprovado -> probabilidade 100 + data_aprovacao
+     * - Cliente Não Aprovado -> probabilidade 0 + motivo_nao_aprovacao
+     * Os demais estados não alteram probabilidade automaticamente.
      */
     public function changeStage(
         Opportunity $opportunity,
@@ -28,12 +30,13 @@ class OpportunityService
 
         $opportunity->fase_atual = $to;
 
-        if ($to === OpportunityStage::APROVADO) {
+        // Regras dos estados finais (resposta.md §5)
+        if ($to === OpportunityStage::CLIENTE_APROVADO) {
             $opportunity->probabilidade = 100;
             $opportunity->data_aprovacao ??= now();
         }
 
-        if ($to === OpportunityStage::NAO_APROVADO) {
+        if ($to === OpportunityStage::CLIENTE_NAO_APROVADO) {
             $opportunity->probabilidade = 0;
             $opportunity->data_aprovacao = null;
             $opportunity->motivo_nao_aprovacao = $observacao ?? $opportunity->motivo_nao_aprovacao;
@@ -63,12 +66,12 @@ class OpportunityService
 
         $data['fase_atual'] = $stage->value;
 
-        if ($stage === OpportunityStage::APROVADO) {
+        if ($stage === OpportunityStage::CLIENTE_APROVADO) {
             $data['probabilidade'] = 100;
             $data['data_aprovacao'] = now();
         }
 
-        if ($stage === OpportunityStage::NAO_APROVADO) {
+        if ($stage === OpportunityStage::CLIENTE_NAO_APROVADO) {
             $data['probabilidade'] = 0;
         }
 

@@ -421,7 +421,7 @@ class ExcelImportService
 
         return [
             OpportunityStage::LEAD->value,
-            'Estado inválido ("'.$raw.'"). Use: Leads, Visitas, Aprovação, Aprovado ou Não Aprovado.',
+            'Estado inválido ("'.$raw.'"). Use: Leads, Qualificação, Visitas, Proposta/Negociação, Aprovação, Bilhete, Resultado, Cliente Aprovado ou Cliente Não Aprovado.',
         ];
     }
 

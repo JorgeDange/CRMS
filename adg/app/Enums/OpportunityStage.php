@@ -5,22 +5,30 @@ namespace App\Enums;
 enum OpportunityStage: string
 {
     case LEAD = 'lead';
+    case QUALIFICACAO = 'qualificacao';
     case VISITA = 'visita';
+    case PROPOSTA_NEGOCIACAO = 'proposta_negociacao';
     case APROVACAO = 'aprovacao';
-    case APROVADO = 'aprovado';
-    case NAO_APROVADO = 'nao_aprovado';
+    case BILHETE = 'bilhete';
+    case RESULTADO = 'resultado';
+    case CLIENTE_APROVADO = 'cliente_aprovado';
+    case CLIENTE_NAO_APROVADO = 'cliente_nao_aprovado';
 
     /**
-     * Ordem do pipeline (PROMPT_MASTER §7/§8.2).
+     * Ordem do pipeline (resposta.md §5 — 9 fases).
      */
     public static function pipeline(): array
     {
         return [
             self::LEAD,
+            self::QUALIFICACAO,
             self::VISITA,
+            self::PROPOSTA_NEGOCIACAO,
             self::APROVACAO,
-            self::APROVADO,
-            self::NAO_APROVADO,
+            self::BILHETE,
+            self::RESULTADO,
+            self::CLIENTE_APROVADO,
+            self::CLIENTE_NAO_APROVADO,
         ];
     }
 
@@ -28,10 +36,14 @@ enum OpportunityStage: string
     {
         return match ($this) {
             self::LEAD => 'Lead',
+            self::QUALIFICACAO => 'Qualificação',
             self::VISITA => 'Visita',
+            self::PROPOSTA_NEGOCIACAO => 'Proposta/Negociação',
             self::APROVACAO => 'Aprovação',
-            self::APROVADO => 'Cliente Aprovado',
-            self::NAO_APROVADO => 'Cliente Não Aprovado',
+            self::BILHETE => 'Bilhete',
+            self::RESULTADO => 'Resultado',
+            self::CLIENTE_APROVADO => 'Cliente Aprovado',
+            self::CLIENTE_NAO_APROVADO => 'Cliente Não Aprovado',
         };
     }
 
@@ -61,17 +73,26 @@ enum OpportunityStage: string
 
     public function isFinal(): bool
     {
-        return $this === self::APROVADO || $this === self::NAO_APROVADO;
+        return $this === self::CLIENTE_APROVADO || $this === self::CLIENTE_NAO_APROVADO;
+    }
+
+    public function isClientState(): bool
+    {
+        return $this === self::CLIENTE_APROVADO || $this === self::CLIENTE_NAO_APROVADO;
     }
 
     public function badgeVariant(): string
     {
         return match ($this) {
             self::LEAD => 'secondary',
-            self::VISITA => 'info',
+            self::QUALIFICACAO => 'info',
+            self::VISITA => 'primary',
+            self::PROPOSTA_NEGOCIACAO => 'warning',
             self::APROVACAO => 'warning',
-            self::APROVADO => 'success',
-            self::NAO_APROVADO => 'danger',
+            self::BILHETE => 'info',
+            self::RESULTADO => 'primary',
+            self::CLIENTE_APROVADO => 'success',
+            self::CLIENTE_NAO_APROVADO => 'danger',
         };
     }
 }

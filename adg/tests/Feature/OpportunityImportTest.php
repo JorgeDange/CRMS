@@ -113,8 +113,8 @@ class OpportunityImportTest extends TestCase
         $this->actingAs($user);
 
         $file = $this->makeFile([
-            ['SIL – Sociedade Importadora', 'Renovação contrato 2026', '12.000.000', 'Leads', '50', '30/12/2026', 'Fornecedor preferencial'],
-            ['', 'Sem cliente', '100000', 'Visitas', '', '', ''],
+            ['SIL – Sociedade Importadora', 'Renovação contrato 2026', '12.000.000', 'lead', '50', '30/12/2026', 'Fornecedor preferencial'],
+            ['', 'Sem cliente', '100000', 'visita', '', '', ''],
         ]);
 
         $component = Livewire::test(OpportunityImport::class)
@@ -178,8 +178,8 @@ class OpportunityImportTest extends TestCase
         $this->actingAs($user);
 
         $file = $this->makeFile([
-            ['SIL – Sociedade Importadora', 'Renovação contrato 2026', '12.000.000', 'Leads', '50', '30/12/2026', 'Fornecedor preferencial'],
-            ['Maona Energy', 'Instalação de bombas', '4500000', 'Visitas', '70', '', ''],
+            ['SIL – Sociedade Importadora', 'Renovação contrato 2026', '12.000.000', 'lead', '50', '30/12/2026', 'Fornecedor preferencial'],
+            ['Maona Energy', 'Instalação de bombas', '4500000', 'qualificacao', '70', '', ''],
         ]);
 
         Livewire::test(OpportunityImport::class)
