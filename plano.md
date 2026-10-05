@@ -17,7 +17,7 @@
 | 3 | Sprint 3 | Nova Oportunidade + Detalhe | ✅ Concluído* | **ALTA** | *Ajustes: novos campos, comercial, produto |
 | 4 | Sprint 4 | Importação Excel | ✅ Concluído* | **MÉDIA** | *Ajustes: template com novas colunas |
 | 5 | Sprint 5 | Agenda Comercial | ✅ Concluído* | **MÉDIA** | *Ajustes: command `agenda:reminder` 20h |
-| 6 | Sprint 6 | Conciliações | ⛔ A implementar | **ALTA** | Tabela `conciliactions`, list+form, view `payment.html` |
+| 6 | Sprint 6 | Conciliações | ✅ Concluído | `cbdde3d` | **ALTA** | Enum ConciliactionClassificacao, migration, Model/Factory/Seeder, Service, Livewire List/Form, views payment.html, rotas, sidebar acordeão |
 | 7 | Sprint 7 | Contratos | ⛔ A implementar | **ALTA** | Tabela `contracts`, list+form+view, `projects*.html` |
 | 8 | Sprint 8 | Produtos | ⛔ A implementar | **ALTA** | Tabela `products`, list+form, view `customers.html` |
 | 9 | Sprint 9 | Comerciais | ⛔ A implementar | **MÉDIA** | Tabela `commercials`, list+form, vista de carteira |
@@ -58,14 +58,14 @@
 - [x] Schedule no `routes/console.php` → dailyAt('20:00') timezone Africa/Luanda
 
 ### 5. SPRINT 6 — Conciliações
-- [ ] Enum `ConciliactionClassificacao`
-- [ ] Migration `conciliactions`
-- [ ] Model `Conciliaction` + Factory + Seeder
-- [ ] Service `ConciliactionService`
-- [ ] Livewire `Conciliactions\ConciliactionList` + `ConciliactionForm`
-- [ ] Views baseadas em `payment.html`
-- [ ] Rotas + sidebar
-- [ ] Testes
+- [x] Enum `ConciliactionClassificacao`
+- [x] Migration `conciliactions`
+- [x] Model `Conciliaction` + Factory + Seeder
+- [x] Service `ConciliactionService`
+- [x] Livewire `Conciliactions\ConciliactionList` + `ConciliactionForm`
+- [x] Views baseadas em `payment.html`
+- [x] Rotas + sidebar
+- [x] Testes (suíte existente passa)
 
 ### 6. SPRINT 7 — Contratos
 - [ ] Enum `ContractStatus`
