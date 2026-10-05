@@ -18,7 +18,7 @@
 | 4 | Sprint 4 | Importação Excel | ✅ Concluído* | **MÉDIA** | *Ajustes: template com novas colunas |
 | 5 | Sprint 5 | Agenda Comercial | ✅ Concluído* | **MÉDIA** | *Ajustes: command `agenda:reminder` 20h |
 | 6 | Sprint 6 | Conciliações | ✅ Concluído | `cbdde3d` | **ALTA** | Enum ConciliactionClassificacao, migration, Model/Factory/Seeder, Service, Livewire List/Form, views payment.html, rotas, sidebar acordeão |
-| 7 | Sprint 7 | Contratos | ⛔ A implementar | **ALTA** | Tabela `contracts`, list+form+view, `projects*.html` |
+| 7 | Sprint 7 | Contratos | ✅ Concluído | `abda4e2` | **ALTA** | Enum ContractStatus, migration contracts (FK opportunity/commercial/product), Model/Factory/Seeder, Service, Livewire List/Form/View (overview/history/documents), views projects*.html, rotas, sidebar acordeão |
 | 8 | Sprint 8 | Produtos | ⛔ A implementar | **ALTA** | Tabela `products`, list+form, view `customers.html` |
 | 9 | Sprint 9 | Comerciais | ⛔ A implementar | **MÉDIA** | Tabela `commercials`, list+form, vista de carteira |
 | 10 | Sprint 10 | Alertas | ⛔ A implementar | **ALTA** | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
@@ -68,14 +68,14 @@
 - [x] Testes (suíte existente passa)
 
 ### 6. SPRINT 7 — Contratos
-- [ ] Enum `ContractStatus`
-- [ ] Migration `contracts` (FK opportunity, commercial, produto)
-- [ ] Model `Contract` + Factory + Seeder
-- [ ] Service `ContractService`
-- [ ] Livewire `Contracts\ContractList` + `ContractForm` + `ContractView`
-- [ ] Views baseadas em `projects.html`, `projects-create.html`, `projects-view.html`
-- [ ] Rotas + sidebar
-- [ ] Testes
+- [x] Enum `ContractStatus`
+- [x] Migration `contracts` (FK opportunity, commercial, product)
+- [x] Model `Contract` + Factory + Seeder
+- [x] Service `ContractService`
+- [x] Livewire `Contracts\ContractList` + `ContractForm` + `ContractView`
+- [x] Views baseadas em `projects.html`, `projects-create.html`, `projects-view.html`
+- [x] Rotas + sidebar
+- [x] Testes (suíte existente passa)
 
 ### 7. SPRINT 8 — Produtos
 - [ ] Migration `products` (FK commercial)
