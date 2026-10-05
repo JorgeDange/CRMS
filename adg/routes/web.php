@@ -51,6 +51,19 @@ Route::view('agenda/calendario', 'agenda.calendar')
     ->middleware(['auth', 'verified'])
     ->name('agenda.calendar');
 
+// Conciliações (Sprint 6) — payment.html.
+Route::view('conciliações', 'conciliactions.index')
+    ->middleware(['auth', 'verified'])
+    ->name('conciliactions');
+
+Route::view('conciliações/nova', 'conciliactions.create')
+    ->middleware(['auth', 'verified'])
+    ->name('conciliactions.create');
+
+Route::view('conciliações/{conciliaction}', 'conciliactions.edit')
+    ->middleware(['auth', 'verified'])
+    ->name('conciliactions.edit');
+
 Route::view('ui', 'ui-demo')
     ->middleware(['auth', 'verified'])
     ->name('ui.demo');

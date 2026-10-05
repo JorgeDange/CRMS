@@ -52,8 +52,8 @@ class AgendaTest extends TestCase
             ->assertSee('>Actividades</a>', false)
             ->assertSee('>Actividade</a>', false);
 
-        // Só Oportunidades e Agenda Comercial são acordeões (o resto continua "Em breve").
-        $this->assertSame(2, substr_count($response->getContent(), 'nxl-hasmenu'));
+        // Oportunidades, Agenda Comercial e Conciliações são acordeões (o resto continua "Em breve").
+        $this->assertSame(3, substr_count($response->getContent(), 'nxl-hasmenu'));
     }
 
     public function test_list_page_renders_prototype_structure(): void
