@@ -54,8 +54,8 @@
 - [x] Testes → OpportunityImportTest actualizado
 
 ### 4. AJUSTES SPRINT 5 — Agenda Comercial
-- [ ] Command `agenda:reminder` → envia agenda do dia seguinte às 20h (email + notificação)
-- [ ] Schedule no `Kernel.php` → daily at 20:00
+- [x] Command `agenda:reminder` → envia agenda do dia seguinte às 20h (email + log)
+- [x] Schedule no `routes/console.php` → dailyAt('20:00') timezone Africa/Luanda
 
 ### 5. SPRINT 6 — Conciliações
 - [ ] Enum `ConciliactionClassificacao`

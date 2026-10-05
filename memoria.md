@@ -25,7 +25,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 2 — Pipeline | ✅ Concluído | `839329b` | Kanban 9 fases, drag&drop, stats, novos campos (pessoa_contacto, tipo_relacao, comercial_id, produto_id, sector, origem) + commercials + pivot |
 | Sprint 3 — Nova Oportunidade + Detalhe | ✅ Concluído | `839329b` | Create/View/VisitReport actualizados c/ novos campos, comercial, produto; relações many-to-many produto |
 | Sprint 4 — Importação Excel | ✅ Concluído | `839329b` | Template/preview/import actualizados p/ 9 fases; labels novos |
-| Sprint 5 — Agenda Comercial | ✅ Concluído | `49c2225` | Agenda completa. **Pendente: command `agenda:reminder` 20h** |
+| Sprint 5 — Agenda Comercial | ✅ Concluído | `c6ba443` | Agenda completa + **command `agenda:reminder` 20h (email + log), schedule daily 20:00** |
 | Sprint 6 — Conciliações | ⛔ A implementar | — | Tabela `conciliactions`, list+form, view `payment.html` |
 | Sprint 7 — Contratos | ⛔ A implementar | — | Tabela `contracts`, list+form+view, `projects*.html` |
 | Sprint 8 — Produtos | ⛔ A implementar | — | Tabela `products`, list+form, view `customers.html` |
@@ -34,7 +34,7 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 11 — Dashboard + Painel Executivo | ⛔ A implementar | — | 6 blocos, Chart.js, `index.html` + `analytics.html` |
 | Sprint 12 — Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
 
-**Próximo sprint a executar:** Ajustes Sprint 2/3 (9 fases + novos campos) → Sprint 6 (Conciliações).
+**Próximo sprint a executar:** Sprint 6 — Conciliações.
 **Conforme resposta.md §13:** não bloquear à espera do cliente — seguir suposições documentadas.
 **Ficheiro de plano:** `plano.md` (criado na raiz do projecto).
 
@@ -527,3 +527,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-04 | **Sprint 5 concluído** (`49c2225`) — Agenda Comercial: apps-tasks/apps-notes/apps-calendar migrados para Livewire; ActivityType/Status enums, Activity model/service, ActivityList/ActivityForm/ActivityCalendar + views, rotas agenda/agenda.nova/agenda.calendario, sidebar acordeão, grelha agenda-calendar (6 semanas), CSS + extração tui-theme, ActivitySeeder, 20 testes AgendaTest; suite 83 testes, pint, build OK |
 | 2026-10-05 | **Plano criado** (`plano.md`) — Roadmap actualizado conforme `resposta.md` v4.0: ajustes Sprint 2/3 (9 fases, novos campos), Sprint 6 Conciliações, Sprint 7 Contratos, Sprint 8 Produtos, Sprint 9 Comerciais, Sprint 10 Alertas, Sprint 11 Dashboard, Sprint 12 Lançamento. |
 | 2026-10-05 | **Sprints 2/3 ajustados** (`839329b`) — Pipeline 9 fases (lead→qualificação→visita→proposta/negociação→aprovação→bilhete→resultado→cliente_aprovado/nao_aprovado), OpportunityStage enum actualizado, novos campos Opportunity (pessoa_contacto, tipo_relacao, comercial_id, produto_id, sector, origem), tabelas commercials + products + pivot, OpportunityService estados finais CLIENTE_APROVADO/NAO_APROVADO, Pipeline 9 colunas, Create form expandido, Stats actualizado, ExcelImportService 9 fases; 83 testes, 410 assertions, pint, build OK |
+| 2026-10-05 | **Sprint 5 concluído** (`c6ba443`) — command `agenda:reminder` 20h (email + log), schedule daily 20:00 timezone Africa/Luanda, settings agenda.lembrete_hora/alertas.email_destino; suite 83 testes, 410 assertions, pint, build OK |
