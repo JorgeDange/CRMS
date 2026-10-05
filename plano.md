@@ -19,7 +19,7 @@
 | 5 | Sprint 5 | Agenda Comercial | ✅ Concluído* | **MÉDIA** | *Ajustes: command `agenda:reminder` 20h |
 | 6 | Sprint 6 | Conciliações | ✅ Concluído | `cbdde3d` | **ALTA** | Enum ConciliactionClassificacao, migration, Model/Factory/Seeder, Service, Livewire List/Form, views payment.html, rotas, sidebar acordeão |
 | 7 | Sprint 7 | Contratos | ✅ Concluído | `abda4e2` | **ALTA** | Enum ContractStatus, migration contracts (FK opportunity/commercial/product), Model/Factory/Seeder, Service, Livewire List/Form/View (overview/history/documents), views projects*.html, rotas, sidebar acordeão |
-| 8 | Sprint 8 | Produtos | ⛔ A implementar | **ALTA** | Tabela `products`, list+form, view `customers.html` |
+| 8 | Sprint 8 | Produtos | ✅ Concluído | `fc419f8` | **ALTA** | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
 | 9 | Sprint 9 | Comerciais | ⛔ A implementar | **MÉDIA** | Tabela `commercials`, list+form, vista de carteira |
 | 10 | Sprint 10 | Alertas | ⛔ A implementar | **ALTA** | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
 | 11 | Sprint 11 | Dashboard + Painel Executivo | ⛔ A implementar | **ALTA** | 6 blocos, Chart.js, `index.html` + `analytics.html` |
@@ -78,10 +78,13 @@
 - [x] Testes (suíte existente passa)
 
 ### 7. SPRINT 8 — Produtos
-- [ ] Migration `products` (FK commercial)
-- [ ] Model `Product` + Factory + Seeder
-- [ ] Service `ProductService`
-- [ ] Livewire `Products\ProductList` + `ProductForm`
+- [x] Migration `products` (FK commercial) — já existia
+- [x] Model `Product` + Factory + Seeder — já existiam
+- [x] Service `ProductService` — usa OpportunityService::formatKz
+- [x] Livewire `Products\ProductList` + `ProductForm`
+- [x] Views baseadas em `customers.html`
+- [x] Rotas + sidebar
+- [x] Testes (suíte existente passa)
 - [ ] View baseada em `customers.html`
 - [ ] Rotas + sidebar
 - [ ] Testes

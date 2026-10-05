@@ -28,13 +28,13 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 5 — Agenda Comercial | ✅ Concluído | `c6ba443` | Agenda completa + **command `agenda:reminder` 20h (email + log), schedule daily 20:00** |
 | Sprint 6 — Conciliações | ✅ Concluído | `cbdde3d` | Enum ConciliactionClassificacao, migration conciliactions, Model+Factory+Seeder, Service, Livewire List/Form, views baseadas em payment.html, rotas, sidebar acordeão, 83 testes suite |
 | Sprint 7 — Contratos | ✅ Concluído | `abda4e2` | Enum ContractStatus, migration contracts, Model/Factory/Seeder, Service, Livewire List/Form/View, views baseadas em projects*.html, rotas, sidebar acordeão |
-| Sprint 8 — Produtos | ⛔ A implementar | — | Tabela `products`, list+form, view `customers.html` |
+| Sprint 8 — Produtos | ✅ Concluído | `fc419f8` | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
 | Sprint 9 — Comerciais | ⛔ A implementar | — | Tabela `commercials` (já no Sprint 2), list+form, vista carteira |
 | Sprint 10 — Alertas | ⛔ A implementar | — | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
 | Sprint 11 — Dashboard + Painel Executivo | ⛔ A implementar | — | 6 blocos, Chart.js, `index.html` + `analytics.html` |
 | Sprint 12 — Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
 
-**Próximo sprint a executar:** Sprint 8 — Produtos.
+**Próximo sprint a executar:** Sprint 9 — Comerciais.
 **Conforme resposta.md §13:** não bloquear à espera do cliente — seguir suposições documentadas.
 **Ficheiro de plano:** `plano.md` (criado na raiz do projecto).
 
@@ -529,3 +529,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-05 | **Sprints 2/3 ajustados** (`839329b`) — Pipeline 9 fases (lead→qualificação→visita→proposta/negociação→aprovação→bilhete→resultado→cliente_aprovado/nao_aprovado), OpportunityStage enum actualizado, novos campos Opportunity (pessoa_contacto, tipo_relacao, comercial_id, produto_id, sector, origem), tabelas commercials + products + pivot, OpportunityService estados finais CLIENTE_APROVADO/NAO_APROVADO, Pipeline 9 colunas, Create form expandido, Stats actualizado, ExcelImportService 9 fases; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-05 | **Sprint 6 concluído** (`cbdde3d`) — Conciliações: enum ConciliactionClassificacao, migration conciliactions, Model/Factory/Seeder (10 registos), Service, Livewire List/Form, views baseadas em payment.html, rotas conciliações/nova/{uuid}, sidebar acordeão; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-05 | **Sprint 7 concluído** (`abda4e2`) — Contratos: enum ContractStatus, migration contracts (FK opportunity/commercial/product), Model/Factory/Seeder (10 registos), Service, Livewire List/Form/View (overview/history/documents tabs), views baseadas em projects*.html, rotas contratos/nova/{uuid}, sidebar acordeão; 83 testes, 410 assertions, pint, build OK |
+| 2026-10-06 | **Sprint 8 concluído** (`fc419f8`) — Produtos: Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam; 83 testes, 410 assertions, pint, build OK |
