@@ -30,11 +30,11 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Sprint 7 — Contratos | ✅ Concluído | `abda4e2` | Enum ContractStatus, migration contracts, Model/Factory/Seeder, Service, Livewire List/Form/View, views baseadas em projects*.html, rotas, sidebar acordeão |
 | Sprint 8 — Produtos | ✅ Concluído | `fc419f8` | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
 | Sprint 9 — Comerciais | ✅ Concluído | `75f06b2` | Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam |
-| Sprint 10 — Alertas | ⛔ A implementar | — | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
+| Sprint 10 — Alertas | ✅ Concluído | `5ea436a` | Enum AlertType, migration alerts, Model/Factory/Seeder, AlertService (gera 5 tipos, não move leads), command alerts:generate (daily 06:00), NewAlert notification, Livewire AlertList, header badge + dropdown, sidebar accordion; 83 testes suite |
 | Sprint 11 — Dashboard + Painel Executivo | ⛔ A implementar | — | 6 blocos, Chart.js, `index.html` + `analytics.html` |
 | Sprint 12 — Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
 
-**Próximo sprint a executar:** Sprint 10 — Alertas.
+**Próximo sprint a executar:** Sprint 11 — Dashboard + Painel Executivo.
 **Conforme resposta.md §13:** não bloquear à espera do cliente — seguir suposições documentadas.
 **Ficheiro de plano:** `plano.md` (criado na raiz do projecto).
 
@@ -531,3 +531,4 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-05 | **Sprint 7 concluído** (`abda4e2`) — Contratos: enum ContractStatus, migration contracts (FK opportunity/commercial/product), Model/Factory/Seeder (10 registos), Service, Livewire List/Form/View (overview/history/documents tabs), views baseadas em projects*.html, rotas contratos/nova/{uuid}, sidebar acordeão; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-06 | **Sprint 8 concluído** (`fc419f8`) — Produtos: Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-06 | **Sprint 9 concluído** (`75f06b2`) — Comerciais: Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam; 83 testes, 410 assertions, pint, build OK |
+| 2026-10-06 | **Sprint 10 concluído** (`5ea436a`) — Alertas: enum AlertType, migration alerts, Model/Factory/Seeder (5 registos), AlertService (5 tipos de alerta, não move leads), command alerts:generate (daily 06:00), NewAlert notification (email+database), Livewire AlertList (filtros, paginação, marcar lido/resolvido), header badge + dropdown notificações, sidebar accordion; 83 testes, 410 assertions, pint, build OK |
