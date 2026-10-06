@@ -20,7 +20,7 @@
 | 6 | Sprint 6 | Conciliações | ✅ Concluído | `cbdde3d` | **ALTA** | Enum ConciliactionClassificacao, migration, Model/Factory/Seeder, Service, Livewire List/Form, views payment.html, rotas, sidebar acordeão |
 | 7 | Sprint 7 | Contratos | ✅ Concluído | `abda4e2` | **ALTA** | Enum ContractStatus, migration contracts (FK opportunity/commercial/product), Model/Factory/Seeder, Service, Livewire List/Form/View (overview/history/documents), views projects*.html, rotas, sidebar acordeão |
 | 8 | Sprint 8 | Produtos | ✅ Concluído | `fc419f8` | **ALTA** | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
-| 9 | Sprint 9 | Comerciais | ⛔ A implementar | **MÉDIA** | Tabela `commercials`, list+form, vista de carteira |
+| 9 | Sprint 9 | Comerciais | ✅ Concluído | `75f06b2` | **MÉDIA** | Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam |
 | 10 | Sprint 10 | Alertas | ⛔ A implementar | **ALTA** | Tabela `alerts`, `AlertService`, command `alerts:generate`, email |
 | 11 | Sprint 11 | Dashboard + Painel Executivo | ⛔ A implementar | **ALTA** | 6 blocos, Chart.js, `index.html` + `analytics.html` |
 | 12 | Sprint 12 | Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
@@ -85,16 +85,15 @@
 - [x] Views baseadas em `customers.html`
 - [x] Rotas + sidebar
 - [x] Testes (suíte existente passa)
-- [ ] View baseada em `customers.html`
-- [ ] Rotas + sidebar
-- [ ] Testes
 
 ### 8. SPRINT 9 — Comerciais
-- [ ] Migration `commercials` (já criada no Sprint 2)
-- [ ] Livewire `Commercials\CommercialList` + `CommercialForm`
-- [ ] Vista de carteira por comercial
-- [ ] Rotas + sidebar
-- [ ] Testes
+- [x] Migration `commercials` (já criada no Sprint 2)
+- [x] Model `Commercial` + Factory + Seeder — já existiam
+- [x] Livewire `Commercials\CommercialList` + `CommercialForm`
+- [x] Views baseadas no padrão existente
+- [x] Rotas + sidebar
+- [x] Testes (suíte existente passa)
+- [x] Vista de carteira por comercial
 
 ### 9. SPRINT 10 — Alertas
 - [ ] Enum `AlertType`
