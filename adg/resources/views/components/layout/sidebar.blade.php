@@ -13,11 +13,21 @@
                 <li class="nxl-item nxl-caption">
                     <label>Menu</label>
                 </li>
-                <li class="nxl-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                    <a href="{{ route('dashboard') }}" class="nxl-link" wire:navigate>
+                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['dashboard', 'analytics']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
+                    <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
                         <span class="nxl-micon"><i class="feather-airplay"></i></span>
                         <span class="nxl-mtext">Dashboard</span>
+                        <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
+                    {{-- Ordem das sub-opcoes: 1. Dashboard 2. Painel Executivo --}}
+                    <ul class="nxl-submenu" x-show="open" x-cloak>
+                        <li class="nxl-item {{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('dashboard') }}" class="nxl-link" wire:navigate>Dashboard</a>
+                        </li>
+                        <li class="nxl-item {{ request()->routeIs('analytics') ? 'active' : '' }}">
+                            <a href="{{ route('analytics') }}" class="nxl-link" wire:navigate>Painel Executivo</a>
+                        </li>
+                    </ul>
                 </li>
                 <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['pipeline', 'opportunities.create', 'opportunities.import', 'opportunities.show']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
                     <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
@@ -131,13 +141,7 @@
                         </li>
                     </ul>
                 </li>
-                <li class="nxl-item">
-                    <span class="nxl-link cursor-not-allowed">
-                        <span class="nxl-micon"><i class="feather-activity"></i></span>
-                        <span class="nxl-mtext">Painel Executivo</span>
-                        <span class="badge bg-gray-200 text-dark rounded ms-1">Em breve</span>
-                    </span>
-                </li>
+                
             </ul>
             <div class="card text-center">
                 <div class="card-body">

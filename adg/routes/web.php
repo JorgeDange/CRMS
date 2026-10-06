@@ -7,9 +7,14 @@ use Maatwebsite\Excel\Facades\Excel;
 
 Route::view('/', 'welcome');
 
-Route::view('dashboard', 'dashboard')
+Route::view('dashboard', 'dashboard.index')
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
+
+// Painel Executivo (Sprint 11) — analytics.html.
+Route::view('analytics', 'analytics.index')
+    ->middleware(['auth', 'verified'])
+    ->name('analytics');
 
 Route::view('profile', 'profile')
     ->middleware(['auth'])
