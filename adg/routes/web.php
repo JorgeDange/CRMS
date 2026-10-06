@@ -93,6 +93,11 @@ Route::view('comerciais/{commercial}', 'commercials.edit')
     ->middleware(['auth', 'verified'])
     ->name('commercials.edit');
 
+// Alertas (Sprint 10) — resposta.md §10.
+Route::view('alertas', 'alerts.index')
+    ->middleware(['auth', 'verified'])
+    ->name('alerts');
+
 // Conciliações (Sprint 6) — payment.html.
 Route::view('conciliações', 'conciliactions.index')
     ->middleware(['auth', 'verified'])

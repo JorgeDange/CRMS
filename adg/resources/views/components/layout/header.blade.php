@@ -26,6 +26,58 @@
         <div class="header-right ms-auto">
             <div class="d-flex align-items-center">
                 <div class="dropdown nxl-h-item">
+                    <a href="{{ route('alerts') }}" class="nxl-head-link me-0 position-relative" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
+                        <i class="feather-bell fs-18 text-dark"></i>
+                        @php $unreadCount = \App\Models\Alert::where('user_id', auth()->id())->where('lido', false)->where('resolvido', false)->count(); @endphp
+                        @if ($unreadCount > 0)
+                            <span class="badge bg-danger nxl-h-badge position-absolute top-0 start-100 translate-middle">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                        @endif
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-notifications-menu">
+                        <div class="d-flex justify-content-between align-items-center notifications-head">
+                            <h6 class="fw-bold text-dark mb-0">Notificações</h6>
+                            <a href="{{ route('alerts') }}" class="fs-11 text-success text-end ms-auto" wire:navigate>
+                                <i class="feather-check"></i>
+                                <span>Marcar todas como lidas</span>
+                            </a>
+                        </div>
+                        @php $recentAlerts = \App\Models\Alert::where('user_id', auth()->id())->where('resolvido', false)->orderBy('created_at', 'desc')->limit(5)->get(); @endphp
+                        @if ($recentAlerts->isEmpty())
+                            <div class="text-center notifications-footer p-3">
+                                <i class="feather-bell fs-1 mb-3 text-muted"></i>
+                                <p class="text-muted mb-0">Sem notificações novas.</p>
+                            </div>
+                        @else
+                            <div class="notifications-item">
+                                @foreach ($recentAlerts as $alert)
+                                    <div class="notifications-desc">
+                                        <a href="javascript:void(0);" class="font-body text-truncate-2-line">
+                                            <span class="fw-semibold text-dark">{{ $alert->tipo->label() }}</span>
+                                            <span class="text-muted ms-2">{{ $alert->mensagem }}</span>
+                                        </a>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="notifications-date text-muted border-bottom border-bottom-dashed">
+                                                {{ $alert->created_at?->diffForHumans() }}
+                                            </div>
+                                            <div class="d-flex align-items-center float-end gap-2">
+                                                @if (! $alert->lido)
+                                                    <a href="javascript:void(0);" class="d-block wd-8 ht-8 rounded-circle bg-gray-300" data-bs-toggle="tooltip" title="Marcar como lido"></a>
+                                                @endif
+                                                <a href="javascript:void(0);" class="text-danger" data-bs-toggle="tooltip" title="Remover">
+                                                    <i class="feather-x fs-12"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
+                        <div class="text-center notifications-footer">
+                            <a href="{{ route('alerts') }}" class="fs-13 fw-semibold text-dark" wire:navigate>Todas as notificações</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="dropdown nxl-h-item">
                     <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
                         <img src="{{ asset('assets/images/avatar/1.png') }}" alt="user-image" class="img-fluid user-avtar me-0" />
                     </a>

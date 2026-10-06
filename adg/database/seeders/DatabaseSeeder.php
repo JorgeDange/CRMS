@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ActivitySeeder::class,
             ConciliactionSeeder::class,
             ContractSeeder::class,
+            AlertSeeder::class,
         ]);
     }
 }

@@ -13,9 +13,9 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         Setting::set('alertas.oportunidades_dias', '7');
-        Setting::set('alertas.clientes_dias', '30');
+        Setting::set('alertas.clientes_dias', '60');
         Setting::set('alertas.contratos_dias', '90');
-        // alertas.leads_inativos_dias — a definir pelo cliente (§19)
+        Setting::set('alertas.leads_inativos_dias', '7');
 
         // Agenda lembrete diário (resposta.md §11)
         Setting::set('agenda.lembrete_hora', '20:00');

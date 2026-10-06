@@ -11,9 +11,16 @@ Artisan::command('inspire', function () {
 /**
  * Agendamento de tarefas (Laravel 11+ usa routes/console.php).
  * Sprint 5: agenda:reminder diário às 20h.
+ * Sprint 10: alerts:generate diário às 06h.
  */
 Schedule::command('agenda:reminder')
     ->dailyAt('20:00')
+    ->timezone('Africa/Luanda')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+Schedule::command('alerts:generate')
+    ->dailyAt('06:00')
     ->timezone('Africa/Luanda')
     ->withoutOverlapping()
     ->runInBackground();
