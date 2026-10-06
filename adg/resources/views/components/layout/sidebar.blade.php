@@ -102,6 +102,22 @@
                         </li>
                     </ul>
                 </li>
+                <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['commercials', 'commercials.create']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
+                    <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
+                        <span class="nxl-micon"><i class="feather-users"></i></span>
+                        <span class="nxl-mtext">Comerciais</span>
+                        <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
+                    </a>
+                    {{-- Ordem das sub-opcoes: 1. Lista 2. Nova --}}
+                    <ul class="nxl-submenu" x-show="open" x-cloak">
+                        <li class="nxl-item {{ request()->routeIs('commercials') ? 'active' : '' }}">
+                            <a href="{{ route('commercials') }}" class="nxl-link" wire:navigate>Todas</a>
+                        </li>
+                        <li class="nxl-item {{ request()->routeIs('commercials.create') ? 'active' : '' }}">
+                            <a href="{{ route('commercials.create') }}" class="nxl-link" wire:navigate>Nova</a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="nxl-item">
                     <span class="nxl-link cursor-not-allowed">
                         <span class="nxl-micon"><i class="feather-bell"></i></span>

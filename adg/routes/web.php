@@ -79,6 +79,20 @@ Route::view('produtos/{produto}', 'products.edit')
     ->middleware(['auth', 'verified'])
     ->name('products.edit');
 
+// Comerciais (Sprint 9) — já existiam model/seeder.
+Route::view('comerciais', 'commercials.index')
+    ->middleware(['auth', 'verified'])
+    ->name('commercials');
+
+// 'comerciais/nova' DEVE vir antes de qualquer rota parametrizada.
+Route::view('comerciais/nova', 'commercials.create')
+    ->middleware(['auth', 'verified'])
+    ->name('commercials.create');
+
+Route::view('comerciais/{commercial}', 'commercials.edit')
+    ->middleware(['auth', 'verified'])
+    ->name('commercials.edit');
+
 // Conciliações (Sprint 6) — payment.html.
 Route::view('conciliações', 'conciliactions.index')
     ->middleware(['auth', 'verified'])
