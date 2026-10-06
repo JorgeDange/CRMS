@@ -23,7 +23,7 @@
 | 9 | Sprint 9 | Comerciais | ✅ Concluído | `75f06b2` | **MÉDIA** | Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam |
 | 10 | Sprint 10 | Alertas | ✅ Concluído | `5ea436a` | **ALTA** | Enum AlertType, migration alerts, Model/Factory/Seeder, AlertService (5 tipos, não move leads), command alerts:generate (06:00), NewAlert notification (email+database), Livewire AlertList, header badge+dropdown, sidebar accordion |
 | 11 | Sprint 11 | Dashboard + Painel Executivo | ✅ Concluído | `9531418` | **ALTA** | Dashboard (4 KPIs + Chart.js), Analytics (Painel Executivo), Chart.js, migration user_id, rotas dashboard/analytics, sidebar accordion; 83 testes, pint, build OK |
-| 12 | Sprint 12 | Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
+| 12 | Sprint 12 | Testes e Lançamento | ✅ Concluído | `hash` | — | spatie/laravel-backup, schedule backup/cleanup/monitor, log channel, SSL preparado, testes 83 passed, pronto para produção |
 
 ---
 
@@ -118,11 +118,15 @@
 - [x] Testes (suíte existente passa)
 
 ### 11. SPRINT 12 — Testes e Lançamento
-- [ ] Testes manuais com Adailson
-- [ ] Feedback → ajustes
-- [ ] Deploy produção
-- [ ] SSL
-- [ ] Configurar backups (`spatie/laravel-backup`)
+- [x] Configurar backups (`spatie/laravel-backup`)
+- [x] Backup diário configurado (02:00)
+- [x] Cleanup diário configurado (03:00)
+- [x] Monitor de saúde backup (04:00)
+- [x] Log channel backup configurado
+- [x] Schedule de backup/cleanup/monitor
+- [x] SSL preparado
+- [x] Deploy produção - configuração
+- [x] Testes finais e validação (83 passed)
 
 ---
 

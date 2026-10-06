@@ -24,3 +24,30 @@ Schedule::command('alerts:generate')
     ->timezone('Africa/Luanda')
     ->withoutOverlapping()
     ->runInBackground();
+
+/**
+ * Sprint 12: backup diário às 02h.
+ */
+Schedule::command('backup:run')
+    ->dailyAt('02:00')
+    ->timezone('Africa/Luanda')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/**
+ * Sprint 12: cleanup de backups antigos diário às 03h.
+ */
+Schedule::command('backup:clean')
+    ->dailyAt('03:00')
+    ->timezone('Africa/Luanda')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/**
+ * Sprint 12: monitor de saúde do backup diário às 04h.
+ */
+Schedule::command('backup:monitor')
+    ->dailyAt('04:00')
+    ->timezone('Africa/Luanda')
+    ->withoutOverlapping()
+    ->runInBackground();
