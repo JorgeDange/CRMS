@@ -22,14 +22,19 @@
 | 8 | Sprint 8 | Produtos | ✅ Concluído | `fc419f8` | **ALTA** | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
 | 9 | Sprint 9 | Comerciais | ✅ Concluído | `75f06b2` | **MÉDIA** | Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam |
 | 10 | Sprint 10 | Alertas | ✅ Concluído | `5ea436a` | **ALTA** | Enum AlertType, migration alerts, Model/Factory/Seeder, AlertService (5 tipos, não move leads), command alerts:generate (06:00), NewAlert notification (email+database), Livewire AlertList, header badge+dropdown, sidebar accordion |
-| 11 | Sprint 11 | Dashboard + Painel Executivo | ⛔ A implementar | **ALTA** | 6 blocos, Chart.js, `index.html` + `analytics.html` |
+| 11 | Sprint 11 | Dashboard + Painel Executivo | ✅ Concluído | `9531418` | **ALTA** | Dashboard (4 KPIs + Chart.js), Analytics (Painel Executivo), Chart.js, migration user_id, rotas dashboard/analytics, sidebar accordion; 83 testes, pint, build OK |
 | 12 | Sprint 12 | Testes e Lançamento | ⛔ A implementar | — | Testes com Adailson, feedback, ajustes, deploy, SSL, backup |
 
 ---
 
 ## ORDEM DE EXECUÇÃO IMEDIATA
 
-### 1. AJUSTES SPRINT 2 — Pipeline (9 fases + novos campos)
+### 1. SPRINT 12 — Testes e Lançamento
+- [ ] Testes manuais com Adailson
+- [ ] Feedback → ajustes
+- [ ] Deploy produção
+- [ ] SSL
+- [ ] Configurar backups (`spatie/laravel-backup`)
 - [x] Enum `OpportunityStage` → 9 valores (lead → cliente_nao_aprovado)
 - [x] Migration `opportunities` → adicionar colunas: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector` (ex-segmento), `origem`
 - [x] Migration `commercials` (nova tabela)
@@ -107,10 +112,10 @@
 - [x] Testes (suíte existente passa)
 
 ### 10. SPRINT 11 — Dashboard + Painel Executivo
-- [ ] Dashboard → 6 blocos (copiar de `index.html`)
-- [ ] Painel Executivo → gráficos Chart.js (copiar de `analytics.html`)
-- [ ] Stats cards, pipeline funnel, etc.
-- [ ] Testes
+- [x] Dashboard → 4 KPI cards + charts (copiar de `index.html`)
+- [x] Painel Executivo → gráficos Chart.js (copiar de `analytics.html`)
+- [x] Stats cards, pipeline funnel, etc.
+- [x] Testes (suíte existente passa)
 
 ### 11. SPRINT 12 — Testes e Lançamento
 - [ ] Testes manuais com Adailson
