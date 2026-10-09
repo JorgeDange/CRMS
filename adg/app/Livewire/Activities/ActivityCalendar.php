@@ -141,6 +141,7 @@ class ActivityCalendar extends Component
         $days = $this->days($start, $end);
 
         $events = Activity::with('opportunity')
+            ->whereHas('opportunity')
             ->whereIn('tipo', $this->types)
             ->whereBetween('data', [$start->toDateString(), $end->toDateString()])
             ->orderBy('data')
@@ -151,6 +152,7 @@ class ActivityCalendar extends Component
         $eventsByDate = $events->groupBy(fn (Activity $activity): string => $activity->data->toDateString());
 
         $upcoming = Activity::with('opportunity')
+            ->whereHas('opportunity')
             ->where('data', '>=', now()->toDateString())
             ->orderBy('data')
             ->orderBy('hora')

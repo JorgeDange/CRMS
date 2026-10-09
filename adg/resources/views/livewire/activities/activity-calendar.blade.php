@@ -59,7 +59,7 @@
                                         <div class="text-dark">
                                             <h6 class="fw-bold my-1 text-truncate-1-line">{{ $activity->descricao }}</h6>
                                             <span class="fs-11 fw-normal text-muted">
-                                                {{ $activity->horaCurta() ? $activity->horaCurta().' — ' : '' }}{{ $activity->opportunity->nome }}
+                                                {{ $activity->horaCurta() ? $activity->horaCurta().' — ' : '' }}{{ $activity->opportunity?->nome ?? '—' }}
                                             </span>
                                             @if ($activity->proxima_accao)
                                                 <p class="fs-12 fw-normal text-muted my-2 mb-0 text-truncate-2-line">{{ $activity->proxima_accao }}</p>
@@ -173,7 +173,7 @@
                             <div class="row g-3">
                                 <div class="col-sm-6">
                                     <span class="fs-11 fw-semibold text-muted text-uppercase d-block mb-1">Cliente</span>
-                                    <span class="fs-14 fw-semibold">{{ $detalhe->opportunity->nome }}</span>
+                                    <span class="fs-14 fw-semibold">{{ $detalhe->opportunity?->nome ?? '—' }}</span>
                                 </div>
                                 <div class="col-sm-3">
                                     <span class="fs-11 fw-semibold text-muted text-uppercase d-block mb-1">Estado</span>

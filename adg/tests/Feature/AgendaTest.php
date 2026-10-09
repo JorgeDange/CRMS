@@ -95,6 +95,36 @@ class AgendaTest extends TestCase
             ->assertSee('Mais recentes');
     }
 
+    public function test_list_page_survives_soft_deleted_opportunity(): void
+    {
+        // Regressao 2026-10-09: activities ligadas a opps soft-deleted
+        // (demo-hist) rebentavam /agenda com 500 ("property nome on null").
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+
+        Activity::factory()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'tipo' => ActivityType::CHAMADA,
+            'descricao' => 'Actividade de opp apagada',
+            'data' => now()->toDateString(),
+            'hora' => '09:00',
+            'status' => ActivityStatus::PENDENTE,
+        ]);
+
+        $opportunity->delete();
+
+        $this->actingAs($user)
+            ->get('/agenda')
+            ->assertOk()
+            ->assertDontSee('Actividade de opp apagada');
+
+        $this->actingAs($user)
+            ->get('/agenda/calendario')
+            ->assertOk()
+            ->assertDontSee('Actividade de opp apagada');
+    }
+
     public function test_list_page_shows_empty_state(): void
     {
         $this->actingAs($this->user())

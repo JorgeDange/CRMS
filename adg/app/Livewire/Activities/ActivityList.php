@@ -78,6 +78,7 @@ class ActivityList extends Component
     public function render()
     {
         $activities = Activity::with('opportunity')
+            ->whereHas('opportunity')
             ->when($this->search !== '', function ($query): void {
                 $like = '%'.$this->search.'%';
                 $query->where(fn ($q) => $q

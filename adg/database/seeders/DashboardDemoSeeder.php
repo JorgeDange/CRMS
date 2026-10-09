@@ -37,7 +37,11 @@ class DashboardDemoSeeder extends Seeder
         Activity::query()->where('descricao', 'like', self::MARCA.'%')->delete();
 
         $userId = User::query()->value('id');
-        $opportunityIds = Opportunity::query()->pluck('id');
+        // Exclui as opps demo-hist: soft-deletadas mais à frente, ligar
+        // activities a elas deixaria registos orfaos (agenda 500).
+        $opportunityIds = Opportunity::query()
+            ->where('titulo', 'not like', self::MARCA.'%')
+            ->pluck('id');
         $userId ??= User::factory()->create()->id;
 
         if ($opportunityIds->isEmpty()) {
@@ -83,6 +87,10 @@ class DashboardDemoSeeder extends Seeder
      */
     private function aprovacoesDozeMeses(): void
     {
+        // Soft delete nao dispara o cascade das FKs — apaga primeiro as
+        // activities que apontem a estas opps para nao deixar orfas.
+        Opportunity::query()->where('titulo', 'like', self::MARCA.'%')->pluck('id')
+            ->each(fn ($id) => Activity::query()->where('opportunity_id', $id)->delete());
         Opportunity::query()->where('titulo', 'like', self::MARCA.'%')->delete();
 
         for ($i = 11; $i >= 0; $i--) {

@@ -126,7 +126,7 @@
                                                             <img src="{{ asset('assets/images/avatar/1.png') }}" alt="" class="img-fluid">
                                                         </div>
                                                         <div>
-                                                            <span class="text-truncate-1-line fw-semibold">{{ $conciliaction->opportunity->nome }}</span>
+                                                            <span class="text-truncate-1-line fw-semibold">{{ $conciliaction->opportunity?->nome ?? '—' }}</span>
                                                         </div>
                                                     </a>
                                                 @else

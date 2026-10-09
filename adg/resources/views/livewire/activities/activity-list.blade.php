@@ -117,7 +117,7 @@
                                                         <span class="ms-2 badge {{ $activity->status->badgeClass() }}">{{ $activity->status->label() }}</span>
                                                     </div>
                                                     <div class="fs-12 fw-normal text-muted text-truncate-1-line">
-                                                        {{ $activity->opportunity->nome }}{{ $activity->proxima_accao ? ' · '.$activity->proxima_accao : '' }}
+                                                        {{ $activity->opportunity?->nome ?? '—' }}{{ $activity->proxima_accao ? ' · '.$activity->proxima_accao : '' }}
                                                     </div>
                                                 </a>
                                             </div>

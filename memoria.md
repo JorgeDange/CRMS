@@ -1200,6 +1200,36 @@ página até à scrollbar horizontal do board (9 colunas × 270px ≈ 2.430px).
 
 ---
 
+### Agenda 500 + "apagar não funciona": activities órfãs (2026-10-09)
+
+**Pedido**: "as funções de apagar não funcionam em todo o painel".
+
+- **Diagnóstico**: varredura de todos os pontos de apagar (produtos,
+  comerciais, conciliações, agenda, alertas) — todos abrem a modal e
+  confirmam; **excepto a Agenda, que dava 500** (`/agenda` e
+  `/agenda/calendario` inacessíveis).
+- **Bug raiz**: `Opportunity` usa `SoftDeletes` e o `DashboardDemoSeeder`
+  cria actividades com `pluck('id')` que **inclui as opps `[demo-hist]`** e
+  depois soft-deleta essas opps no mesmo run — o `cascadeOnDelete` das FKs
+  não corre em soft delete → 4 activities órfãs →
+  `Attempt to read property "nome" on null` em `activity-list`.
+- **Correcções**:
+  - `DashboardDemoSeeder`: actividades só para opps não-demo
+    (`not like [demo-hist]`) + apaga (físico) as activities das opps demo
+    **antes** do soft delete;
+  - `ActivityList`/`ActivityCalendar` com `whereHas('opportunity')`
+    (órfãs nunca aparecem) + guards `?->nome ?? '—'` também em
+    `conciliaction-list`, `contract-list`, `contract-view` (6 views);
+  - 4 activities órfãs removidas da BD dev; seeders de reposição
+    (`updateOrCreate`) re-executados após os testes E2E.
+- **Teste regressão**: `test_list_page_survives_soft_deleted_opportunity`
+  (lista + calendário com opp soft-deleted → 200 e sem a activity).
+- **Validação**: E2E `e2e-apagar-todos.mjs` — 4 listas apagam de verdade
+  (produtos 7→6, comerciais 1→0, conciliações 10→9, agenda 30→29) +
+  alertas, **0 erros de consola**; suite **140/729**, pint OK.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1239,3 +1269,4 @@ página até à scrollbar horizontal do board (9 colunas × 270px ≈ 2.430px).
 | 2026-10-09 | **Sprint 13 concluído — Tabela de Clientes** (`seguir.md`) — 6 campos novos denormalizados em `opportunities` (codigo/3 booleans/2 estados, migration+fillable+casts+factory), enums `ConciliacaoEstado`/`ContratoEstado` com `badgeClass()`, seeder 10 clientes CLI001–CLI010 (percentagens §10.2), componente `ClientTable` (pesquisa, filtros KAM/Compras/Conciliação/Contratos + contagem + reset, ordenação, 20/pág., só aprovados, relação `commercial()`), view `#customerList` 10 colunas + empty state + olho→`opportunities.show`, rota `clients.index` (`Route::view`), sidebar item standalone `feather-users`, sincronização §14.1 em `ConciliactionService`+`ContractService` (raw `update`, fallbacks PENDENTE/ACTIVO); 139 testes/725 assertions, pint, E2E novo `e2e-clientes.mjs` ×3 + re-verde de 3 E2Es, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Pipeline: valores compactos (fix overflow)** — cartões "Pipeline Aberto/Aprovado (mês)/Ponderado" passam a `formatKzCompact()` (igual ao Painel Executivo, ex. "Kz 339,7M") com valor completo no `title`; kanban alinhado (total da coluna + valor do cartão, ambos com `title` completo); E2E `e2e-pipeline-valores.mjs` 1600+1366 sem overflow (4 stats + 9 totais + 50 cartões), 17 testes + pint OK, sem mudança de CSS/JS. |
 | 2026-10-09 | **Kanban: navegação sem scrollbar lateral** — setas ← → na FilterBar (scroll suave 2 colunas, disabled nas extremidades, estado via scroll/morphed) + auto-scroll durante o drag nas bordas do board (14px/frame, pára em drop/dragend/fora do board, sem scroll fantasma); `x-data` unificado no wrapper com `$refs.board`; E2E novo `e2e-kanban-navegacao.mjs` ×2 verde (0→564→0, auto-scroll direita/esquerda, 0 erros), PipelineTest 9/9. |
+| 2026-10-09 | **"Apagar não funciona" → Agenda 500 por activities órfãs** — raiz: `DashboardDemoSeeder` ligava actividades às opps `[demo-hist]` e soft-deletava-as no mesmo run (cascade das FKs não corre em soft delete); `/agenda` dava 500 em `$activity->opportunity->nome`. Fixes: seeder exclui demo do pluck + apaga activities antes do soft delete, `whereHas('opportunity')` em ActivityList/Calendar, guards `?->?? '—'` em 6 views, 4 órfãs removidas da BD, teste de regressão; E2E `e2e-apagar-todos.mjs` valida apagar em 4 listas + alertas (0 erros), suite 140/729, pint OK. |

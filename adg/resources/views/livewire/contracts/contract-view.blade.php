@@ -19,7 +19,7 @@
                 </div>
                 <div class="row mb-4">
                     <div class="col-lg-3 fw-medium text-muted">Cliente</div>
-                    <div class="col-lg-9">{{ $contract->opportunity->nome ?? '—' }}</div>
+                    <div class="col-lg-9">{{ $contract->opportunity?->nome ?? '—' }}</div>
                 </div>
                 <div class="row mb-4">
                     <div class="col-lg-3 fw-medium text-muted">Produto</div>
