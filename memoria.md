@@ -1058,6 +1058,54 @@ tabela — verificar" + "verifica também em outras áreas que possuem tabelas, 
 
 ---
 
+### Modal de detalhe do alerta: sino + página Alertas (2026-10-09)
+
+**Pedido**: "ao clicar num alerta deve abrir uma modal com as informações
+desse alerta e os seus botões de acção" (âmbito confirmado: **ambos** — sino
+e página `/alertas`).
+
+- **Novo componente `Livewire\Alerts\AlertBell`** substitui o bloco estático
+  do sino em `header.blade.php`: badge e dropdown (5 recentes) passam a
+  Livewire → **badge actualiza-se em tempo real** após acções; item clicável
+  (`wire:click="abrirAlerta(id)"`); removido `data-bs-auto-close="outside"`
+  (o dropdown fecha sozinho ao escolher); placeholders mortos saem (o ponto
+  "não lido" vira `<span>` indicador, o X "remover" desaparece — as acções
+  vivem na modal). Markup do `<a class="nxl-head-link…">` preservado
+  **byte-a-byte** (regex de `AlertsTest` intacta).
+- **Partial partilhada `livewire/alerts/detail-modal.blade.php`** — padrão
+  exacto do modal da Agenda (markup-puro `show d-block`, backdrop com blur
+  inline, `wire:click.self`, travão do body via `dispatch('modal-alerta',
+  aberto:…)` + `x-on:modal-alerta.window` na raiz de cada componente):
+  badge do tipo + chip de estado (Não lido/Lido/Resolvido), **mensagem
+  completa** (`pre-wrap`), entidade com link "Ver registo"
+  (`opportunities.show`/`contracts.show`/`conciliactions.edit` — resolvido no
+  render, apaga-se se a entidade não existir), criado por/criado em
+  (`d/m/Y H:i` + `diffForHumans`), prazo; rodapé: **Marcar como lido** (se
+  `!lido`), **Marcar como resolvido** (se `!resolvido`), **Eliminar**
+  ($store.confirmar) e **Fechar**. IDs distintos por componente
+  (`modalDetalheAlertaSino`/`…Lista` — coexistem na página `/alertas`).
+- **`AlertList`**: `$alertaActivoId` + `abrirAlerta`/`fecharDetalhe`
+  (mesmos nomes do bell → partial reutilizável sem adaptador); `remove()`
+  fecha a modal se o alerta activo for o eliminado; célula **Mensagem**
+  clicável (`cursor:pointer` + `wire:click`).
+- **Testes +3**: bell abre modal com mensagem completa e executa as 3 acções
+  (e fecha ao eliminar), id desconhecido ignorado, lista abre a mesma modal —
+  **124 testes / 668 assertions**.
+- **E2E novo `e2e-alerta-modal.mjs`**: marcador criado por script PHP e
+  apagado pelo próprio teste (zero toque nos dados demo). Fluxo sino → item →
+  modal com mensagem+3 botões, menu fechado, body travado → marcar lido
+  (botão some, chip muda) → fechar; `/alertas` → clicar Mensagem → Eliminar →
+  `#modalConfirmar` → confirmar → marcador removido, modal fechada, body
+  livre; **0 erros de consola, `criticoOk:true`** (bug próprio apanhado:
+  `clicouFechar` calculado mas nunca lançado ao objecto → `&&` devolvia
+  `undefined` e o `criticoOk` nem saía no JSON). `e2e-notificacoes.mjs`
+  re-verde (3 itens empilhados).
+- **Validação**: 124/668, pint OK, 3 E2E verdes, build `app-CDSVpqV-.css` +
+  `app-DZulwGZq.js` (o CSS muda porque os novos views entram no safelist
+  `@source '*.php'`).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1093,3 +1141,4 @@ tabela — verificar" + "verifica também em outras áreas que possuem tabelas, 
 | 2026-10-08 | **Produtos, Alertas, Comerciais e Contratos sem sidebar vertical (padrão Agenda/Conciliações)** — 7 views (`product-list/form`, `alert-list`, `commercial-list/form`, `contract-list/form`): removidos `content-sidebar`+`sidebarOpen`+hamburger; botões `+ Novo X` no header (Alertas sem criação), dropdowns Filtros com grupos `<h6>` (Produtos: Estado+Comercial; Alertas: Tipo+Estado; Comerciais/Contratos: Estado, "Todos"→"Todos os estados"); 4 testes de lista com novas asserções (+20); E2E `e2e-listas-sem-sidebar.mjs` 1600+1366 verdes (sem clip, 0 erros, forms sem sidebar); zero views com `content-sidebar`; 116 testes/635 assertions, pint, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-08 | **Coluna Observações desalinhada + varredura de tabelas** — causa raiz: `theme-extract.css:163` mete `display:-webkit-box!important` (`.text-truncate-1-line`) directo no `<td>` → `flow-root` em vez de `table-cell` (altura 53 vs 61, conteúdo ao alto, tira branca nas linhas vermelhas); fix em 3 views (conciliaction-list Observações, commercial-list Descrição, alert-list Mensagem): classe movida para `<div>` interno; varredura global (grep + runtime em 13 páginas: 346 tds + 63 ths) confirma **0 células distorcidas no protótipo inteiro**; 116 testes/635 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Pendências resolvidos** — commit dos 143 ficheiros pendentes (`eeefe7c`+`d56259e`); fix notificações (1 `.notifications-item` por alerta — estava 1 wrapper flex com todos os desc's em grid horizontal); `agenda:reminder` cria alerta `AGENDA` (§11, entidade nullable, anti-duplicado); **bug latente**: tabela `notifications` inexistente rebentava `alerts:generate` → migration criada; `alerts:generate --dry-run` real; `contracts:expire` 05h30 (suposição §19.12); `.env.example` MySQL, suposições 14/14 ✅, CHECKLIST DE DEPLOY, `teste-manual.md`; E2E gráficos (8/8 com dados reais) + sectores variados no seed (donut Segmento 1→6 fatias); 121 testes/659 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
+| 2026-10-09 | **Modal de detalhe do alerta (sino + página Alertas)** — novo `AlertBell` (sino Livewire com badge live, item clicável, dropdown fecha sozinho, markup do `<a>` preservado para o regex de `AlertsTest`) + partial `detail-modal` (padrão Agenda: tipo/estado, mensagem completa, entidade com "Ver registo", criado por/em, prazo, acções lido/resolvido/eliminar-com-confirmação/fechar, IDs distintos Sino/Lista); `AlertList` ganha `abrirAlerta`/`fecharDetalhe` + Mensagem clicável, `remove` fecha a modal activa; 124 testes/668 assertions, pint, E2E novo `e2e-alerta-modal.mjs` (marcador auto-apagável) + re-verde de notificações, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |

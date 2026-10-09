@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Alerts\AlertBell;
+use App\Livewire\Alerts\AlertList;
 use App\Models\Alert;
 use App\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class AlertsTest extends TestCase
@@ -129,5 +132,64 @@ class AlertsTest extends TestCase
             ->assertSuccessful();
 
         $this->assertSame($antes + 1, Alert::count(), 'Execucao normal cria o alerta candidato.');
+    }
+
+    /**
+     * Clicar num alerta do sino abre a modal de detalhe (Sprint 14) com a
+     * mensagem completa e as accoes funcionam a partir dela.
+     */
+    public function test_bell_opens_detail_modal_and_applies_actions(): void
+    {
+        $user = $this->user();
+        $alerta = Alert::factory()->create([
+            'user_id' => $user->id,
+            'lido' => false,
+            'resolvido' => false,
+            'mensagem' => 'Mensagem completa para a modal de detalhe',
+        ]);
+
+        $this->actingAs($user);
+
+        $component = Livewire::test(AlertBell::class);
+
+        $component
+            ->call('abrirAlerta', $alerta->id)
+            ->assertSet('alertaActivoId', $alerta->id)
+            ->assertSee('Mensagem completa para a modal de detalhe');
+
+        $component->call('marcarLido', $alerta->id);
+        $this->assertTrue($alerta->fresh()->lido, 'Marcar lido a partir da modal nao pode falhar.');
+
+        $component->call('marcarResolvido', $alerta->id);
+        $this->assertTrue($alerta->fresh()->resolvido, 'Marcar resolvido a partir da modal nao pode falhar.');
+
+        $component->call('remove', $alerta->id);
+        $component->assertSet('alertaActivoId', null, 'Eliminar o alerta activo fecha a modal.');
+        $this->assertDatabaseMissing('alerts', ['id' => $alerta->id]);
+    }
+
+    public function test_bell_ignores_unknown_alert(): void
+    {
+        $this->actingAs($this->user());
+
+        Livewire::test(AlertBell::class)
+            ->call('abrirAlerta', 999999)
+            ->assertSet('alertaActivoId', null);
+    }
+
+    /**
+     * Na pagina /alertas clicar na mensagem abre a mesma modal de detalhe.
+     */
+    public function test_alert_list_opens_detail_modal(): void
+    {
+        $alerta = Alert::factory()->create([
+            'user_id' => $this->user()->id,
+            'mensagem' => 'Alerta aberto pela pagina de alertas',
+        ]);
+
+        Livewire::test(AlertList::class)
+            ->call('abrirAlerta', $alerta->id)
+            ->assertSet('alertaActivoId', $alerta->id)
+            ->assertSee('Alerta aberto pela pagina de alertas');
     }
 }

@@ -16,6 +16,8 @@ class AlertList extends Component
 
     public string $sort = 'desc';
 
+    public ?int $alertaActivoId = null;
+
     public function mount(): void
     {
         $tipo = request()->query('tipo');
@@ -46,6 +48,26 @@ class AlertList extends Component
         $this->tipoFilter = '';
         $this->statusFilter = '';
         $this->search = '';
+    }
+
+    public function abrirAlerta(int $alertId): void
+    {
+        if (! Alert::query()->whereKey($alertId)->exists()) {
+            return;
+        }
+
+        $this->alertaActivoId = $alertId;
+        $this->dispatch('modal-alerta', aberto: true);
+    }
+
+    public function fecharDetalhe(): void
+    {
+        if ($this->alertaActivoId === null) {
+            return;
+        }
+
+        $this->alertaActivoId = null;
+        $this->dispatch('modal-alerta', aberto: false);
     }
 
     public function marcarLido(int $alertId): void
@@ -80,6 +102,10 @@ class AlertList extends Component
 
         $alert->delete();
 
+        if ($this->alertaActivoId === $alertId) {
+            $this->fecharDetalhe();
+        }
+
         $this->dispatch('alert-removed');
     }
 
@@ -110,6 +136,9 @@ class AlertList extends Component
         return view('livewire.alerts.alert-list', [
             'alerts' => $alerts,
             'tipos' => $tipos,
+            'alertaActivo' => $this->alertaActivoId !== null
+                ? Alert::find($this->alertaActivoId)
+                : null,
         ]);
     }
 }

@@ -1,6 +1,8 @@
 {{-- Lista de Alertas — Sprint 10 (resposta.md §10) --}}
-{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
-<div class="d-flex flex-grow-1">
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar).
+     Abertura/fecho da modal de detalhe trava/destrava o scroll do body --}}
+<div class="d-flex flex-grow-1"
+     x-on:modal-alerta.window="document.body.classList.toggle('modal-open', $event.detail.aberto === true)">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
@@ -138,7 +140,11 @@
                                                     {{ $alert->tipo->label() }}
                                                 </span>
                                             </td>
-                                            <td><div class="text-truncate-1-line" style="max-width: 400px;">{{ $alert->mensagem }}</div></td>
+                                            <td>
+                                                <div class="text-truncate-1-line" style="max-width: 400px; cursor: pointer;"
+                                                     title="Ver detalhe do alerta"
+                                                     wire:click="abrirAlerta({{ $alert->id }})">{{ $alert->mensagem }}</div>
+                                            </td>
                                             <td>
                                                 @if ($alert->entidade === 'opportunities')
                                                     <span class="badge bg-soft-primary text-primary">Oportunidade</span>
@@ -237,5 +243,7 @@
         </div>
 
         <x-ui.footer />
+
+        @include('livewire.alerts.detail-modal', ['alerta' => $alertaActivo, 'modalId' => 'modalDetalheAlertaLista'])
     </div>
 </div>
