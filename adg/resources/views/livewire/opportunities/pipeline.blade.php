@@ -8,6 +8,11 @@
              boardMax: 0,
              dirAuto: 0,
              _autoRaf: null,
+             drop(event, stage) {
+                 const id = parseInt(event.dataTransfer.getData('text/plain'));
+                 if (isNaN(id)) return;
+                 $wire.$call('move', id, stage);
+             },
              actualizarSetas() {
                  const b = this.$refs.board;
                  if (!b) return;

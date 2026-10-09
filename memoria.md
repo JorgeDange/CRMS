@@ -1230,6 +1230,23 @@ página até à scrollbar horizontal do board (9 colunas × 270px ≈ 2.430px).
 
 ---
 
+### Fix: `drop is not defined` no kanban (2026-10-09)
+
+**Pedido**: erro de consola `Alpine Expression Error: drop is not defined`
+ao soltar cartões no pipeline.
+
+- **Causa**: na tarefa das setas, o `x-data` subiu do `#kanbanBoard` para o
+  wrapper `col-lg-12` mas o método `drop()` (que chama
+  `$wire.$call('move', …)`) ficou para trás — as zonas continuavam a chamar
+  `drop($event, …)` num scope sem a função.
+- **Fix**: `drop()` reposto no objecto Alpine do wrapper.
+- **Validação**: E2E novo `e2e-kanban-drop.mjs` — dragstart → drop na
+  coluna seguinte → cartão movido (`move` real), reposição à coluna
+  original, `drag-over` limpo, **0 erros de consola** (`criticoOk:true` ×4);
+  navegação `e2e-kanban-navegacao` ×2, PipelineTest 9/9, pint OK.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1270,3 +1287,4 @@ página até à scrollbar horizontal do board (9 colunas × 270px ≈ 2.430px).
 | 2026-10-09 | **Pipeline: valores compactos (fix overflow)** — cartões "Pipeline Aberto/Aprovado (mês)/Ponderado" passam a `formatKzCompact()` (igual ao Painel Executivo, ex. "Kz 339,7M") com valor completo no `title`; kanban alinhado (total da coluna + valor do cartão, ambos com `title` completo); E2E `e2e-pipeline-valores.mjs` 1600+1366 sem overflow (4 stats + 9 totais + 50 cartões), 17 testes + pint OK, sem mudança de CSS/JS. |
 | 2026-10-09 | **Kanban: navegação sem scrollbar lateral** — setas ← → na FilterBar (scroll suave 2 colunas, disabled nas extremidades, estado via scroll/morphed) + auto-scroll durante o drag nas bordas do board (14px/frame, pára em drop/dragend/fora do board, sem scroll fantasma); `x-data` unificado no wrapper com `$refs.board`; E2E novo `e2e-kanban-navegacao.mjs` ×2 verde (0→564→0, auto-scroll direita/esquerda, 0 erros), PipelineTest 9/9. |
 | 2026-10-09 | **"Apagar não funciona" → Agenda 500 por activities órfãs** — raiz: `DashboardDemoSeeder` ligava actividades às opps `[demo-hist]` e soft-deletava-as no mesmo run (cascade das FKs não corre em soft delete); `/agenda` dava 500 em `$activity->opportunity->nome`. Fixes: seeder exclui demo do pluck + apaga activities antes do soft delete, `whereHas('opportunity')` em ActivityList/Calendar, guards `?->?? '—'` em 6 views, 4 órfãs removidas da BD, teste de regressão; E2E `e2e-apagar-todos.mjs` valida apagar em 4 listas + alertas (0 erros), suite 140/729, pint OK. |
+| 2026-10-09 | **Fix `drop is not defined` no kanban** — o método `drop()` ficou para trás quando o `x-data` subiu do board para o wrapper (tarefa das setas); reposto no objecto Alpine. E2E novo `e2e-kanban-drop.mjs` valida drop real + reposição + `drag-over` limpo com 0 erros (×4), navegação ×2, PipelineTest 9/9, pint OK. |
