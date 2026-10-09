@@ -10,7 +10,7 @@
                     </div>
                     <span class="fw-bold d-block">
                         <span class="d-block">Pipeline Aberto</span>
-                        <span class="fs-24 fw-bolder d-block">{{ $pipelineValor }}</span>
+                        <span class="fs-24 fw-bolder d-block" title="{{ $pipelineValorCompleto }}">{{ $pipelineValor }}</span>
                     </span>
                 </div>
                 <span class="badge bg-soft-primary text-primary">{{ $pipelineCount }} opps</span>
@@ -28,7 +28,7 @@
                     </div>
                     <span class="fw-bold d-block">
                         <span class="d-block">Aprovado (mês)</span>
-                        <span class="fs-24 fw-bolder d-block">{{ $ganhoValor }}</span>
+                        <span class="fs-24 fw-bolder d-block" title="{{ $ganhoValorCompleto }}">{{ $ganhoValor }}</span>
                     </span>
                 </div>
                 <span class="badge bg-soft-success text-success">{{ $ganhoCount }} opps</span>
@@ -46,7 +46,7 @@
                     </div>
                     <span class="fw-bold d-block">
                         <span class="d-block">Ponderado</span>
-                        <span class="fs-24 fw-bolder d-block">{{ $ponderado }}</span>
+                        <span class="fs-24 fw-bolder d-block" title="{{ $ponderadoCompleto }}">{{ $ponderado }}</span>
                     </span>
                 </div>
                 <span class="badge bg-soft-warning text-warning">&times; prob.</span>

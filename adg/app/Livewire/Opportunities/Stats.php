@@ -49,11 +49,14 @@ class Stats extends Component
         $conversao = $finalizadasCount > 0 ? (int) round($aprovadasCount / $finalizadasCount * 100) : 0;
 
         return view('livewire.opportunities.stats', [
-            'pipelineValor' => OpportunityService::formatKz($pipelineValor),
+            'pipelineValor' => OpportunityService::formatKzCompact($pipelineValor),
+            'pipelineValorCompleto' => OpportunityService::formatKz($pipelineValor),
             'pipelineCount' => $pipelineCount,
-            'ganhoValor' => OpportunityService::formatKz($ganhoValor),
+            'ganhoValor' => OpportunityService::formatKzCompact($ganhoValor),
+            'ganhoValorCompleto' => OpportunityService::formatKz($ganhoValor),
             'ganhoCount' => $ganhoCount,
-            'ponderado' => OpportunityService::formatKz($ponderado),
+            'ponderado' => OpportunityService::formatKzCompact($ponderado),
+            'ponderadoCompleto' => OpportunityService::formatKz($ponderado),
             'conversao' => $conversao,
         ]);
     }

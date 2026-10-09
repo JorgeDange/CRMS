@@ -49,7 +49,7 @@
                                 <h6 class="mb-0 fw-bold {{ $config['heading'] }}">{{ $config['label'] }}</h6>
                                 <span class="{{ $config['badge'] }}">{{ $grouped->get($stage, collect())->count() }}</span>
                             </div>
-                            <span class="fs-12 text-muted">{{ OpportunityService::formatKz($totals->get($stage, 0)) }}</span>
+                            <span class="fs-12 text-muted" title="{{ OpportunityService::formatKz($totals->get($stage, 0)) }}">{{ OpportunityService::formatKzCompact($totals->get($stage, 0)) }}</span>
                         </div>
                         <div class="kanban-col-body {{ $config['body'] }} p-2 rounded-bottom border border-top-0 d-flex flex-column gap-2"
                              style="min-height: 320px;" data-dropzone="{{ $stage }}"
@@ -67,7 +67,7 @@
                                            class="fw-bold d-block text-dark mb-1 text-decoration-none">{{ $opportunity->titulo }}</a>
                                         <span class="fs-12 text-muted d-block mb-2">{{ $opportunity->empresa ?? $opportunity->nome }}</span>
                                         <div class="d-flex align-items-center justify-content-between mb-2">
-                                            <span class="fw-bold {{ $config['value'] }} fs-13">{{ OpportunityService::formatKz($opportunity->valor_estimado) }}</span>
+                                            <span class="fw-bold {{ $config['value'] }} fs-13" title="{{ OpportunityService::formatKz($opportunity->valor_estimado) }}">{{ OpportunityService::formatKzCompact($opportunity->valor_estimado) }}</span>
                                             <span class="badge {{ $config['prob'] }}">{{ $opportunity->probabilidade }}%</span>
                                         </div>
                                         <div class="d-flex align-items-center justify-content-between">

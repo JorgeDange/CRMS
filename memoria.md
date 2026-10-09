@@ -1162,6 +1162,23 @@ paginação.
 
 ---
 
+### Pipeline: valores em formato compacto (2026-10-09)
+
+**Pedido**: os cartões "Pipeline Aberto / Aprovado (mês) / Ponderado" não
+usavam a conversão M/K do dashboard e os valores vazavam dos cartões.
+
+- `Stats` passa a usar `OpportunityService::formatKzCompact()` nos 3 valores
+  ("Kz 339.720.000" → "Kz 339,7M"), mantendo o valor completo em `title`
+  (hover) via `…Completo`.
+- Kanban do Pipeline alinhado: total da coluna e valor do cartão também
+  compactos, com o valor completo no `title`.
+- Validação em Chrome real (`e2e-pipeline-valores.mjs`, 1600+1366):
+  0 overflow em 4 stats + 9 totais + 50 cartões, formato M presente, 0 erros
+  de consola — `criticoOk:true` ×2; 17 testes (PipelineTest+OpportunityViewTest)
+  e pint OK. Sem mudança de CSS/JS → sem novo build.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1199,3 +1216,4 @@ paginação.
 | 2026-10-09 | **Pendências resolvidos** — commit dos 143 ficheiros pendentes (`eeefe7c`+`d56259e`); fix notificações (1 `.notifications-item` por alerta — estava 1 wrapper flex com todos os desc's em grid horizontal); `agenda:reminder` cria alerta `AGENDA` (§11, entidade nullable, anti-duplicado); **bug latente**: tabela `notifications` inexistente rebentava `alerts:generate` → migration criada; `alerts:generate --dry-run` real; `contracts:expire` 05h30 (suposição §19.12); `.env.example` MySQL, suposições 14/14 ✅, CHECKLIST DE DEPLOY, `teste-manual.md`; E2E gráficos (8/8 com dados reais) + sectores variados no seed (donut Segmento 1→6 fatias); 121 testes/659 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Modal de detalhe do alerta (sino + página Alertas)** — novo `AlertBell` (sino Livewire com badge live, item clicável, dropdown fecha sozinho, markup do `<a>` preservado para o regex de `AlertsTest`) + partial `detail-modal` (padrão Agenda: tipo/estado, mensagem completa, entidade com "Ver registo", criado por/em, prazo, acções lido/resolvido/eliminar-com-confirmação/fechar, IDs distintos Sino/Lista); `AlertList` ganha `abrirAlerta`/`fecharDetalhe` + Mensagem clicável, `remove` fecha a modal activa; 124 testes/668 assertions, pint, E2E novo `e2e-alerta-modal.mjs` (marcador auto-apagável) + re-verde de notificações, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Sprint 13 concluído — Tabela de Clientes** (`seguir.md`) — 6 campos novos denormalizados em `opportunities` (codigo/3 booleans/2 estados, migration+fillable+casts+factory), enums `ConciliacaoEstado`/`ContratoEstado` com `badgeClass()`, seeder 10 clientes CLI001–CLI010 (percentagens §10.2), componente `ClientTable` (pesquisa, filtros KAM/Compras/Conciliação/Contratos + contagem + reset, ordenação, 20/pág., só aprovados, relação `commercial()`), view `#customerList` 10 colunas + empty state + olho→`opportunities.show`, rota `clients.index` (`Route::view`), sidebar item standalone `feather-users`, sincronização §14.1 em `ConciliactionService`+`ContractService` (raw `update`, fallbacks PENDENTE/ACTIVO); 139 testes/725 assertions, pint, E2E novo `e2e-clientes.mjs` ×3 + re-verde de 3 E2Es, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
+| 2026-10-09 | **Pipeline: valores compactos (fix overflow)** — cartões "Pipeline Aberto/Aprovado (mês)/Ponderado" passam a `formatKzCompact()` (igual ao Painel Executivo, ex. "Kz 339,7M") com valor completo no `title`; kanban alinhado (total da coluna + valor do cartão, ambos com `title` completo); E2E `e2e-pipeline-valores.mjs` 1600+1366 sem overflow (4 stats + 9 totais + 50 cartões), 17 testes + pint OK, sem mudança de CSS/JS. |
