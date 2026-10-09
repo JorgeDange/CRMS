@@ -45,6 +45,13 @@
                         </li>
                     </ul>
                 </li>
+                {{-- Sprint 13 — Tabela de Clientes (entre Oportunidades e Agenda) --}}
+                <li class="nxl-item {{ request()->routeIs('clients.*') ? 'active' : '' }}">
+                    <a href="{{ route('clients.index') }}" class="nxl-link" wire:navigate>
+                        <span class="nxl-micon"><i class="feather-users"></i></span>
+                        <span class="nxl-mtext">Clientes</span>
+                    </a>
+                </li>
                 <li class="nxl-item nxl-hasmenu" x-data="{ open: {{ in_array(request()->route()?->getName(), ['agenda', 'agenda.create', 'agenda.calendar']) ? 'true' : 'false'}} }" :class="open && 'nxl-trigger'">
                     <a href="javascript:void(0);" class="nxl-link" @click.prevent="open = !open">
                         <span class="nxl-micon"><i class="feather-calendar"></i></span>

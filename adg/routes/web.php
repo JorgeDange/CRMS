@@ -44,6 +44,11 @@ Route::get('pipeline/{opportunity}', function (Opportunity $opportunity) {
     return view('opportunities.show', ['opportunity' => $opportunity]);
 })->middleware(['auth', 'verified'])->name('opportunities.show');
 
+// Tabela de Clientes (Sprint 13) — clientes aprovados.
+Route::view('clientes', 'clients.index')
+    ->middleware(['auth', 'verified'])
+    ->name('clients.index');
+
 // Agenda Comercial (Sprint 5) — apps-tasks / apps-notes / apps-calendar.
 Route::view('agenda', 'agenda.index')
     ->middleware(['auth', 'verified'])

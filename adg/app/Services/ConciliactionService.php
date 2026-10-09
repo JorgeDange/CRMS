@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Enums\ConciliactionClassificacao;
 use App\Models\Conciliaction;
+use App\Models\Opportunity;
 
 class ConciliactionService
 {
@@ -12,7 +13,11 @@ class ConciliactionService
      */
     public function create(array $data): Conciliaction
     {
-        return Conciliaction::create($data);
+        $conciliaction = Conciliaction::create($data);
+
+        $this->sincronizarOpportunity($conciliaction);
+
+        return $conciliaction;
     }
 
     /**
@@ -22,6 +27,8 @@ class ConciliactionService
     {
         $conciliaction->fill($data);
         $conciliaction->save();
+
+        $this->sincronizarOpportunity($conciliaction);
 
         return $conciliaction;
     }
@@ -51,6 +58,8 @@ class ConciliactionService
         $conciliaction->classificacao = $classificacao;
         $conciliaction->save();
 
+        $this->sincronizarOpportunity($conciliaction);
+
         return $conciliaction;
     }
 
@@ -60,5 +69,26 @@ class ConciliactionService
     public function remove(Conciliaction $conciliaction): void
     {
         $conciliaction->delete();
+    }
+
+    /**
+     * Actualiza opportunities.conciliacao_estado (Tabela de Clientes,
+     * seguir.md §14.1 — campo denormalizado para leitura rapida).
+     */
+    private function sincronizarOpportunity(Conciliaction $conciliaction): void
+    {
+        if (! $conciliaction->opportunity_id) {
+            return;
+        }
+
+        $classificacao = $conciliaction->classificacao;
+
+        // Sem atributo carregado (create sem classificacao) → default da BD.
+        $valor = $classificacao instanceof ConciliactionClassificacao
+            ? $classificacao->value
+            : ($classificacao ?? ConciliactionClassificacao::PENDENTE->value);
+
+        Opportunity::whereKey($conciliaction->opportunity_id)
+            ->update(['conciliacao_estado' => $valor]);
     }
 }

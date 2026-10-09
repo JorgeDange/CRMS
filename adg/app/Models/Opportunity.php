@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ConciliacaoEstado;
+use App\Enums\ContratoEstado;
 use App\Enums\OpportunityStage;
 use App\Enums\TipoRelacao;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,6 +29,12 @@ class Opportunity extends Model
         'email',
         'nif',
         'codigo_sap',
+        'codigo',
+        'tem_compras',
+        'assinatura_director',
+        'enviado_entregue',
+        'conciliacao_estado',
+        'contrato_estado',
         'sector',
         'localizacao',
         'origem',
@@ -50,6 +58,11 @@ class Opportunity extends Model
         return [
             'fase_atual' => OpportunityStage::class,
             'tipo_relacao' => TipoRelacao::class,
+            'tem_compras' => 'boolean',
+            'assinatura_director' => 'boolean',
+            'enviado_entregue' => 'boolean',
+            'conciliacao_estado' => ConciliacaoEstado::class,
+            'contrato_estado' => ContratoEstado::class,
             'valor_estimado' => 'decimal:2',
             'probabilidade' => 'integer',
             'data_fecho' => 'date',

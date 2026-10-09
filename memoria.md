@@ -1106,6 +1106,62 @@ e página `/alertas`).
 
 ---
 
+### Tabela de Clientes (Sprint 13) (2026-10-09)
+
+**Pedido**: `seguir.md` §1-14 — vista `/clientes` com a tabela de clientes
+aprovados (9 campos do Excel do Adailson + acções), filtros, ordenação e
+paginação.
+
+- **Campos novos denormalizados em `opportunities`** (migration
+  `2026_10_09_000003_adicionar_colunas_tabela_clientes_em_opportunities`,
+  `after('codigo_sap')`): `codigo` (CLI###, 4 índices), `tem_compras`,
+  `assinatura_director`, `enviado_entregue` (bool default false) e
+  `conciliacao_estado`/`contrato_estado` (string nullable, índice composto);
+  `Opportunity` com fillable+casts, factory com as probabilidades do §10.2.
+- **Novos enums** `ConciliacaoEstado` (concordante/discordante/pendente) e
+  `ContratoEstado` (sim/caducidade/nao), ambos com `badgeClass()` no padrão
+  `bg-soft-X text-X` (labels NÃO/…/CADUCIDADE maiúsculas iguais ao protótipo).
+- **Seeder**: 10 clientes `cliente_aprovado` `CLI001`–`CLI010` com as
+  percentagens do §10.2 (6 compras / 4 assinatura / 5 enviado; conc 3/2/5;
+  contrato 4 sim / 2 caducidade / 4 nao).
+- **Componente `Livewire\Clients\ClientTable`**: pesquisa (`debounce.300ms`
+  em nome/código), dropdown Filtros com grupos KAM (comerciais activos) /
+  Compras / Conciliação / Contratos + badge de contagem + "Limpar filtros",
+  ordenação CÓDIGO/CLIENTE, 20 por página; só `fase_atual=cliente_aprovado`;
+  relação real é **`commercial()`** (o doc diz `comercial`).
+- **Vista/rota**: wrapper `clients/index.blade.php` no padrão alerts
+  (`hidePageHeader`/`hideFooter` + header slot "Clientes"), rota
+  `Route::view('clientes', …)` com nome `clients.index` (padrão do projecto em
+  vez do `Route::get` full-page do doc); sidebar com item standalone
+  `feather-users` entre Oportunidades e Agenda (activo via `routeIs`, não
+  partilha CSS de acordeão — verificado no E2E). Tabela `#customerList` com
+  10 colunas, empty state inline (`x-ui.empty-state` não existe), acção olho
+  `wire:navigate` → `opportunities.show`.
+- **Sincronização §14.1 nos serviços**: `ConciliactionService`
+  (create/update/classificar) e `ContractService`
+  (create/update/setStatus/renovar/cancelar) escrevem
+  `conciliacao_estado`/`contrato_estado` na opportunity via
+  `Opportunity::whereKey()->update()` com o valor raw (bypass de casts);
+  fallbacks: classificação ausente→`PENDENTE`, estado ausente→`ACTIVO`;
+  mapeamento ACTIVO|RENOVADO→SIM, EXPIRADO→CADUCIDADE, CANCELADO→NAO.
+- **Testes +15 `ClientTableTest`** (§11): auth, estrutura (10 cabeçalhos,
+  sem `content-sidebar`), só aprovados, badges+KAM na linha, pesquisa,
+  5 filtros individuais, reset, ordenação, paginação (25→20/pág.), link da
+  acção, sidebar activa, empty state — **139 testes / 725 assertions**.
+- **E2E novo `e2e-clientes.mjs`**: sidebar → `/clientes`, headers exactos,
+  12 linhas, badges todos `bg-soft-*`, 12 botões "Ver" com pathname
+  `/pipeline/` (o `route()` devolve URL absoluta — assert corrigido para
+  `new URL(a.href).pathname`), ordenação (chevron up→down), dropdown completo
+  (KAM/Compras/Conciliação/Contratos/Limpar), filtro Compras=Não → 6 linhas
+  todas NÃO, limpar/restaurar, pesquisa "Distribuidora"→1/restaurar,
+  **0 erros de consola — `criticoOk:true` ×3 pós-build**; re-verde de
+  `e2e-listas-sem-sidebar`, `e2e-notificacoes` e `e2e-alerta-modal` (esta
+  exige que o marcador seja criado primeiro com `criar-alerta-e2e.php`).
+- **Validação**: 139/725, pint OK, 4 E2E verdes, build `app-CDSVpqV-.css` +
+  `app-DZulwGZq.js`.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1142,3 +1198,4 @@ e página `/alertas`).
 | 2026-10-08 | **Coluna Observações desalinhada + varredura de tabelas** — causa raiz: `theme-extract.css:163` mete `display:-webkit-box!important` (`.text-truncate-1-line`) directo no `<td>` → `flow-root` em vez de `table-cell` (altura 53 vs 61, conteúdo ao alto, tira branca nas linhas vermelhas); fix em 3 views (conciliaction-list Observações, commercial-list Descrição, alert-list Mensagem): classe movida para `<div>` interno; varredura global (grep + runtime em 13 páginas: 346 tds + 63 ths) confirma **0 células distorcidas no protótipo inteiro**; 116 testes/635 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Pendências resolvidos** — commit dos 143 ficheiros pendentes (`eeefe7c`+`d56259e`); fix notificações (1 `.notifications-item` por alerta — estava 1 wrapper flex com todos os desc's em grid horizontal); `agenda:reminder` cria alerta `AGENDA` (§11, entidade nullable, anti-duplicado); **bug latente**: tabela `notifications` inexistente rebentava `alerts:generate` → migration criada; `alerts:generate --dry-run` real; `contracts:expire` 05h30 (suposição §19.12); `.env.example` MySQL, suposições 14/14 ✅, CHECKLIST DE DEPLOY, `teste-manual.md`; E2E gráficos (8/8 com dados reais) + sectores variados no seed (donut Segmento 1→6 fatias); 121 testes/659 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Modal de detalhe do alerta (sino + página Alertas)** — novo `AlertBell` (sino Livewire com badge live, item clicável, dropdown fecha sozinho, markup do `<a>` preservado para o regex de `AlertsTest`) + partial `detail-modal` (padrão Agenda: tipo/estado, mensagem completa, entidade com "Ver registo", criado por/em, prazo, acções lido/resolvido/eliminar-com-confirmação/fechar, IDs distintos Sino/Lista); `AlertList` ganha `abrirAlerta`/`fecharDetalhe` + Mensagem clicável, `remove` fecha a modal activa; 124 testes/668 assertions, pint, E2E novo `e2e-alerta-modal.mjs` (marcador auto-apagável) + re-verde de notificações, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
+| 2026-10-09 | **Sprint 13 concluído — Tabela de Clientes** (`seguir.md`) — 6 campos novos denormalizados em `opportunities` (codigo/3 booleans/2 estados, migration+fillable+casts+factory), enums `ConciliacaoEstado`/`ContratoEstado` com `badgeClass()`, seeder 10 clientes CLI001–CLI010 (percentagens §10.2), componente `ClientTable` (pesquisa, filtros KAM/Compras/Conciliação/Contratos + contagem + reset, ordenação, 20/pág., só aprovados, relação `commercial()`), view `#customerList` 10 colunas + empty state + olho→`opportunities.show`, rota `clients.index` (`Route::view`), sidebar item standalone `feather-users`, sincronização §14.1 em `ConciliactionService`+`ContractService` (raw `update`, fallbacks PENDENTE/ACTIVO); 139 testes/725 assertions, pint, E2E novo `e2e-clientes.mjs` ×3 + re-verde de 3 E2Es, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |

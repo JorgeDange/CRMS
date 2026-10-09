@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Enums\ContractStatus;
+use App\Enums\ContratoEstado;
 use App\Models\Contract;
+use App\Models\Opportunity;
 
 class ContractService
 {
@@ -12,7 +14,11 @@ class ContractService
      */
     public function create(array $data): Contract
     {
-        return Contract::create($data);
+        $contract = Contract::create($data);
+
+        $this->sincronizarOpportunity($contract);
+
+        return $contract;
     }
 
     /**
@@ -22,6 +28,8 @@ class ContractService
     {
         $contract->fill($data);
         $contract->save();
+
+        $this->sincronizarOpportunity($contract);
 
         return $contract;
     }
@@ -33,6 +41,8 @@ class ContractService
     {
         $contract->estado = $status;
         $contract->save();
+
+        $this->sincronizarOpportunity($contract);
 
         return $contract;
     }
@@ -50,6 +60,8 @@ class ContractService
 
         $contract->save();
 
+        $this->sincronizarOpportunity($contract);
+
         return $contract;
     }
 
@@ -61,6 +73,8 @@ class ContractService
         $contract->estado = ContractStatus::CANCELADO;
         $contract->save();
 
+        $this->sincronizarOpportunity($contract);
+
         return $contract;
     }
 
@@ -70,5 +84,30 @@ class ContractService
     public function remove(Contract $contract): void
     {
         $contract->delete();
+    }
+
+    /**
+     * Actualiza opportunities.contrato_estado (Tabela de Clientes,
+     * seguir.md §14.1): ACTIVO/RENOVADO → SIM, EXPIRADO → CADUCIDADE,
+     * CANCELADO → NAO.
+     */
+    private function sincronizarOpportunity(Contract $contract): void
+    {
+        if (! $contract->opportunity_id) {
+            return;
+        }
+
+        $estado = $contract->estado instanceof ContractStatus
+            ? $contract->estado
+            : ContractStatus::tryFrom((string) $contract->estado) ?? ContractStatus::ACTIVO;
+
+        $contratoEstado = match ($estado) {
+            ContractStatus::ACTIVO, ContractStatus::RENOVADO => ContratoEstado::SIM,
+            ContractStatus::EXPIRADO => ContratoEstado::CADUCIDADE,
+            ContractStatus::CANCELADO => ContratoEstado::NAO,
+        };
+
+        Opportunity::whereKey($contract->opportunity_id)
+            ->update(['contrato_estado' => $contratoEstado->value]);
     }
 }
