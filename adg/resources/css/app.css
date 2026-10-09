@@ -49,9 +49,49 @@
     --font-sans: 'Inter', sans-serif;
 }
 
-/* Acentos de tabela do prototipo (theme.min.css) */
-:root {
-    --bs-table-accent-bg: rgb(244 244 249);
+/* Loading overlay — usa logo-d.png enquanto a app carrega */
+.app-loading {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f3f4f6 0%, #eff0f6 100%);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.app-loading.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+.app-loading-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+}
+.app-loading-logo {
+    max-width: 200px;
+    height: auto;
+    filter: drop-shadow(0 4px 12px rgba(52, 84, 209, 0.15));
+}
+.app-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e5e7eb;
+    border-top-color: #3454d1;
+    border-radius: 50%;
+    animation: app-loading-spin 0.8s linear infinite;
+}
+@keyframes app-loading-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Livewire: esconder loading apos hidratacao */
+@media (prefers-reduced-motion: reduce) {
+    .app-loading-spinner { animation: none; }
 }
 
 /* Correccoes de layout do <style> inline do index.html do prototipo */
@@ -102,3 +142,71 @@
 .agenda-event-time { flex-shrink: 0; font-size: 11px; font-weight: 700; }
 .agenda-event-title { min-width: 0; }
 
+
+/* --------------------------------------------------------------- */
+/* Painel Executivo - valores em dinheiro nao vazam dos KPI cards   */
+/* --------------------------------------------------------------- */
+/* Os KPI usam formatKzCompact ("Kz 305,2M") e nowrap; o clamp
+   ajusta a fonte ao viewport porque em ecras estreitos (xxl
+   activo ~1400px) o fs-4 fixo (24px) transbordava do card a
+   partir do lado do avatar + gap. */
+.kpi-money {
+    font-size: clamp(15px, 1.35vw, 22px);
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------- */
+/* Correccao: Tailwind 4 gera .collapse{visibility:collapse} (utility */
+/* de visibility) porque a classe "collapse" aparece nas views. Isso  */
+/* colide com a .collapse do Bootstrap (accordion/collapse) e torna  */
+/* INVISIVEIS os corpos colapsaveis (lista da agenda, pipeline).     */
+/* Regra fora de @layer ganha na cascata sobre a utility do Tailwind. */
+/* O display:none do Bootstrap (.collapse:not(.show)) nao e tocado.   */
+/* --------------------------------------------------------------- */
+.collapse { visibility: visible; }
+
+/* --------------------------------------------------------------- */
+/* Lista da Agenda: cartoes de grupo (card stretch stretch-full)     */
+/* herdam height:calc(100% - 24px) do theme-extract. Com N grupos o  */
+/* 100% resolve contra a soma do proprio contentor e cada cartao     */
+/* fica com milhares de px (29 grupos x 7514px). Aqui a altura e     */
+/* natural e o scroll e feito pelo content-area como nas outras      */
+/* paginas. Escopado a apps-tasks (so a lista da Agenda).            */
+/* --------------------------------------------------------------- */
+.apps-tasks .content-area-body > .card.stretch { height: auto; }
+
+/* --------------------------------------------------------------- */
+/* Modal: theme-extract tem body.modal-open .nxl-container{filter:   */
+/* blur(3px)} — no prototipo os modais ficam DEPOIS de </main> (fora */
+/* do contentor), logo o blur atinge so o chrome. Aqui os modais     */
+/* vivem DENTRO de main (renderizados pelo Livewire) e o filtro      */
+/* borrava tambem o proprio modal ("modal opacitada").               */
+/* Solucao: sem filter no contentor + o mesmo blur no backdrop, que  */
+/* fica POR BAIXO do modal => fundo borrado, modal nitido. O blur do */
+/* backdrop esta em inline-style na view porque o minifier do build  */
+/* dropa `backdrop-filter` e so deixa o `-webkit-` (Chrome ignora).  */
+/* --------------------------------------------------------------- */
+body.modal-open .nxl-container,
+body.modal-open .nxl-header,
+body.modal-open .nxl-navigation,
+body.modal-open .page-header {
+    filter: none;
+}
+
+.modal-backdrop.show {
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+/* --------------------------------------------------------------- */
+/* Tabelas com white-space:nowrap (theme-extract) criam min-content  */
+/* maior que o viewport em ecras estreitos (ex.: 1366px) e a cadeia */
+/* flex nao encolhia => conteudo cortado do lado direito sem scroll  */
+/* de pagina. min-width:0 nos itens flex deixa .content-area        */
+/* encolher e o .table-responsive faz o scroll interno normal.       */
+/* Escopado a apps-container + without-header (padrao das listas).   */
+/* --------------------------------------------------------------- */
+.apps-container .nxl-content.without-header .main-content .d-flex.flex-grow-1,
+.apps-container .nxl-content.without-header .main-content .content-area {
+    min-width: 0;
+}

@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             ConciliactionSeeder::class,
             ContractSeeder::class,
             AlertSeeder::class,
+            DashboardDemoSeeder::class,
         ]);
     }
 }

@@ -1,61 +1,11 @@
 {{-- Lista de Produtos — copiado de crm-prototipo/customers.html (Sprint 8) --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Produtos</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('products.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Novo Produto</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-list"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'activo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('activo')">
-                        <i class="feather-check-circle"></i>
-                        <span>Activos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'inactivo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('inactivo')">
-                        <i class="feather-x-circle"></i>
-                        <span>Inactivos</span>
-                    </a>
-                </li>
-            </ul>
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Comercial</li>
-                @foreach ($comerciais as $comercial)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $commercialFilter === (string) $comercial->id ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterCommercial('{{ $comercial->id }}')">
-                            <span>{{ $comercial->nome }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
+                <a href="{{ route('products.create') }}" class="btn btn-primary btn-sm" wire:navigate>
+                    <i class="feather-plus me-2"></i><span>Novo Produto</span>
                 </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
@@ -63,6 +13,7 @@
                         <span>Filtros</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
+                        <h6 class="dropdown-header">Estado</h6>
                         <a class="dropdown-item {{ $statusFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterStatus('')">
                             <i class="feather-filter me-2"></i>
@@ -79,6 +30,7 @@
                             <span>Inactivos</span>
                         </a>
                         <div class="dropdown-divider"></div>
+                        <h6 class="dropdown-header">Comercial</h6>
                         <a class="dropdown-item {{ $commercialFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterCommercial('')">
                             <i class="feather-filter me-2"></i>
@@ -170,7 +122,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($products as $product)
-                                        <tr class="single-item wire:key=\"product-{{ $product->id }}\" {{ ! $product->activo ? 'table-warning' : '' }}">
+                                        <tr class="single-item {{ ! $product->activo ? 'table-warning' : '' }}"
+                                            wire:key="product-{{ $product->id }}">
                                             <td>
                                                 <div class="item-checkbox ms-1">
                                                     <div class="custom-control custom-checkbox">
@@ -239,7 +192,7 @@
                                                             <li>
                                                                 <a class="dropdown-item text-danger"
                                                                    href="javascript:void(0);"
-                                                                   @click.prevent="confirm('Eliminar este produto?') && $wire.remove({{ $product->id }})">
+                                                                    @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar produto', mensagem: 'Eliminar este produto? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $product->id }}))">
                                                                     <i class="feather-trash-2 me-3"></i>
                                                                     <span>Eliminar</span>
                                                                 </a>

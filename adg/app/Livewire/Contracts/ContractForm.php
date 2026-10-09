@@ -36,12 +36,12 @@ class ContractForm extends Component
 
     public string $notas = '';
 
-    public function mount(): void
+    public function mount(?string $contract = null): void
     {
         $this->data_inicio = now()->toDateString();
         $this->data_fim = now()->addYear()->toDateString();
 
-        $uuid = request()->query('contract');
+        $uuid = $contract ?? request()->query('contract');
 
         if (! is_string($uuid) || $uuid === '') {
             return;

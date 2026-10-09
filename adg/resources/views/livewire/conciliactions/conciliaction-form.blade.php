@@ -1,64 +1,9 @@
 {{-- Formulário de Conciliação — baseado em payment.html (Sprint 6) --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Conciliações</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('conciliactions.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Nova Conciliação</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Classificação</li>
-                @foreach ($classificacoes as $c)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $classificacaoFilter === $c->value ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterClassificacao('{{ $c->value }}')">
-                            <i class="{{ $c->icon() }}"></i>
-                            <span>{{ $c->label() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Estado</li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $resolvidoFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterResolvido('')">
-                        <i class="feather-filter"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $resolvidoFilter === 'true' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterResolvido('true')">
-                        <i class="feather-check-circle"></i>
-                        <span>Resolvidas</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $resolvidoFilter === 'false' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterResolvido('false')">
-                        <i class="feather-clock"></i>
-                        <span>Pendentes</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
-                </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
                         <i class="feather-dollar-sign me-2"></i>

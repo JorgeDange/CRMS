@@ -51,7 +51,7 @@
                         <span class="nxl-mtext">Agenda Comercial</span>
                         <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
-                    {{-- Ordem das sub-opcoes: 1. Calendario 2. Actividades 3. Actividade (prototipo apps-*.html) --}}
+                    {{-- Ordem das sub-opcoes: 1. Calendario 2. Actividades 3. Nova Actividade --}}
                     <ul class="nxl-submenu" x-show="open" x-cloak>
                         <li class="nxl-item {{ request()->routeIs('agenda.calendar') ? 'active' : '' }}">
                             <a href="{{ route('agenda.calendar') }}" class="nxl-link" wire:navigate>Calendário</a>
@@ -60,7 +60,7 @@
                             <a href="{{ route('agenda') }}" class="nxl-link" wire:navigate>Actividades</a>
                         </li>
                         <li class="nxl-item {{ request()->routeIs('agenda.create') ? 'active' : '' }}">
-                            <a href="{{ route('agenda.create') }}" class="nxl-link" wire:navigate>Actividade</a>
+                            <a href="{{ route('agenda.create') }}" class="nxl-link" wire:navigate>Nova Actividade</a>
                         </li>
                     </ul>
                 </li>
@@ -103,7 +103,7 @@
                         <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
                     {{-- Ordem das sub-opcoes: 1. Lista 2. Nova --}}
-                    <ul class="nxl-submenu" x-show="open" x-cloak">
+                    <ul class="nxl-submenu" x-show="open" x-cloak>
                         <li class="nxl-item {{ request()->routeIs('products') ? 'active' : '' }}">
                             <a href="{{ route('products') }}" class="nxl-link" wire:navigate>Todas</a>
                         </li>
@@ -119,7 +119,7 @@
                         <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
                     {{-- Ordem das sub-opcoes: 1. Lista 2. Nova --}}
-                    <ul class="nxl-submenu" x-show="open" x-cloak">
+                    <ul class="nxl-submenu" x-show="open" x-cloak>
                         <li class="nxl-item {{ request()->routeIs('commercials') ? 'active' : '' }}">
                             <a href="{{ route('commercials') }}" class="nxl-link" wire:navigate>Todas</a>
                         </li>
@@ -135,7 +135,7 @@
                         <span class="nxl-arrow"><i class="feather-chevron-right"></i></span>
                     </a>
                     {{-- Ordem das sub-opcoes: 1. Lista --}}
-                    <ul class="nxl-submenu" x-show="open" x-cloak">
+                    <ul class="nxl-submenu" x-show="open" x-cloak>
                         <li class="nxl-item {{ request()->routeIs('alerts') ? 'active' : '' }}">
                             <a href="{{ route('alerts') }}" class="nxl-link" wire:navigate>Todas</a>
                         </li>

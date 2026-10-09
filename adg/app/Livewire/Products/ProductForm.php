@@ -22,9 +22,9 @@ class ProductForm extends Component
 
     public bool $activo = true;
 
-    public function mount(): void
+    public function mount(?string $produto = null): void
     {
-        $uuid = request()->query('produto');
+        $uuid = $produto ?? request()->query('produto');
 
         if (! is_string($uuid) || $uuid === '') {
             return;

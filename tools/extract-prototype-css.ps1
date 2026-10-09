@@ -29,7 +29,8 @@ function Parse-Css([string]$css, [int]$pos, [int]$end) {
             $body = $css.Substring($bodyStart, $bodyEnd - $bodyStart)
             if ($sel.StartsWith('@')) {
                 $children = Parse-Css $body 0 $body.Length
-                [void]$nodes.Add([pscustomobject]@{ Kind = 'At'; Sel = $sel; Children = $children })
+                # Body tambem aqui: @font-face/@page tem declaracoes, nao filhos regras
+                [void]$nodes.Add([pscustomobject]@{ Kind = 'At'; Sel = $sel; Children = $children; Body = $body })
             } else {
                 [void]$nodes.Add([pscustomobject]@{ Kind = 'Rule'; Sel = $sel; Body = $body })
             }
@@ -51,28 +52,48 @@ function Select-KeptSelectors([string]$sel, [string]$keepRe) {
     return ($kept -join ', ')
 }
 
-function Rewrite-Urls([string]$text) {
-    $text = $text -replace 'url\((\s*)\.\./fonts/', 'url($1/fonts/'
-    $text = $text -replace 'url\((\s*)["'']\.\./fonts/', 'url($1"/fonts/'
+# Resolve um caminho relativo a $baseDir (dir do css de origem, relativo ao repo)
+# para um caminho absoluto a partir da raiz web (public/).
+function Resolve-WebPath([string]$baseDir, [string]$rel) {
+    $stack = New-Object System.Collections.Generic.List[string]
+    foreach ($seg in (($baseDir + '/' + $rel) -split '/')) {
+        if ($seg -eq '' -or $seg -eq '.') { continue }
+        if ($seg -eq '..') { if ($stack.Count -gt 0) { $stack.RemoveAt($stack.Count - 1) }; continue }
+        [void]$stack.Add($seg)
+    }
+    return '/' + ($stack -join '/')
+}
+
+function Rewrite-Urls([string]$text, [string]$srcDir = '') {
+    # fontes: copiadas para public/fonts pelo rodape do script
+    $text = $text -replace 'url\((\s*)(["'']?)\.\./fonts/', 'url($1$2/fonts/'
+    # restantes relativos (ex.: ../img/flags do vendors.min.css) -> absolutos
+    if ($srcDir) {
+        $text = [regex]::Replace($text, 'url\((\s*)(["'']?)((?:\.\./)+[^)''"]*)(["'']?)\s*\)', {
+            param($m)
+            $path = Resolve-WebPath $srcDir $m.Groups[3].Value
+            return 'url(' + $m.Groups[1].Value + $m.Groups[2].Value + $path + $m.Groups[4].Value + ')'
+        })
+    }
     return $text
 }
 
-function Write-Nodes($nodes, [System.Text.StringBuilder]$sb, [string]$keepRe, [switch]$AllFontFaces) {
+function Write-Nodes($nodes, [System.Text.StringBuilder]$sb, [string]$keepRe, [switch]$AllFontFaces, [string]$srcDir = '') {
     foreach ($n in $nodes) {
         if ($n.Kind -eq 'Rule') {
             $k = Select-KeptSelectors $n.Sel $keepRe
-            if ($k) { [void]$sb.Append($k).Append('{').Append((Rewrite-Urls $n.Body)).Append("}`n") }
+            if ($k) { [void]$sb.Append($k).Append('{').Append((Rewrite-Urls $n.Body $srcDir)).Append("}`n") }
         } else {
             $sel = $n.Sel
             if ($sel -match '^@font-face') {
-                $fam = if ($n.Body -match 'font-family:\s*([^;}]+)') { $Matches[1].Trim(" '", '"') } else { '' }
+                $fam = if ($n.Body -match 'font-family:\s*([^;}]+)') { $Matches[1].Trim([char[]]@(' ', "'", '"')) } else { '' }
                 if ($AllFontFaces -or $fam -match 'feather|bootstrap-icons|Font Awesome') {
-                    [void]$sb.Append('@font-face{').Append((Rewrite-Urls $n.Body)).Append("}`n")
+                    [void]$sb.Append('@font-face{').Append((Rewrite-Urls $n.Body $srcDir)).Append("}`n")
                 }
             }
             elseif ($sel -match '^@(media|supports|layer)') {
                 $inner = New-Object System.Text.StringBuilder
-                Write-Nodes $n.Children $inner $keepRe -AllFontFaces:$AllFontFaces
+                Write-Nodes $n.Children $inner $keepRe -AllFontFaces:$AllFontFaces -srcDir $srcDir
                 if ($inner.Length -gt 0) {
                     [void]$sb.Append($sel).Append("{`n").Append($inner).Append("}`n")
                 }
@@ -87,8 +108,12 @@ function Extract-Css([string]$inFile, [string]$outFile, [string]$keepRe, [switch
     $raw = [regex]::Replace($raw, '/\*.*?\*/', '', 'Singleline')   # comentarios
     $raw = [regex]::Replace($raw, '@import[^;]+;', '')              # imports remotos (fonts ja carregadas)
     $nodes = Parse-Css $raw 0 $raw.Length
+    $srcDir = Split-Path $inFile -Parent
+    if ($srcDir.StartsWith($Repo)) {
+        $srcDir = $srcDir.Substring($Repo.Length).TrimStart('\', '/') -replace '\\', '/'
+    } else { $srcDir = '' }
     $sb = New-Object System.Text.StringBuilder
-    Write-Nodes $nodes $sb $keepRe -AllFontFaces:$AllFontFaces
+    Write-Nodes $nodes $sb $keepRe -AllFontFaces:$AllFontFaces -srcDir $srcDir
     $header = "/* EXTRAIDO do prototipo ? gerado por tools/extract-prototype-css.ps1 (PROMPT_MASTER 4.6) */`n"
     [System.IO.File]::WriteAllText($outFile, $header + $sb.ToString(), (New-Object System.Text.UTF8Encoding($false)))
     $ruleCount = ([regex]::Matches($sb.ToString(), "\{")).Count
@@ -169,9 +194,11 @@ $tuiKeep = `
     '\.weekday-grid|\.schedule-time|\.render-range|\.tui-full-calendar-checkbox-round'
 
 # vendors.min.css: apenas iconografia (feather, bootstrap-icons, FA) + fontes.
+# '^i$' = regra base i{font-size:16px;font-family:feather} — sem ela as classes
+# .feather-* tem content mas nenhum font-family (icones nao desenham).
 $vendorsKeep = `
     '\.feather-|\[class\^=.feather|\.fa-|\[class\^=.fa|\[class\*=.fa|\bfa\b|\.fas\b|\.far\b|\.fab\b|' + `
-    '\.bi-|\[class\^=.bi|\bbi\b|\.hamburger'
+    '\.bi-|\[class\^=.bi|\bbi\b|\.hamburger|^i$'
 
 # ------------------------------------------------------------------- run ----
 $brandRe = '#3454d1|#eff0f6|#283c50|#17c666|#ea4d4d|#ffa21d|#3dc7be|#64748b|#4b5563|#f0f2f8|#e5e7eb|' + `

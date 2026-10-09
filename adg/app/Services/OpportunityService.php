@@ -94,4 +94,30 @@ class OpportunityService
     {
         return 'Kz '.number_format((float) $value, 0, '.', '.');
     }
+
+    /**
+     * Formato compacto para os KPI cards do Painel Executivo:
+     * valores completos (Kz 305.200.000) vazavam do card em ecras
+     * estreitos (col-xxl-3 a ~1400px). Precedente: o dashboard ja
+     * usa "15M / 33.5M" no footer de Facturacao.
+     *   999.999        -> Kz 999.999
+     *   305.200.000    -> Kz 305,2M
+     *   1.503.000.000  -> Kz 1.503M
+     */
+    public static function formatKzCompact(float|int|string|null $value): string
+    {
+        $v = (float) $value;
+
+        if (abs($v) < 1_000_000) {
+            return 'Kz '.number_format($v, 0, '.', '.');
+        }
+
+        $milhoes = $v / 1_000_000;
+
+        if (abs($milhoes) < 1000) {
+            return 'Kz '.number_format($milhoes, 1, ',', '.').'M';
+        }
+
+        return 'Kz '.number_format($milhoes, 0, '.', '.').'M';
+    }
 }

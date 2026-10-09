@@ -1,77 +1,16 @@
 {{-- Lista de Alertas — Sprint 10 (resposta.md §10) --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Alertas</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a class="nav-link {{ $tipoFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterTipo('')">
-                        <i class="feather-list"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                @foreach ($tipos as $tipo)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $tipoFilter === $tipo->value ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterTipo('{{ $tipo->value }}')">
-                            <i class="{{ $tipo->icon() }}"></i>
-                            <span>{{ $tipo->label() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Estado</li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-filter"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'nao_lido' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('nao_lido')">
-                        <i class="feather-bell"></i>
-                        <span>Não lidos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'lido' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('lido')">
-                        <i class="feather-check-circle"></i>
-                        <span>Lidos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'resolvido' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('resolvido')">
-                        <i class="feather-check-square"></i>
-                        <span>Resolvidos</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
-                </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
                         <i class="feather-filter me-2"></i>
                         <span>Filtros</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
+                        <h6 class="dropdown-header">Tipo</h6>
                         <a class="dropdown-item {{ $tipoFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterTipo('')">
                             <i class="feather-filter me-2"></i>
@@ -85,6 +24,7 @@
                             </a>
                         @endforeach
                         <div class="dropdown-divider"></div>
+                        <h6 class="dropdown-header">Estado</h6>
                         <a class="dropdown-item {{ $statusFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterStatus('')">
                             <i class="feather-filter me-2"></i>
@@ -182,7 +122,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($alerts as $alert)
-                                        <tr class="single-item wire:key=\"alert-{{ $alert->id }}\" {{ ! $alert->lido ? 'table-info' : '' }}>
+                                        <tr class="single-item {{ ! $alert->lido ? 'table-info' : '' }}"
+                                            wire:key="alert-{{ $alert->id }}">
                                             <td>
                                                 <div class="item-checkbox ms-1">
                                                     <div class="custom-control custom-checkbox">
@@ -197,7 +138,7 @@
                                                     {{ $alert->tipo->label() }}
                                                 </span>
                                             </td>
-                                            <td class="text-truncate-1-line" style="max-width: 400px;">{{ $alert->mensagem }}</td>
+                                            <td><div class="text-truncate-1-line" style="max-width: 400px;">{{ $alert->mensagem }}</div></td>
                                             <td>
                                                 @if ($alert->entidade === 'opportunities')
                                                     <span class="badge bg-soft-primary text-primary">Oportunidade</span>
@@ -275,7 +216,7 @@
                                                             <li>
                                                                 <a class="dropdown-item text-danger"
                                                                    href="javascript:void(0);"
-                                                                   @click.prevent="confirm('Eliminar este alerta?') && $wire.remove({{ $alert->id }})">
+                                                                    @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar alerta', mensagem: 'Eliminar este alerta? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $alert->id }}))">
                                                                     <i class="feather-trash-2 me-3"></i>
                                                                     <span>Eliminar</span>
                                                                 </a>

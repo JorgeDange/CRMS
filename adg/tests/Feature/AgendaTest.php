@@ -50,7 +50,7 @@ class AgendaTest extends TestCase
             ->assertSee(route('agenda.create'), false)
             ->assertSee('>Calendário</a>', false)
             ->assertSee('>Actividades</a>', false)
-            ->assertSee('>Actividade</a>', false);
+            ->assertSee('>Nova Actividade</a>', false);
 
         // Oportunidades, Agenda Comercial, Conciliações, Contratos, Produtos, Comerciais, Alertas e Dashboard são acordeões (o resto continua "Em breve").
         $this->assertSame(8, substr_count($response->getContent(), 'nxl-hasmenu'));
@@ -77,10 +77,12 @@ class AgendaTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('content-sidebar', false)
+            ->assertDontSee('content-sidebar', false)
             ->assertSee('content-area-header', false)
             ->assertSee('single-task-list', false)
-            ->assertSee('As minhas actividades')
+            ->assertSee('Filtros')
+            ->assertSee('Todos os estados')
+            ->assertSee('Todos os tipos')
             ->assertSee('Nova Actividade')
             ->assertSee('Videoconferência com Importadora Kinaxixi')
             ->assertSee('SIL – Sociedade Importadora')
@@ -240,7 +242,6 @@ class AgendaTest extends TestCase
             ->assertSee('Descrição da próxima acção')
             ->assertSee('Prazo')
             ->assertSee('Legenda de tipos')
-            ->assertSee('Regras')
             ->assertSee('Seleccionar cliente')
             ->assertSee('SIL – Sociedade Importadora');
     }
@@ -297,6 +298,8 @@ class AgendaTest extends TestCase
             ->call('save')
             ->assertRedirect(route('agenda'));
 
+        $this->assertTrue(session()->has('actividade_criada'));
+
         $this->assertDatabaseHas('activities', [
             'opportunity_id' => $opportunity->id,
             'user_id' => $user->id,
@@ -313,11 +316,13 @@ class AgendaTest extends TestCase
             ->assertOk()
             ->assertSee('Calendário')
             ->assertSee('Ver todas as actividades')
-            ->assertSee('Legenda de tipos (ActivityType)')
+            ->assertSee('Legenda de tipos')
             ->assertSee('Eventos e Agendamentos')
             ->assertSee('agenda-calendar', false)
             ->assertSee('id="renderRange"', false)
-            ->assertSee('id="calendarList"', false)
+            ->assertSee('id="viewAllSchedules"', false)
+            ->assertSee('Próximos')
+            ->assertSee('Nova Actividade')
             ->assertSee('Diária')
             ->assertSee('Mensal')
             ->assertSee('Dom', false)
@@ -421,5 +426,80 @@ class AgendaTest extends TestCase
         $component
             ->set('types', ['bogus', 'chamada'])
             ->assertSet('types', ['chamada']);
+    }
+
+    public function test_calendar_event_click_opens_details_modal(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+
+        $activity = Activity::factory()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'descricao' => 'Reuniao com cliente para detalhes',
+            'data' => now()->toDateString(),
+            'hora' => '10:30',
+            'status' => ActivityStatus::PENDENTE,
+            'proxima_accao' => 'Enviar proposta comercial',
+            'proxima_accao_prazo' => now()->addDays(3)->toDateString(),
+        ]);
+
+        $this->actingAs($user);
+
+        $component = Livewire::test(ActivityCalendar::class)
+            ->call('abrirDetalhe', $activity->id)
+            ->assertSet('detalheId', $activity->id)
+            ->assertDispatched('modal-actividade', aberto: true)
+            ->assertSee('id="modalDetalheActividade"', false)
+            ->assertSee('Reuniao com cliente para detalhes')
+            ->assertSee($opportunity->nome)
+            ->assertSee('Enviar proposta comercial')
+            ->assertSee('Editar')
+            ->assertSee('Concluir')
+            ->assertSee('Eliminar');
+
+        $html = $component->html();
+        $this->assertStringContainsString('class="modal fade show d-block"', $html);
+        $this->assertStringContainsString('wire:click="abrirDetalhe(', $html);
+        $this->assertStringContainsString('href="javascript:void(0);"', $html);
+
+        $component
+            ->call('abrirDetalhe', 999999)
+            ->assertSet('detalheId', $activity->id);
+
+        $component
+            ->call('fecharDetalhe')
+            ->assertSet('detalheId', null)
+            ->assertDispatched('modal-actividade', aberto: false);
+
+        $this->assertStringNotContainsString('class="modal fade show d-block"', $component->html());
+    }
+
+    public function test_calendar_detail_modal_concludes_and_deletes(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+
+        $activity = Activity::factory()->pendente()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'descricao' => 'Chamada para concluir pelo modal',
+            'data' => now()->toDateString(),
+        ]);
+
+        $this->actingAs($user);
+
+        $component = Livewire::test(ActivityCalendar::class)
+            ->call('abrirDetalhe', $activity->id)
+            ->assertSet('detalheId', $activity->id);
+
+        $component->call('concluirDetalhe');
+        $this->assertSame(ActivityStatus::CONCLUIDA, $activity->fresh()->status);
+        $component->assertSet('detalheId', $activity->id);
+
+        $component->call('eliminarDetalhe');
+        $component->assertSet('detalheId', null);
+        $component->assertDispatched('modal-actividade', aberto: false);
+        $this->assertDatabaseMissing('activities', ['id' => $activity->id]);
     }
 }

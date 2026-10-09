@@ -7,5 +7,5 @@
     hideFooter="true">
     <x-slot name="header">Editar Produto</x-slot>
 
-    @livewire('products.product-form')
+    @livewire('products.product-form', ['produto' => $produto])
 </x-app-layout>

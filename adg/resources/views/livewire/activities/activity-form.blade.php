@@ -1,60 +1,9 @@
 {{-- Formulario de actividade — copiado de crm-prototipo/apps-notes.html (Sprint 5, 8.4) --}}
-{{-- Raiz unica obrigatoria (Livewire); envolve content-sidebar + content-area como no prototipo --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Actividades</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('agenda.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Nova Actividade</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav d-flex flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a href="{{ route('agenda') }}" class="nav-link active" wire:navigate>
-                        <i class="feather-layers"></i>
-                        <span>Todas</span>
-                    </a>
-                </li>
-                @foreach ($tipos as $tipo)
-                    <li class="nav-item">
-                        <a href="{{ route('agenda', ['tipo' => $tipo->value]) }}" class="nav-link" wire:navigate>
-                            <i class="{{ $tipo->icon() }}"></i>
-                            <span>{{ $tipo->labelPlural() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-            <ul class="nav d-flex flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted">Estado</li>
-                <li class="nav-item">
-                    <a href="{{ route('agenda', ['status' => 'pendente']) }}" class="nav-link" wire:navigate>
-                        <i class="feather-clock"></i>
-                        <span>Pendentes</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('agenda', ['status' => 'concluida']) }}" class="nav-link" wire:navigate>
-                        <i class="feather-check-circle"></i>
-                        <span>Concluídas</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
-                </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,18">Nova Actividade</a>
                     <ul class="dropdown-menu dropdown-menu-end">
@@ -65,7 +14,7 @@
                 </div>
             </div>
             <div class="page-header-right ms-auto">
-                <div class="page-header-right-items">
+                <div class="hstack gap-2">
                     <a href="{{ route('agenda') }}" class="btn btn-light-brand" wire:navigate>
                         <i class="feather-list me-2"></i>
                         <span>Lista</span>
@@ -87,6 +36,16 @@
                         </div>
                         <div class="card-body">
                             <form wire:submit="save">
+                                @if ($errors->any())
+                                    <div class="alert alert-danger" role="alert">
+                                        <h6 class="alert-heading fw-bold mb-1">Não foi possível guardar:</h6>
+                                        <ul class="mb-0 ps-3">
+                                            @foreach ($errors->all() as $erro)
+                                                <li>{{ $erro }}</li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
@@ -164,8 +123,13 @@
                                 </div>
 
                                 <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="feather-save me-2"></i>Guardar actividade
+                                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">
+                                        <span wire:loading.remove wire:target="save">
+                                            <i class="feather-save me-2"></i>Guardar actividade
+                                        </span>
+                                        <span wire:loading wire:target="save">
+                                            <span class="spinner-border spinner-border-sm me-2"></span>A guardar…
+                                        </span>
                                     </button>
                                     <a href="{{ route('agenda') }}" class="btn btn-light-brand" wire:navigate>Cancelar</a>
                                 </div>
@@ -174,7 +138,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
-                    <div class="card stretch stretch-full mb-3">
+                    <div class="card stretch stretch-full">
                         <div class="card-header">
                             <h5 class="card-title mb-0">Legenda de tipos</h5>
                         </div>
@@ -184,16 +148,6 @@
                                     <span class="badge {{ $tipo->badge() }} me-2">{{ $tipo->label() }}</span>
                                 </div>
                             @endforeach
-                        </div>
-                    </div>
-                    <div class="card stretch stretch-full">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Regras</h5>
-                        </div>
-                        <div class="card-body fs-13">
-                            <p class="mb-2"><i class="feather-info text-primary me-1"></i> Descrição, Próxima acção e Prazo são obrigatórios.</p>
-                            <p class="mb-2"><i class="feather-info text-primary me-1"></i> Status inicia sempre em <strong>Pendente</strong>.</p>
-                            <p class="mb-0"><i class="feather-info text-primary me-1"></i> Prazo vencido gera alerta <span class="badge bg-soft-danger text-danger">PRAZO</span>.</p>
                         </div>
                     </div>
                 </div>

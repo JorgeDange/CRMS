@@ -7,5 +7,5 @@
     hideFooter="true">
     <x-slot name="header">Editar Conciliação</x-slot>
 
-    @livewire('conciliactions.conciliaction-form')
+    @livewire('conciliactions.conciliaction-form', ['conciliaction' => $conciliaction])
 </x-app-layout>

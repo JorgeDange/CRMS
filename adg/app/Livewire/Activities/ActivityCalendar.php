@@ -4,6 +4,7 @@ namespace App\Livewire\Activities;
 
 use App\Enums\ActivityType;
 use App\Models\Activity;
+use App\Services\ActivityService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Component;
@@ -43,10 +44,47 @@ class ActivityCalendar extends Component
     /** @var array<int, string> */
     public array $types = [];
 
+    /** Abre o modal de detalhes do evento clicado na grelha. */
+    public ?int $detalheId = null;
+
     public function mount(): void
     {
         $this->cursor = now()->toDateString();
         $this->types = $this->allTypes();
+    }
+
+    public function abrirDetalhe(int $activityId): void
+    {
+        if (Activity::query()->whereKey($activityId)->exists()) {
+            $this->detalheId = $activityId;
+            $this->dispatch('modal-actividade', aberto: true);
+        }
+    }
+
+    public function fecharDetalhe(): void
+    {
+        $this->detalheId = null;
+        $this->dispatch('modal-actividade', aberto: false);
+    }
+
+    public function concluirDetalhe(): void
+    {
+        $activity = $this->detalheId ? Activity::query()->find($this->detalheId) : null;
+
+        if ($activity) {
+            app(ActivityService::class)->toggleStatus($activity);
+        }
+    }
+
+    public function eliminarDetalhe(): void
+    {
+        $activity = $this->detalheId ? Activity::query()->find($this->detalheId) : null;
+
+        if ($activity) {
+            app(ActivityService::class)->remove($activity);
+            $this->detalheId = null;
+            $this->dispatch('modal-actividade', aberto: false);
+        }
     }
 
     public function setView(string $view): void
@@ -125,6 +163,7 @@ class ActivityCalendar extends Component
             'eventsByDate' => $eventsByDate,
             'upcoming' => $upcoming,
             'tipos' => ActivityType::cases(),
+            'detalhe' => $this->detalheId ? Activity::with('opportunity')->find($this->detalheId) : null,
             'dayNames' => $this->view === 'day'
                 ? [self::DAY_NAMES[(int) Carbon::parse($this->cursor)->dayOfWeek]]
                 : self::DAY_NAMES,

@@ -7,5 +7,5 @@
     hideFooter="true">
     <x-slot name="header">Editar Comercial</x-slot>
 
-    @livewire('commercials.commercial-form')
+    @livewire('commercials.commercial-form', ['commercial' => $commercial])
 </x-app-layout>

@@ -1,6 +1,8 @@
 <?php
 
 use App\Exports\OpportunityTemplateExport;
+use App\Models\Alert;
+use App\Models\Contract;
 use App\Models\Opportunity;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
@@ -66,9 +68,15 @@ Route::view('contratos/nova', 'contracts.create')
     ->middleware(['auth', 'verified'])
     ->name('contracts.create');
 
-Route::view('contratos/{contract}', 'contracts.show')
+// 'contratos/{contract}/editar' DEVE vir antes da rota parametrizada de leitura.
+Route::view('contratos/{contract}/editar', 'contracts.edit')
     ->middleware(['auth', 'verified'])
-    ->name('contracts.show');
+    ->name('contracts.edit');
+
+// Route::view passa o {contract} como string — a view precisa do model.
+Route::get('contratos/{contract}', function (Contract $contract) {
+    return view('contracts.show', ['contract' => $contract]);
+})->middleware(['auth', 'verified'])->name('contracts.show');
 
 // Produtos (Sprint 8) — customers.html.
 Route::view('produtos', 'products.index')
@@ -102,6 +110,15 @@ Route::view('comerciais/{commercial}', 'commercials.edit')
 Route::view('alertas', 'alerts.index')
     ->middleware(['auth', 'verified'])
     ->name('alerts');
+
+// "Marcar todas como lidas" do dropdown de notificacoes do header.
+Route::post('alertas/marcar-todas', function () {
+    Alert::where('user_id', auth()->id())
+        ->where('lido', false)
+        ->update(['lido' => true]);
+
+    return back()->with('status', 'Notificações marcadas como lidas.');
+})->middleware(['auth', 'verified'])->name('alerts.markAll');
 
 // Conciliações (Sprint 6) — payment.html.
 Route::view('conciliações', 'conciliactions.index')

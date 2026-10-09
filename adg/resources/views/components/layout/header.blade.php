@@ -26,7 +26,8 @@
         <div class="header-right ms-auto">
             <div class="d-flex align-items-center">
                 <div class="dropdown nxl-h-item">
-                    <a href="{{ route('alerts') }}" class="nxl-head-link me-0 position-relative" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
+                    {{-- href sem navegacao: com route() o dropdown nunca abria (prototipo usa href="#") --}}
+                    <a href="javascript:void(0);" class="nxl-head-link me-0 position-relative" data-bs-toggle="dropdown" role="button" data-bs-auto-close="outside">
                         <i class="feather-bell fs-18 text-dark"></i>
                         @php $unreadCount = \App\Models\Alert::where('user_id', auth()->id())->where('lido', false)->where('resolvido', false)->count(); @endphp
                         @if ($unreadCount > 0)
@@ -36,10 +37,13 @@
                     <div class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-notifications-menu">
                         <div class="d-flex justify-content-between align-items-center notifications-head">
                             <h6 class="fw-bold text-dark mb-0">Notificações</h6>
-                            <a href="{{ route('alerts') }}" class="fs-11 text-success text-end ms-auto" wire:navigate>
-                                <i class="feather-check"></i>
-                                <span>Marcar todas como lidas</span>
-                            </a>
+                            <form method="POST" action="{{ route('alerts.markAll') }}" class="ms-auto">
+                                @csrf
+                                <button type="submit" class="fs-11 text-success text-end border-0 bg-transparent p-0">
+                                    <i class="feather-check"></i>
+                                    <span>Marcar todas como lidas</span>
+                                </button>
+                            </form>
                         </div>
                         @php $recentAlerts = \App\Models\Alert::where('user_id', auth()->id())->where('resolvido', false)->orderBy('created_at', 'desc')->limit(5)->get(); @endphp
                         @if ($recentAlerts->isEmpty())

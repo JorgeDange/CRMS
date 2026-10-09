@@ -32,7 +32,14 @@
             </div>
         </div>
         <!--! END: [FilterBar Oportunidades] !-->
-        <div class="kanban-board d-flex gap-3 overflow-auto pb-3" id="kanbanBoard">
+        <div class="kanban-board d-flex gap-3 overflow-auto pb-3" id="kanbanBoard"
+             x-data="{
+                 drop(event, stage) {
+                     const id = parseInt(event.dataTransfer.getData('text/plain'));
+                     if (isNaN(id)) return;
+                     $wire.$call('move', id, stage);
+                 }
+             }">
 
             @foreach ($columns as $stage => $config)
                 @if ($stageFilter === '' || $stageFilter === $stage)
@@ -48,11 +55,12 @@
                              style="min-height: 320px;" data-dropzone="{{ $stage }}"
                              x-on:dragover.prevent="$el.classList.add('drag-over')"
                              x-on:dragleave="$el.classList.remove('drag-over')"
-                             x-on:drop.prevent="$el.classList.remove('drag-over'); $wire.move(parseInt($event.dataTransfer.getData('text/plain')), '{{ $stage }}')">
+                             x-on:drop.prevent="$el.classList.remove('drag-over'); drop($event, $el.dataset.dropzone)">
 
                             @foreach ($grouped->get($stage, collect()) as $opportunity)
                                 <div class="kanban-card card mb-0 shadow-sm {{ $config['card'] }}" draggable="true"
-                                     x-on:dragstart="$event.dataTransfer.setData('text/plain', '{{ $opportunity->id }}'); $el.classList.add('dragging')"
+                                     data-opp="{{ $opportunity->id }}"
+                                     x-on:dragstart="$event.dataTransfer.setData('text/plain', $el.dataset.opp); $el.classList.add('dragging')"
                                      x-on:dragend="$el.classList.remove('dragging')">
                                     <div class="card-body p-3">
                                         <a href="{{ route('opportunities.show', $opportunity) }}" wire:navigate

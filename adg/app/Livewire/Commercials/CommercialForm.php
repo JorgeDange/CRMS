@@ -15,9 +15,9 @@ class CommercialForm extends Component
 
     public bool $activo = true;
 
-    public function mount(): void
+    public function mount(?string $commercial = null): void
     {
-        $uuid = request()->query('commercial');
+        $uuid = $commercial ?? request()->query('commercial');
 
         if (! is_string($uuid) || $uuid === '') {
             return;

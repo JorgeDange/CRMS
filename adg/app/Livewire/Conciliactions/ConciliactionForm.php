@@ -27,11 +27,11 @@ class ConciliactionForm extends Component
 
     public bool $resolvido = false;
 
-    public function mount(): void
+    public function mount(?string $conciliaction = null): void
     {
         $this->data = now()->toDateString();
 
-        $uuid = request()->query('conciliaction');
+        $uuid = $conciliaction ?? request()->query('conciliaction');
 
         if (! is_string($uuid) || $uuid === '') {
             return;

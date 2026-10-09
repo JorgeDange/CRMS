@@ -1,50 +1,11 @@
 {{-- Lista de Comerciais — padrão Sprint 9 --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Comerciais</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('commercials.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Novo Comercial</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-list"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'activo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('activo')">
-                        <i class="feather-check-circle"></i>
-                        <span>Activos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'inactivo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('inactivo')">
-                        <i class="feather-x-circle"></i>
-                        <span>Inactivos</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
+                <a href="{{ route('commercials.create') }}" class="btn btn-primary btn-sm" wire:navigate>
+                    <i class="feather-plus me-2"></i><span>Novo Comercial</span>
                 </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
@@ -52,10 +13,11 @@
                         <span>Filtros</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
+                        <h6 class="dropdown-header">Estado</h6>
                         <a class="dropdown-item {{ $statusFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterStatus('')">
                             <i class="feather-filter me-2"></i>
-                            <span>Todos</span>
+                            <span>Todos os estados</span>
                         </a>
                         <a class="dropdown-item {{ $statusFilter === 'activo' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterStatus('activo')">
@@ -144,7 +106,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($comerciais as $comercial)
-                                        <tr class="single-item wire:key=\"commercial-{{ $comercial->id }}\" {{ ! $comercial->activo ? 'table-warning' : '' }}">
+                                        <tr class="single-item {{ ! $comercial->activo ? 'table-warning' : '' }}"
+                                            wire:key="commercial-{{ $comercial->id }}">
                                             <td>
                                                 <div class="item-checkbox ms-1">
                                                     <div class="custom-control custom-checkbox">
@@ -163,7 +126,7 @@
                                                     </div>
                                                 </a>
                                             </td>
-                                            <td class="text-truncate-1-line" style="max-width: 300px;">{{ $comercial->descricao ?? '—' }}</td>
+                                            <td><div class="text-truncate-1-line" style="max-width: 300px;">{{ $comercial->descricao ?? '—' }}</div></td>
                                             <td>
                                                 @if ($comercial->activo)
                                                     <span class="badge bg-soft-success text-success">
@@ -204,7 +167,7 @@
                                                             <li>
                                                                 <a class="dropdown-item text-danger"
                                                                    href="javascript:void(0);"
-                                                                   @click.prevent="confirm('Eliminar este comercial?') && $wire.remove({{ $comercial->id }})">
+                                                                    @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar comercial', mensagem: 'Eliminar este comercial? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $comercial->id }}))">
                                                                     <i class="feather-trash-2 me-3"></i>
                                                                     <span>Eliminar</span>
                                                                 </a>

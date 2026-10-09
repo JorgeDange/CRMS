@@ -1,45 +1,11 @@
 {{-- Lista de Contratos — copiado de crm-prototipo/projects.html (Sprint 7) --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Contratos</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('contracts.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Novo Contrato</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-list"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                @foreach ($estados as $estado)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === $estado->value ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterStatus('{{ $estado->value }}')">
-                            <i class="{{ $estado->icon() }}"></i>
-                            <span>{{ $estado->label() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
+                <a href="{{ route('contracts.create') }}" class="btn btn-primary btn-sm" wire:navigate>
+                    <i class="feather-plus me-2"></i><span>Novo Contrato</span>
                 </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
@@ -47,6 +13,7 @@
                         <span>Filtros</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
+                        <h6 class="dropdown-header">Estado</h6>
                         <a class="dropdown-item {{ $statusFilter === '' ? 'active' : '' }}"
                            href="javascript:void(0)" wire:click="filterStatus('')">
                             <i class="feather-filter me-2"></i>
@@ -132,7 +99,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($contracts as $contract)
-                                        <tr class="single-item wire:key=\"contract-{{ $contract->id }}\" {{ $contract->estado->value === 'cancelado' ? 'table-warning' : '' }}">
+                                        <tr class="single-item {{ $contract->estado->value === 'cancelado' ? 'table-warning' : '' }}"
+                                            wire:key="contract-{{ $contract->id }}">
                                             <td>
                                                 @if ($contract->opportunity)
                                                     <a href="{{ route('opportunities.show', $contract->opportunity) }}" wire:navigate class="hstack gap-3">

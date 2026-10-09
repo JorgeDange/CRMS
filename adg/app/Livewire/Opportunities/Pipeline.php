@@ -15,8 +15,8 @@ class Pipeline extends Component
     public string $stageFilter = '';
 
     /**
-     * Colunas do kanban — 9 fases (resposta.md §5).
-     * Classes CSS baseadas no protótipo leads.html com adaptação de cores.
+     * Colunas do kanban �?" 9 fases (resposta.md ��5).
+     * Classes CSS baseadas no prot��tipo leads.html com adapta��ǜo de cores.
      */
     public const COLUMNS = [
         OpportunityStage::LEAD->value => [
@@ -127,7 +127,7 @@ class Pipeline extends Component
     }
 
     /**
-     * Recebe o drop de um cartao (Alpine) e altera a fase via Service.
+     * Recebe o drop de um cartao (Alpine `$wire.$call('move', ...)`) e altera a fase via Service.
      */
     public function move(int $opportunityId, string $stage): void
     {

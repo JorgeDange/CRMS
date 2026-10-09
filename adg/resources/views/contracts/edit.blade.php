@@ -7,5 +7,5 @@
     hideFooter="true">
     <x-slot name="header">Editar Contrato</x-slot>
 
-    @livewire('contracts.contract-form')
+    @livewire('contracts.contract-form', ['contract' => $contract])
 </x-app-layout>

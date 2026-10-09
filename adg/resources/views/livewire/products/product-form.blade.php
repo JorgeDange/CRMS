@@ -1,63 +1,9 @@
 {{-- Formulário de Produto — copiado de crm-prototipo/customers-create.html (Sprint 8) --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Produtos</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('products.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Novo Produto</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Estado</li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-list"></i>
-                        <span>Todos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'activo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('activo')">
-                        <i class="feather-check-circle"></i>
-                        <span>Activos</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === 'inactivo' ? 'active' : '' }}"
-                       href="javascript:void(0);" wire:click="filterStatus('inactivo')">
-                        <i class="feather-x-circle"></i>
-                        <span>Inactivos</span>
-                    </a>
-                </li>
-            </ul>
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Comercial</li>
-                @foreach ($comerciais as $comercial)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $commercialFilter === (string) $comercial->id ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterCommercial('{{ $comercial->id }}')">
-                            <span>{{ $comercial->nome }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
-                </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
                         <i class="feather-file-text me-2"></i>

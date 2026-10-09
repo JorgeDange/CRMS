@@ -17,35 +17,25 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 
 <body>
     <!--! ================================================================ !-->
-    <!--! [Start] Main Content !-- copiado de crm-prototipo/auth-login-cover.html !-->
+    <!--! [Start] Main Content - Login Centralizado !-->
     <!--! ================================================================ !-->
     <main class="auth-cover-wrapper">
-        <div class="auth-cover-content-inner">
-            <div class="auth-cover-content-wrapper">
-                <div class="auth-img">
-                    <img src="{{ asset('assets/images/auth/auth-cover-login-bg.svg') }}" alt="" class="img-fluid">
-                </div>
-            </div>
-        </div>
-        <div class="auth-cover-sidebar-inner">
-            <div class="auth-cover-card-wrapper">
-                <div class="auth-cover-card p-sm-5">
-                    <div class="mb-5" style="max-width:230px">
-                        <img src="{{ asset('images/logo-d.png') }}" alt="{{ config('app.name') }}" class="img-fluid">
+        <div class="d-flex align-items-center justify-content-center min-vh-100 py-5">
+            <div class="auth-cover-card-wrapper w-100" style="max-width: 420px;">
+                <div class="auth-cover-card p-sm-5 p-4">
+                    <div class="text-center mb-5">
+                        <img src="{{ asset('images/logo-d.png') }}" alt="{{ config('app.name') }}" class="img-fluid mx-auto d-block" style="max-width: 200px;">
                     </div>
-                    <h2 class="fs-20 fw-bolder mb-4">Entrar</h2>
-                    <h4 class="fs-13 fw-bold mb-2">Aceda à sua conta</h4>
-                    <p class="fs-12 fw-medium text-muted">Bem-vindo de volta ao <strong>Lead Inteligente</strong> — gestão comercial B2B.</p>
+                    <h2 class="fs-20 fw-bolder mb-2 text-center">Entrar</h2>
+                    <p class="fs-13 text-muted text-center mb-5">Aceda à sua conta — <strong>Lead Inteligente</strong></p>
 
                     {{ $slot }}
 
-                    <div class="mt-5 text-muted text-center">
-                        <span class="fs-12">Contacte o administrador para criar uma conta.</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -53,6 +43,7 @@
     <!--! ================================================================ !-->
     <!--! [End] Main Content !-->
     <!--! ================================================================ !-->
+    @livewireScripts
 </body>
 
 </html>

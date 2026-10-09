@@ -90,6 +90,8 @@ class ActivityForm extends Component
             app(ActivityService::class)->create($data);
         }
 
+        session()->flash('actividade_criada', true);
+
         $this->redirect(route('agenda'), navigate: true);
     }
 

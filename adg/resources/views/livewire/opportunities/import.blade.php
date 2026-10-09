@@ -8,7 +8,7 @@
                 <h5 class="card-title mb-0">Importar de Excel</h5>
             </div>
             <div class="card-body">
-                <form wire:submit="preview">
+                <form wire:submit="preview" enctype="multipart/form-data">
                     <div class="mb-3">
                         <label class="form-label">Ficheiro (.xlsx) <span class="text-danger">*</span></label>
                         <input type="file" class="form-control" wire:model="file" accept=".xlsx,.xls">

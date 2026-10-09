@@ -1,73 +1,41 @@
 {{-- Lista de actividades — copiado de crm-prototipo/apps-tasks.html (Sprint 5, 8.4) --}}
-{{-- Raiz unica obrigatoria (Livewire); envolve content-sidebar + content-area como no prototipo --}}
-<div class="d-flex flex-grow-1" x-data="{ sidebarOpen: false }">
-    <div class="content-sidebar content-sidebar-md" :class="sidebarOpen && 'app-sidebar-open'">
-        <div class="content-sidebar-header bg-white sticky-top hstack justify-content-between">
-            <h4 class="fw-bolder mb-0">Actividades</h4>
-            <a href="javascript:void(0);" class="app-sidebar-close-trigger d-flex" @click="sidebarOpen = false">
-                <i class="feather-x"></i>
-            </a>
-        </div>
-        <div class="content-sidebar-header">
-            <a href="{{ route('agenda.create') }}" class="btn btn-primary w-100" wire:navigate>
-                <i class="feather-plus me-2"></i>
-                <span>Nova Actividade</span>
-            </a>
-        </div>
-        <div class="content-sidebar-body">
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="nav-item">
-                    <a class="nav-link {{ $statusFilter === '' ? 'active' : '' }}" href="javascript:void(0);" wire:click="filterStatus('')">
-                        <i class="feather-list"></i>
-                        <span>Todas</span>
-                    </a>
-                </li>
-                @foreach ($estados as $estado)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $statusFilter === $estado->value ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterStatus('{{ $estado->value }}')">
-                            <i class="{{ $estado->value === 'pendente' ? 'feather-watch' : ($estado->value === 'concluida' ? 'feather-check-circle' : 'feather-x-circle') }}"></i>
-                            <span>{{ $estado->label() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-            <ul class="nav flex-column nxl-content-sidebar-item">
-                <li class="px-4 my-2 fs-10 fw-bold text-uppercase text-muted text-spacing-1">Tipo</li>
-                @foreach ($tipos as $tipo)
-                    <li class="nav-item">
-                        <a class="nav-link {{ $typeFilter === $tipo->value ? 'active' : '' }}"
-                           href="javascript:void(0);" wire:click="filterType('{{ $tipo->value }}')">
-                            <i class="{{ $tipo->icon() }}"></i>
-                            <span>{{ $tipo->labelPlural() }}</span>
-                        </a>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </div>
-
+{{-- Raiz unica obrigatoria (Livewire); content-area ocupa toda a largura (sem content-sidebar) --}}
+<div class="d-flex flex-grow-1">
     <div class="content-area">
         <div class="content-area-header sticky-top">
             <div class="page-header-left d-flex align-items-center gap-2">
-                <a href="javascript:void(0);" class="app-sidebar-open-trigger me-2" @click="sidebarOpen = true">
-                    <i class="feather-align-left fs-20"></i>
+                <a href="{{ route('agenda.create') }}" class="btn btn-primary btn-sm" wire:navigate>
+                    <i class="feather-plus me-2"></i><span>Nova Actividade</span>
                 </a>
                 <div class="dropdown">
                     <a href="javascript:void(0)" class="btn btn-light-brand dropdown-toggle" data-bs-toggle="dropdown" data-bs-offset="0,16">
-                        <i class="feather-check-circle me-2"></i>
-                        <span>{{ $statusFilter === '' ? 'As minhas actividades' : \App\Enums\ActivityStatus::from($statusFilter)->label() }}</span>
+                        <i class="feather-filter me-2"></i>
+                        <span>Filtros</span>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end">
+                        <h6 class="dropdown-header">Estado</h6>
                         <a class="dropdown-item {{ $statusFilter === '' ? 'active' : '' }}" href="javascript:void(0)" wire:click="filterStatus('')">
-                            <i class="feather-hash"></i>
-                            <span>Todas</span>
+                            <i class="feather-list me-2"></i>
+                            <span>Todos os estados</span>
                         </a>
                         @foreach ($estados as $estado)
                             <a class="dropdown-item {{ $statusFilter === $estado->value ? 'active' : '' }}"
                                href="javascript:void(0)" wire:click="filterStatus('{{ $estado->value }}')">
-                                <i class="{{ $estado->value === 'pendente' ? 'feather-clock' : ($estado->value === 'concluida' ? 'feather-check-circle' : 'feather-x-circle') }}"></i>
+                                <i class="{{ $estado->value === 'pendente' ? 'feather-clock' : ($estado->value === 'concluida' ? 'feather-check-circle' : 'feather-x-circle') }} me-2"></i>
                                 <span>{{ $estado->label() }}</span>
+                            </a>
+                        @endforeach
+                        <div class="dropdown-divider"></div>
+                        <h6 class="dropdown-header">Tipo</h6>
+                        <a class="dropdown-item {{ $typeFilter === '' ? 'active' : '' }}" href="javascript:void(0)" wire:click="filterType('')">
+                            <i class="feather-filter me-2"></i>
+                            <span>Todos os tipos</span>
+                        </a>
+                        @foreach ($tipos as $tipo)
+                            <a class="dropdown-item {{ $typeFilter === $tipo->value ? 'active' : '' }}"
+                               href="javascript:void(0)" wire:click="filterType('{{ $tipo->value }}')">
+                                <i class="{{ $tipo->icon() }} me-2"></i>
+                                <span>{{ $tipo->labelPlural() }}</span>
                             </a>
                         @endforeach
                     </div>
@@ -114,6 +82,12 @@
         </div>
 
         <div class="content-area-body">
+            @if (session('actividade_criada'))
+                <div class="alert alert-success d-flex align-items-center justify-content-between" role="alert">
+                    <span><i class="feather-check-circle me-2"></i>Actividade guardada com sucesso.</span>
+                    <button type="button" class="btn-close" aria-label="Fechar" onclick="this.closest('.alert').remove()"></button>
+                </div>
+            @endif
             @forelse ($groups as $group)
                 @php($collapseId = 'tasks_collapse_'.$loop->index)
                 <div class="card stretch stretch-full">
@@ -170,7 +144,7 @@
                                                        href="{{ route('agenda.create', ['atividade' => $activity->uuid]) }}"
                                                        wire:navigate>Editar actividade</a>
                                                     <a class="dropdown-item" href="javascript:void(0);"
-                                                       @click.prevent="confirm('Eliminar esta actividade?') && $wire.remove({{ $activity->id }})">Eliminar actividade</a>
+                                                        @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar actividade', mensagem: 'Eliminar esta actividade? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $activity->id }}))">Eliminar actividade</a>
                                                 </div>
                                             </div>
                                         </div>
