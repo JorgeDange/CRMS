@@ -9,10 +9,12 @@ enum AlertType: string
     case CONTRATO = 'contrato';
     case LEAD_INATIVO = 'lead_inativo';
     case CONCILIACAO = 'conciliacao';
+    case AGENDA = 'agenda';
 
     public function label(): string
     {
         return match ($this) {
+            self::AGENDA => 'Agenda',
             self::OPORTUNIDADE => 'Oportunidade',
             self::CLIENTE => 'Cliente',
             self::CONTRATO => 'Contrato',
@@ -24,6 +26,7 @@ enum AlertType: string
     public function icon(): string
     {
         return match ($this) {
+            self::AGENDA => 'feather-calendar',
             self::OPORTUNIDADE => 'feather-alert-triangle',
             self::CLIENTE => 'feather-users',
             self::CONTRATO => 'feather-file-text',
@@ -35,6 +38,7 @@ enum AlertType: string
     public function badgeVariant(): string
     {
         return match ($this) {
+            self::AGENDA => 'success',
             self::OPORTUNIDADE => 'warning',
             self::CLIENTE => 'info',
             self::CONTRATO => 'primary',

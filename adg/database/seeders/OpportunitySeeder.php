@@ -44,7 +44,7 @@ class OpportunitySeeder extends Seeder
             ['cliente_nao_aprovado', 'Fornecimento geradores', 'Energias do Namibe', 15_000_000, 0, '2026-09-01'],
         ];
 
-        foreach ($rows as [$stage, $titulo, $empresa, $valor, $probabilidade, $fecho]) {
+        foreach ($rows as $i => [$stage, $titulo, $empresa, $valor, $probabilidade, $fecho]) {
             $isAprovado = $stage === OpportunityStage::CLIENTE_APROVADO->value;
             $isNaoAprovado = $stage === OpportunityStage::CLIENTE_NAO_APROVADO->value;
 
@@ -57,7 +57,8 @@ class OpportunitySeeder extends Seeder
                     'probabilidade' => $probabilidade,
                     'data_fecho' => $fecho,
                     'fase_atual' => $stage,
-                    'sector' => 'Distribuição',
+                    // Sectores variados → donut "Segmento" do Painel Executivo
+                    'sector' => $i % 2 === 0 ? 'Distribuição' : 'Indústria',
                     'localizacao' => 'Luanda',
                     'data_aprovacao' => $isAprovado ? '2026-10-01 10:00:00' : null,
                     'motivo_nao_aprovacao' => $isNaoAprovado ? 'preço concorrência' : null,

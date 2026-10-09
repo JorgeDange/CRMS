@@ -2,7 +2,9 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\AlertType;
 use App\Models\Activity;
+use App\Models\Alert;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Console\Command;
@@ -142,7 +144,8 @@ class AgendaReminder extends Command
     }
 
     /**
-     * Cria notificações no sistema para o(s) utilizador(es).
+     * Cria a notificação no sistema (tabela alerts — resposta.md §11:
+     * "canais: email + notificação no sistema").
      * Como é utilizador único, cria para o primeiro utilizador.
      */
     private function createSystemNotifications(Collection $activities, Carbon $date): void
@@ -153,8 +156,6 @@ class AgendaReminder extends Command
             return;
         }
 
-        // Usar a tabela alerts (será criada no Sprint 10) ou uma tabela de notificações simples
-        // Por agora, apenas log — Sprint 10 implementará alerts completos
         Log::info('AgendaReminder system notification', [
             'user_id' => $user->id,
             'date' => $date->toDateString(),
@@ -168,7 +169,27 @@ class AgendaReminder extends Command
             ])->toArray(),
         ]);
 
-        // TODO Sprint 10: criar registos na tabela alerts
-        // Alert::create([...]);
+        // Evita duplicado se o comando for re-executado para a mesma data.
+        $jaExiste = Alert::where('tipo', AlertType::AGENDA)
+            ->where('user_id', $user->id)
+            ->where('resolvido', false)
+            ->where('mensagem', 'like', '%'.$date->format('d/m/Y').'%')
+            ->exists();
+
+        if ($jaExiste) {
+            return;
+        }
+
+        $pendentes = $activities->where('status', 'pendente')->count();
+        $concluidas = $activities->where('status', 'concluida')->count();
+
+        Alert::create([
+            'tipo' => AlertType::AGENDA,
+            'entidade' => null,
+            'entidade_id' => null,
+            'mensagem' => "Agenda de {$date->format('d/m/Y')}: {$activities->count()} actividade(s) — {$pendentes} pendente(s), {$concluidas} concluída(s).",
+            'user_id' => $user->id,
+            'prazo' => $date,
+        ]);
     }
 }

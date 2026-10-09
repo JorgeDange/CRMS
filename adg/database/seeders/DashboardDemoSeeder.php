@@ -95,7 +95,8 @@ class DashboardDemoSeeder extends Seeder
                 'telefone' => '+244 9'.rand(1000000, 9999999),
                 'email' => 'demo'.$mes->format('ym').'@example.com',
                 'nif' => '54'.random_int(1000000000, 9999999999),
-                'sector' => 'Distribuição',
+                // Sectores variados → donut "Segmento" com várias fatias
+                'sector' => ['Distribuição', 'Indústria', 'Construção', 'Retalho', 'Agricultura', 'Serviços'][$i % 6],
                 'localizacao' => 'Luanda',
                 'origem' => 'Website',
                 'interesse' => 'Fornecimento anual (demo)',

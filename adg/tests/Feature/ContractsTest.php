@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\ContractStatus;
 use App\Models\Contract;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,5 +82,35 @@ class ContractsTest extends TestCase
             ->assertOk()
             ->assertSee(route('contracts'), false)
             ->assertSee('Contratos');
+    }
+
+    /**
+     * Suposição §19.12: contrato com data_fim passada e estado activo
+     * muda automaticamente para expirado (comando contracts:expire).
+     */
+    public function test_expire_command_changes_past_active_contracts_only(): void
+    {
+        $passado = Contract::factory()->create([
+            'estado' => ContractStatus::ACTIVO,
+            'data_fim' => now()->subDay(),
+        ]);
+        $futuro = Contract::factory()->create([
+            'estado' => ContractStatus::ACTIVO,
+            'data_fim' => now()->addDays(30),
+        ]);
+        $canceladoPassado = Contract::factory()->create([
+            'estado' => ContractStatus::CANCELADO,
+            'data_fim' => now()->subDay(),
+        ]);
+
+        // Dry-run não altera nada.
+        $this->artisan('contracts:expire', ['--dry-run' => true])->assertSuccessful();
+        $this->assertSame(ContractStatus::ACTIVO, $passado->fresh()->estado);
+
+        $this->artisan('contracts:expire')->assertSuccessful();
+
+        $this->assertSame(ContractStatus::EXPIRADO, $passado->fresh()->estado);
+        $this->assertSame(ContractStatus::ACTIVO, $futuro->fresh()->estado);
+        $this->assertSame(ContractStatus::CANCELADO, $canceladoPassado->fresh()->estado);
     }
 }

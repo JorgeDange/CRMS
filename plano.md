@@ -1,8 +1,8 @@
 # PLANO DE EXECUÇÃO — Sistema ADG
 
 **Base:** `resposta.md` v4.0 (Outubro 2026)  
-**Estado actual:** Sprints 0–12 concluídos + **Revisão geral** (ícones, crashes, estrutura) + **fix drag & drop do Pipeline / Alpine único** — 113 testes, pint, build OK  
-**Próximo:** Testes manuais com Adailson → feedback → deploy
+**Estado actual:** Sprints 0–12 concluídos + Revisão geral + fixes de UI + **pendências resolvidos 2026-10-09** (notificações, alertas, contratos, docs) — 121 testes, pint, build OK  
+**Próximo:** testes manuais com Adailson (`teste-manual.md`) → feedback → deploy (`CHECKLIST DE DEPLOY`)
 
 ---
 
@@ -30,11 +30,14 @@
 ## ORDEM DE EXECUÇÃO IMEDIATA
 
 ### 1. SPRINT 12 — Testes e Lançamento
-- [ ] Testes manuais com Adailson
+- [x] Configurar backups (`spatie/laravel-backup`)
+- [ ] Testes manuais com Adailson (percurso em `teste-manual.md`)
 - [ ] Feedback → ajustes
-- [ ] Deploy produção
+- [ ] Deploy produção (seguir **CHECKLIST DE DEPLOY** abaixo)
 - [ ] SSL
-- [ ] Configurar backups (`spatie/laravel-backup`)
+- [ ] Cron do scheduler em produção (6 entradas: agenda 20h, contratos 05h30, alertas 06h, backup 02h/03h/04h)
+- [ ] SMTP real em produção (em dev `MAIL_MAILER=log`)
+- [ ] Serviço MySQL persistente (admin: `sc config MySQL80 start=demand`)
 - [x] Enum `OpportunityStage` → 9 valores (lead → cliente_nao_aprovado)
 - [x] Migration `opportunities` → adicionar colunas: `pessoa_contacto`, `tipo_relacao`, `comercial_id`, `produto_id`, `sector` (ex-segmento), `origem`
 - [x] Migration `commercials` (nova tabela)
@@ -156,19 +159,37 @@ Para cada sprint:
 | # | Suposição | Onde | Status |
 |---|-----------|------|--------|
 | 1 | Pipeline tem 9 fases | `OpportunityStage` | ✅ Sprint 2 |
-| 2 | Comerciais são categorias, não pessoas | `commercials` | ⏳ Sprint 2/9 |
-| 3 | Tipo de relação = 5 opções | `TipoRelacao` | ⏳ Sprint 2/3 |
-| 4 | Produto relacionado = relação com tabela | `opportunities.produto_id` | ⏳ Sprint 2/3 |
-| 5 | Nome e pessoa_contacto = campos separados | `opportunities` | ⏳ Sprint 2/3 |
-| 6 | Produto ↔ Oportunidades = many-to-many | `opportunity_product` | ⏳ Sprint 2/3 |
-| 7 | Produto ↔ Contratos = um por contrato | `contracts.produto_id` | ⏳ Sprint 7 |
-| 8 | Alerta cliente = 60 dias | `settings` | ⏳ Sprint 10 |
-| 9 | Email de alertas = email do Adailson | `settings` | ⏳ Sprint 10 |
-| 10 | Lembrete 20h = email + sistema | Agenda | ⏳ Sprint 5 |
-| 11 | Conciliação = Concordante/Discordante/Pendente | `conciliactions` | ⏳ Sprint 6 |
-| 12 | Contrato expirado = muda estado | `contracts` | ⏳ Sprint 7 |
-| 13 | Ordem Aprovação → Bilhete | Pipeline | ⏳ Sprint 2 |
-| 14 | Alertas sem movimentação automática | `AlertService` | ⏳ Sprint 10 |
+| 2 | Comerciais são categorias, não pessoas | `commercials` | ✅ Sprint 2/9 |
+| 3 | Tipo de relação = 5 opções | `TipoRelacao` | ✅ Sprint 3 |
+| 4 | Produto relacionado = relação com tabela | `opportunities.produto_id` | ✅ Sprint 3 |
+| 5 | Nome e pessoa_contacto = campos separados | `opportunities` | ✅ Sprint 3 |
+| 6 | Produto ↔ Oportunidades = many-to-many | `opportunity_product` | ✅ Sprint 3 |
+| 7 | Produto ↔ Contratos = um por contrato | `contracts.produto_id` | ✅ Sprint 7 |
+| 8 | Alerta cliente = 60 dias | `settings` | ✅ Sprint 10 |
+| 9 | Email de alertas = email do Adailson | `settings` | ✅ Sprint 10 |
+| 10 | Lembrete 20h = email + sistema | Agenda | ✅ Sprint 5 + 2026-10-09 (cria alerta AGENDA) |
+| 11 | Conciliação = Concordante/Discordante/Pendente | `conciliactions` | ✅ Sprint 6 |
+| 12 | Contrato expirado = muda estado | `contracts` | ✅ Sprint 7 + 2026-10-09 (`contracts:expire` 05h30) |
+| 13 | Ordem Aprovação → Bilhete | Pipeline | ✅ Sprint 2 |
+| 14 | Alertas sem movimentação automática | `AlertService` | ✅ Sprint 10 |
+
+---
+
+## CHECKLIST DE DEPLOY (produção)
+
+1. **Servidor**: PHP 8.4 + extensões (pdo_mysql, gd, zip, intl), MySQL 8, Node 20 (build)
+2. **Código**: `git pull` → `composer install --no-dev --optimize-autoloader` → `npm ci && npm run build`
+3. **`.env`** (copiar de `.env.example`, já em MySQL):
+   - `APP_URL` (domínio), `APP_DEBUG=false`, `APP_KEY` (gerar), `SESSION_SECURE_COOKIE=true`
+   - `DB_DATABASE=adg`, credenciais MySQL
+   - `MAIL_MAILER=smtp` + host/porta/credenciais reais (em dev é `log`)
+4. **BD**: `php artisan migrate --force` (+ seeders opcionais na 1ª vez)
+5. **Cron do scheduler** (uma linha, todos os dias):
+   `* * * * * cd /caminho/adg && php artisan schedule:run >> /dev/null 2>&1`
+   - `agenda:reminder` 20h · `contracts:expire` 05h30 · `alerts:generate` 06h · `backup:run/clean/monitor` 02h/03h/04h (timezone Africa/Luanda)
+6. **SSL**: certificado (Let's Encrypt/certbot) + redirect HTTP→HTTPS
+7. **Pós-deploy**: login manual, `php artisan backup:run` de teste, verificar sino de notificações
+8. **MySQL local (dev)**: `sc config MySQL80 start=demand` (requer admin — pendência)
 
 ---
 
@@ -217,9 +238,10 @@ php artisan agenda:reminder
 | 2026-10-05 | 5 | Agenda Comercial | `49c2225` |
 | 2026-10-05 | 6–10 | Conciliações, Contratos, Produtos, Comerciais, Alertas | `cbdde3d`…`5ea436a` |
 | 2026-10-06 | 11–12 | Dashboard/Painel Executivo + Lançamento | `9531418`… |
-| 2026-10-06 | — | **Revisão geral: ícones, crashes, Chart.js, código morto** | *por commitar* |
-| 2026-10-08 | — | **Pipeline drag & drop refeito + Alpine único (fix consola), ApexCharts definitivo, `charts.js` removido** | *por commitar* |
-| — | — | **PRÓXIMO: testes manuais + deploy** | — |
+| 2026-10-06 | — | **Revisão geral: ícones, crashes, Chart.js, código morto** | `eeefe7c` (commitado 2026-10-09) |
+| 2026-10-08 | — | **Pipeline drag & drop refeito + Alpine único (fix consola), ApexCharts definitivo, `charts.js` removido** | `eeefe7c` (commitado 2026-10-09) |
+| 2026-10-09 | — | **Docs do trabalho 06–08/10** | `d56259e` |
+| — | — | **PRÓXIMO: testes manuais (teste-manual.md) + deploy** | — |
 
 ---
 
@@ -242,8 +264,8 @@ estrutura está desorganizada — verifique bem com o protótipo"*.
 - [x] Sidebar confirmada contra `resposta.md` §7 (8 acordeões)
 - [x] Testes: **83 → 113** (Dashboard, Analytics, Alerts, Contracts, Products,
   Commercials, Conciliações — antes sem nenhum)
-- [ ] Testes manuais no browser com o protótipo lado a lado
-- [ ] Verificar gráficos com dados reais (seed) no browser
+- [ ] Testes manuais no browser com o protótipo lado a lado (percurso em `teste-manual.md`)
+- [x] Verificar gráficos com dados reais (seed) no browser — E2E `e2e-graficos.mjs` 2026-10-09 (8/8 válidos)
 
 ---
 

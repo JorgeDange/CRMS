@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Alert;
+use App\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -89,5 +90,44 @@ class AlertsTest extends TestCase
             $html
         );
         $this->assertStringContainsString(route('alerts.markAll', [], false), $html);
+    }
+
+    /**
+     * O tipo AGENDA (lembrete diário, §11) tem de aparecer no filtro
+     * de tipos da lista — o dropdown é 100% enum-driven.
+     */
+    public function test_type_filter_includes_agenda(): void
+    {
+        $response = $this->actingAs($this->user())->get('/alertas');
+
+        $response
+            ->assertOk()
+            ->assertSee("filterTipo('agenda')", false)
+            ->assertSee('Agenda');
+    }
+
+    /**
+     * --dry-run conta os alertas que seriam criados sem persistir
+     * nem enviar emails; a execução normal sim.
+     */
+    public function test_alerts_generate_dry_run_does_not_persist(): void
+    {
+        $user = $this->user();
+        Opportunity::factory()->create([
+            'fase_atual' => 'lead',
+            'ultima_actividade_em' => now()->subDays(10),
+        ]);
+
+        $antes = Alert::count();
+
+        $this->artisan('alerts:generate', ['--dry-run' => true])
+            ->assertSuccessful();
+
+        $this->assertSame($antes, Alert::count(), 'Dry-run nao pode criar alertas.');
+
+        $this->artisan('alerts:generate')
+            ->assertSuccessful();
+
+        $this->assertSame($antes + 1, Alert::count(), 'Execucao normal cria o alerta candidato.');
     }
 }

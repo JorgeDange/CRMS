@@ -183,8 +183,9 @@ e `/ui` não têm e ficariam sem Alpine).
 
 ### Pendências gerais
 - MySQL como serviço persistente (pedir admin para `sc config MySQL80 start= demand`)
-- Opcional: confirmar com utilizador que a BD `adg` substitui a antiga `crm_pessoal`
-- `.env.example` ajustado a MySQL (vem com sqlite por omissão)
+- ~~Opcional: confirmar com utilizador que a BD `adg` substitui a antiga `crm_pessoal`~~
+  — **confirmado 2026-10-09**: `adg` é a BD oficial; `crm_pessoal` pode ser eliminada
+- ~~`.env.example` ajustado a MySQL~~ — **feito 2026-10-09** (`DB_CONNECTION=mysql`, `DB_DATABASE=adg`)
 
 ### Problema conhecido (Sprint 0) — corrigido no Sprint 1
 O teste `AuthenticationTest:34` falhava com `form.email` → corrigido para `form.login`
@@ -1009,6 +1010,54 @@ tabela — verificar" + "verifica também em outras áreas que possuem tabelas, 
 
 ---
 
+### Pendências resolvidos: notificações, alertas, contratos e docs (2026-10-09)
+
+**Pedido**: "vamos resolver os pendentes" (trabalho por commitar + TODOs + validações)
++ "a modal de notificação está mal estruturada — aparecem em grid horizontal".
+
+- **Commits pendentes**: 143 ficheiros do trabalho 06–08/10 commitados em 2
+  (`eeefe7c` código, `d56259e` docs).
+- **Notificações (bug de estrutura)**: `header.blade.php` envolvia **todos** os alertas
+  num único `.notifications-item` (que é `display:flex` no protótipo) → os
+  `.notifications-desc` ficavam irmãos flex **na horizontal (grid)**. Fix: `@foreach`
+  **por fora** — 1 `.notifications-item` por notificação, empilhados com separador
+  tracejado (`.notifications-item + .notifications-item`). E2E `e2e-notificacoes.mjs`:
+  3 itens, tops 211→309→409, mesmo `left`, 1 `desc`/item, `criticoOk:true`.
+- **`agenda:reminder` cria notificação no sistema (§11)**: novo `AlertType::AGENDA`
+  (label "Agenda", `feather-calendar`, badge success — sem migration de enum, coluna
+  string); migration `2026_10_09_000001` torna `entidade`/`entidade_id` nullable
+  (alertas de sistema); `AgendaReminder::createSystemNotifications` cria `Alert` com
+  guard anti-duplicado por data; email próprio do lembrete mantém o canal de email
+  (sem 2.º email via `NewAlert`). Filtro de tipos da lista é enum-driven → "Agenda"
+  aparece automaticamente.
+- **BUG LATENTE GRAVE apanhado pelos testes**: `NewAlert` viaja por
+  `['mail','database']` mas **a tabela `notifications` nunca existiu** (nem em `adg`!)
+  → `alerts:generate` rebentaria sempre no 1.º alerta em produção. Migration
+  `2026_10_09_000002_create_notifications_table` + `php artisan migrate`.
+- **`alerts:generate --dry-run` implementado**: `AlertService::generate(bool $dryRun)`
+  conta os que *seriam* criados sem persistir nem notificar (antes executava a
+  normal mesmo em dry-run); mensagem "SERIAM criados".
+- **Suposição §19.12 implementada**: novo comando `contracts:expire [--dry-run]`
+  (activo + `data_fim` passada → `EXPIRADO` via `ContractService::setStatus`),
+  agendado 05h30 Africa/Luanda (antes dos alertas 06h) em `routes/console.php`.
+- **Docs/env**: `.env.example` → MySQL (`DB_DATABASE=adg`); suposições do `plano.md`
+  14/14 ✅; novo **CHECKLIST DE DEPLOY** no `plano.md` (cron de 6 entradas, SMTP,
+  SSL, APP_KEY, pós-deploy); pendência "BD adg substitui crm_pessoal" **confirmada**
+  pelo utilizador (registada); novo **`teste-manual.md`** (percurso passo-a-passo
+  para o Adailson, 10 secções + espaço de feedback).
+- **Gráficos com dados reais (pendência Revisão Geral)**: E2E `e2e-graficos.mjs`
+  lê `window.adgCharts.chartInstances` e valida series/labels/soma de cada um —
+  Dashboard 4/4 e Painel Executivo 4/4 válidos; donut "Segmento" tinha **1 fatia**
+  (todos os seeders metiam `sector='Distribuição'`) → sectores variados em
+  `DashboardDemoSeeder` (6 sectores) e `OpportunitySeeder` (alternado) + reseed;
+  percentagens ≤100, 0 erros de consola, `criticoOk:true`.
+- **Validação**: **121 testes / 659 assertions** (+5 novos: reminder×2, filtro
+  Agenda, dry-run, contracts:expire), pint OK, E2E `e2e-notificacoes.mjs` +
+  `e2e-graficos.mjs` verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`
+  (inalterado — só mudaram Blades/PHP).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1043,3 +1092,4 @@ tabela — verificar" + "verifica também em outras áreas que possuem tabelas, 
 | 2026-10-08 | **Conciliações: sidebar vertical removida (padrão Agenda) + tabela desajustada corrigida** — `conciliaction-list` sem `content-sidebar` (botão `+ Nova Conciliação` e grupos "Classificação/Estado" no dropdown Filtros), `conciliaction-form` sem sidebar/hamburger; causa raiz: sidebar 300px cortava 156px do `.content-area` e a tabela nowrap não cabia no wrap; CSS `min-width:0` na cadeia flex corrige o corte em 1366px (passa a scroll interno); `ConciliactionsTest` espelha o AgendaTest; E2E 1600+1366 verdes (0 erros); 116 testes/615 assertions, pint, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-08 | **Produtos, Alertas, Comerciais e Contratos sem sidebar vertical (padrão Agenda/Conciliações)** — 7 views (`product-list/form`, `alert-list`, `commercial-list/form`, `contract-list/form`): removidos `content-sidebar`+`sidebarOpen`+hamburger; botões `+ Novo X` no header (Alertas sem criação), dropdowns Filtros com grupos `<h6>` (Produtos: Estado+Comercial; Alertas: Tipo+Estado; Comerciais/Contratos: Estado, "Todos"→"Todos os estados"); 4 testes de lista com novas asserções (+20); E2E `e2e-listas-sem-sidebar.mjs` 1600+1366 verdes (sem clip, 0 erros, forms sem sidebar); zero views com `content-sidebar`; 116 testes/635 assertions, pint, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
 | 2026-10-08 | **Coluna Observações desalinhada + varredura de tabelas** — causa raiz: `theme-extract.css:163` mete `display:-webkit-box!important` (`.text-truncate-1-line`) directo no `<td>` → `flow-root` em vez de `table-cell` (altura 53 vs 61, conteúdo ao alto, tira branca nas linhas vermelhas); fix em 3 views (conciliaction-list Observações, commercial-list Descrição, alert-list Mensagem): classe movida para `<div>` interno; varredura global (grep + runtime em 13 páginas: 346 tds + 63 ths) confirma **0 células distorcidas no protótipo inteiro**; 116 testes/635 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
+| 2026-10-09 | **Pendências resolvidos** — commit dos 143 ficheiros pendentes (`eeefe7c`+`d56259e`); fix notificações (1 `.notifications-item` por alerta — estava 1 wrapper flex com todos os desc's em grid horizontal); `agenda:reminder` cria alerta `AGENDA` (§11, entidade nullable, anti-duplicado); **bug latente**: tabela `notifications` inexistente rebentava `alerts:generate` → migration criada; `alerts:generate --dry-run` real; `contracts:expire` 05h30 (suposição §19.12); `.env.example` MySQL, suposições 14/14 ✅, CHECKLIST DE DEPLOY, `teste-manual.md`; E2E gráficos (8/8 com dados reais) + sectores variados no seed (donut Segmento 1→6 fatias); 121 testes/659 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |

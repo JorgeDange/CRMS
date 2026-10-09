@@ -15,11 +15,18 @@ use Illuminate\Support\Facades\DB;
 class AlertService
 {
     /**
+     * Modo dry-run: conta os alertas que SERIAM criados, sem persistir nem notificar.
+     */
+    private bool $dryRun = false;
+
+    /**
      * Gera todos os alertas (Sprint 10 / resposta.md §10).
      * O sistema NÃO move leads automaticamente — apenas notifica.
      */
-    public function generate(): array
+    public function generate(bool $dryRun = false): array
     {
+        $this->dryRun = $dryRun;
+
         $report = [
             'oportunidade' => 0,
             'cliente' => 0,
@@ -202,6 +209,11 @@ class AlertService
 
         if ($exists) {
             return false;
+        }
+
+        // Dry-run: apenas contaria — não persiste nem envia email.
+        if ($this->dryRun) {
+            return true;
         }
 
         $alert = Alert::create([

@@ -37,15 +37,10 @@ class AlertsGenerate extends Command
 
         $service = app(AlertService::class);
 
-        if ($dryRun) {
-            // TODO: implementar modo dry-run que apenas mostra o que seria feito
-            $this->info('Modo dry-run não implementado totalmente — a executar normalmente.');
-        }
-
-        $report = $service->generate();
+        $report = $service->generate($dryRun);
 
         $this->table(
-            ['Tipo', 'Novos Alertas'],
+            ['Tipo', $dryRun ? 'Alertas que seriam criados' : 'Novos Alertas'],
             [
                 ['Oportunidades sem actividade', $report['oportunidade']],
                 ['Clientes sem contacto', $report['cliente']],
@@ -56,7 +51,9 @@ class AlertsGenerate extends Command
         );
 
         $total = array_sum($report);
-        $this->info("Total de novos alertas criados: {$total}");
+        $this->info($dryRun
+            ? "Total de alertas que SERIAM criados: {$total} (nada foi persistido)"
+            : "Total de novos alertas criados: {$total}");
 
         return self::SUCCESS;
     }

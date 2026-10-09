@@ -4,10 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\ActivityStatus;
 use App\Enums\ActivityType;
+use App\Enums\AlertType;
 use App\Livewire\Activities\ActivityCalendar;
 use App\Livewire\Activities\ActivityForm;
 use App\Livewire\Activities\ActivityList;
 use App\Models\Activity;
+use App\Models\Alert;
 use App\Models\Opportunity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -501,5 +503,61 @@ class AgendaTest extends TestCase
         $component->assertSet('detalheId', null);
         $component->assertDispatched('modal-actividade', aberto: false);
         $this->assertDatabaseMissing('activities', ['id' => $activity->id]);
+    }
+
+    /**
+     * resposta.md §11: o lembrete das 20h tem de criar notificação
+     * no sistema (tabela alerts), além do email — e sem duplicar
+     * se o comando for re-executado para a mesma data.
+     */
+    public function test_reminder_creates_system_alert_and_avoids_duplicates(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+        $amanha = now()->addDay();
+
+        Activity::factory()->pendente()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'descricao' => 'Visita de amanhã',
+            'data' => $amanha->toDateString(),
+        ]);
+
+        $this->artisan('agenda:reminder', ['--date' => $amanha->toDateString()])
+            ->assertSuccessful();
+
+        $this->assertSame(1, Alert::where('tipo', AlertType::AGENDA)->count());
+        $alerta = Alert::where('tipo', AlertType::AGENDA)->firstOrFail();
+        $this->assertSame($user->id, $alerta->user_id);
+        $this->assertFalse($alerta->lido);
+        $this->assertStringContainsString($amanha->format('d/m/Y'), $alerta->mensagem);
+        $this->assertStringContainsString('1 actividade(s)', $alerta->mensagem);
+        $this->assertNull($alerta->entidade);
+
+        // Re-execução para a mesma data não duplica a notificação.
+        $this->artisan('agenda:reminder', ['--date' => $amanha->toDateString()])
+            ->assertSuccessful();
+
+        $this->assertSame(1, Alert::where('tipo', AlertType::AGENDA)->count());
+    }
+
+    public function test_reminder_dry_run_does_not_create_alert(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+        $amanha = now()->addDay();
+
+        Activity::factory()->pendente()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'data' => $amanha->toDateString(),
+        ]);
+
+        $this->artisan('agenda:reminder', [
+            '--date' => $amanha->toDateString(),
+            '--dry-run' => true,
+        ])->assertSuccessful();
+
+        $this->assertSame(0, Alert::where('tipo', AlertType::AGENDA)->count());
     }
 }

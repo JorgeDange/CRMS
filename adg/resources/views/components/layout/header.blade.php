@@ -52,8 +52,8 @@
                                 <p class="text-muted mb-0">Sem notificações novas.</p>
                             </div>
                         @else
-                            <div class="notifications-item">
-                                @foreach ($recentAlerts as $alert)
+                            @foreach ($recentAlerts as $alert)
+                                <div class="notifications-item">
                                     <div class="notifications-desc">
                                         <a href="javascript:void(0);" class="font-body text-truncate-2-line">
                                             <span class="fw-semibold text-dark">{{ $alert->tipo->label() }}</span>
@@ -73,8 +73,8 @@
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
-                            </div>
+                                </div>
+                            @endforeach
                         @endif
                         <div class="text-center notifications-footer">
                             <a href="{{ route('alerts') }}" class="fs-13 fw-semibold text-dark" wire:navigate>Todas as notificações</a>

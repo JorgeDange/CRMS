@@ -16,7 +16,8 @@ class AlertFactory extends Factory
 
     public function definition(): array
     {
-        $tipo = $this->faker->randomElement(AlertType::cases());
+        // AGENDA é criado apenas pelo comando agenda:reminder (sem entidade).
+        $tipo = $this->faker->randomElement(array_values(array_filter(AlertType::cases(), fn (AlertType $c) => $c !== AlertType::AGENDA)));
 
         return [
             'tipo' => $tipo,
