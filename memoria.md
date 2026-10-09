@@ -51,11 +51,11 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 | Frontend | Blade + **Livewire 3** | 3.8.10 (+ volt 1.11.2) | ✅ |
 | CSS Framework | **Bootstrap 5.3** (npm `bootstrap@5.3.8`) | 5.3 | ✅ |
 | CSS Utilitário | **Tailwind CSS 4** (`@tailwindcss/vite`) | 4.3.3 | ✅ |
-| Interacções | **Alpine.js** (sem jQuery) | 3.4.2 | ✅ |
+| Interacções | **Alpine.js** (sem jQuery; instância única — a do Livewire) | 3.4.2 | ✅ |
 | Build | **Vite 7** (`laravel-vite-plugin@2`) | 7.3.6 | ✅ |
 | Testes | **PHPUnit** | 11.5.56 | ✅ |
 | Queue/Session/Cache | database | — | ✅ |
-| Excel / Gráficos / Backup | **maatwebsite/excel** 4.0 (Sprint 4) | 4.0 | ⏳ gráficos/backup nos sprints seguintes (§5) |
+| Excel / Gráficos / Backup | **maatwebsite/excel** 4 (S4) + **ApexCharts** 7.8 (protótipo) + **spatie/laravel-backup** (S12) | 4.0 / 7.8 | ✅ (gráficos: ApexCharts, §4 sobreposto pelo protótipo §22) |
 
 ### Notas de ambiente (importante para não perder contexto)
 
@@ -97,6 +97,10 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
   `.xlsx` correctamente nesta máquina → regra `mimes:xlsx` funciona.
 - **PowerShell `Set-Content -Encoding UTF8` (PS 5.1) mete BOM** em ficheiros sem BOM —
   remover com `[IO.File]::WriteAllText($p, $t, (New-Object Text.UTF8Encoding $false))`.
+- **`npm run build` logo após `artisan view:clear` gera CSS incompleto** — o app.css tem
+  `@source '../../storage/framework/views/*.php'` e, sem views compiladas, o Tailwind
+  perde ~18 KB de utilitários (639 KB em vez de 657 KB). Ordem segura: compilar views
+  primeiro (correr a app/tests) e build no fim; se acontecer, repetir o build.
 
 ---
 
@@ -133,9 +137,15 @@ Actualizado ao fim de cada sprint. Fonte de verdade técnica: `PROMPT_MASTER.md`
 > ⚠️ Corpo real do protótipo = `#f3f4f6` (theme.min.css), **não** `#eff0f6` como diz o §3 do MD
 > (`#eff0f6` = `.bg-gray-100`/`--bs-light`). Prevalece o protótipo (§22).
 
-`adg/resources/js/app.js`: `bootstrap` (bundle c/ Popper) + Alpine + `Alpine.data('sidebar')`
-(substitui o jQuery `minimenu`/`mob-navigation-active` do protótipo; localStorage igual:
+`adg/resources/js/app.js`: `bootstrap` (bundle c/ Popper) + `./apexcharts-init` +
+`Alpine.data('sidebar')` registado **em `document.addEventListener('alpine:init')`**
+(só pode haver UMA instância de Alpine — é a do Livewire; um `Alpine.start()` próprio
+causava "Detected multiple instances of Alpine running" e directivos avaliados 2×;
+substitui o jQuery `minimenu`/`mob-navigation-active` do protótipo; localStorage igual:
 key `nexel-classic-dashboard-menu-mini-theme` = `menu-mini-theme`).
+Os layouts app/guest declaram `@livewireStyles`/`@livewireScripts` explícitos (a
+auto-inject do Livewire só injecta quando a página tem componente Livewire — `/dashboard`
+e `/ui` não têm e ficariam sem Alpine).
 `vite.config.js`: plugins `laravel` + `tailwindcss`.
 
 ### Extração §4.6 (concluída no Sprint 1)
@@ -514,6 +524,491 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 
 ---
 
+## REVISÃO GERAL — ÍCONES, ERROS E ESTRUTURA (2026-10-06)
+
+Pedido: *"tem muitos erros... procure pelos erros em todas as áreas"*, *"o sistema
+não carrega nenhum ícone"*, *"a estrutura está desorganizada e desestruturada,
+verifique bem com o protótipo"*.
+
+### Ícones (bug raiz)
+- **`tools/extract-prototype-css.ps1`** tinha 2 bugs: (1) `Parse-Css` não guardava
+  `Body` nos nós `@` → todos os `@font-face` saíam vazios (`@font-face{}`); (2)
+  `$vendorsKeep` não casava o selector `i` → a regra base `i{...font-family:feather}`
+  era descartada, deixando as classes `.feather-*` só com `content`.
+- Também corrigido: `Trim(" '", '"')` → `Trim([char[]]@(' ', "'", '"'))`; novos
+  `Rewrite-Urls($text, $srcDir)` + `Resolve-WebPath` (o `../` não era capturado e
+  produzia `/assets/vendors/css/img/...`); `$vendorsKeep` ganhou `^i$`.
+- Extração re-executada: 12 `@font-face` preenchidos, 271–282 `.feather-*:before`,
+  urls `/fonts/...` e `/assets/vendors/img/flags/...`. `npm run build` → CSS com
+  `@font-face{font-family:feather;src:url(/fonts/...)}` e `i{...font-family:feather}`;
+  `public/build/fonts` (hack antigo) já não é preciso — caminhos absolutos `/fonts/`.
+- HTTP: `/fonts/feather.woff`, `/fonts/bootstrap-icons.woff2`,
+  `/fonts/fa-solid-900.woff2` e `/assets/vendors/img/flags/4x3/bi.svg` → **200**.
+
+### Erros de runtime encontrados e corrigidos
+- `/analytics` rebentava com **7 × Undefined variable** (`$vendasYTD`, `$ponderado`,
+  …) — a view usava variáveis nunca passadas. Criado **`app/Services/DashboardService.php`**
+  (exigido pelo PROMPT_MASTER §10) com `kpis()/charts()/tables()` partilhados; `Dashboard`
+  e `Analytics` ficaram finos (`view([...$service->kpis(), 'charts' => …, …$service->tables()])`).
+- `Vendas YTD` lia `$valorPipeline` e `Pipeline Ponderado` lia `$ponderado` →
+  passaram a `$vendasYTD` / `$pipelinePonderado`.
+- **Gráficos**: começou com `resources/js/charts.js` (Chart.js, resposta.md §4) mas o
+  utilizador exigiu fidelidade ao protótipo (§22) → **Chart.js removido, ApexCharts 7.8
+  instalado**; `resources/js/apexcharts-init.js` lê `data-adg-chart='{type:"area"|"donut"|
+  "small-area",...}'` das divs (idênticas ao `index.html`/`analytics.html`) e destrói
+  instâncias órfãs em `livewire:navigated`; os small charts usam `window.adgSmallCharts`
+  (JSON no blade); `app.js` importa `./apexcharts-init`; `charts.js` apagado (código morto).
+- **`route('contracts.edit')` não existia** → `/contratos` dava 500 assim que havia
+  ≥ 1 contrato; criada a rota `contratos/{contract}/editar`.
+- **`Route::view('contratos/{contract}')` passava uma string** →
+  `contracts/show.blade.php` rebentava com `Attempt to read property "numero_contrato"
+  on string`; convertida para `Route::get` com binding implícito de `Contract`.
+- **4 formulários rebentavam** com `Undefined variable $statusFilter`/`$classificacaoFilter`:
+  `product-form`, `commercial-form`, `contract-form` e `conciliaction-form` traziam os
+  blocos de filtro copiados da lista; `customers-create.html`/`projects-create.html`
+  **não têm** `content-sidebar` com filtros → removidos (crash + fidelidade ao protótipo).
+- **"Editar" não preenchia o formulário**: `*/edit.blade.php` não passava o registo ao
+  componente — o `mount()` lia `?produto=`/`?contract=` do query string, que as rotas
+  nunca geram. Agora as views passam `['produto' => $produto]` (etc.) e os `mount()`
+  aceitam o parâmetro opcional, mantendo o fallback ao query string.
+- **Sino do header**: `href="{{ route('alerts') }}"` com `data-bs-toggle="dropdown"`
+  fazia a página navegar antes de abrir (o protótipo usa `href="#"`) → `href="javascript:void(0);"`.
+- **"Marcar todas como lidas"** só navegava para `/alertas` → nova rota
+  `POST alertas/marcar-todas` (`alerts.markAll`) com `<form>` que marca `lido = true`
+  apenas dos alertas do utilizador autenticado.
+- `x-cloak"` malformado ×3 no `sidebar.blade.php`; `wire:key=\"..."` dentro do atributo
+  `class` em 5 `*-list.blade.php` (contract/alert/commercial/conciliaction/product)
+  → `wire:key` como atributo separado.
+
+### Estrutura / código morto
+- Auditoria automática de **todas as `route()` usadas** (views + app + routes) contra
+  `route:list` → **todas resolvem**.
+- Removido código morto do Breeze que apontava para rotas inexistentes
+  (`password.email`, `profile.update`, `profile.edit`, `verification.send`):
+  7 `App\Http\Controllers\Auth\*` (fica `VerifyEmailController`), `ProfileController`,
+  `resources/views/auth/*.blade.php`, `resources/views/profile/edit.blade.php`,
+  `resources/views/profile/partials/*` e `resources/views/layouts/navigation.blade.php`.
+- Sidebar confirmada contra `resposta.md` §7 (8 acordeões, "Nova Oportunidade" antes de
+  "Pipeline") — estava correcta; `PROMPT_MASTER` §7 diverge e foi sobreposto.
+- Mantidos **4 KPI cards** (decisão registada em `plano.md:115`) apesar dos 6 blocos
+  do Sprint 11.
+
+### Testes
+- **+30 testes** nos módulos que não tinham nenhum — foi por isso que os crashes
+  passaram desperbidos: `DashboardTest` (dashboard/analytics, KPIs, payload JSON dos 8
+  gráficos), `AlertsTest` (lista, marcação global, dropdown do header), `ContractsTest`,
+  `ProductsTest`, `CommercialsTest`, `ConciliactionsTest` (auth, lista, create,
+  show/edit com prefill, sidebar).
+- **Validação:** `php artisan test` → **113 testes, 580 assertions, 0 falhas**
+  (era 83/399); `vendor/bin/pint --test` → **passed**; `npm run build` → OK
+  (`app-*.css` 657 KB / `app-*.js` 1117 KB com ApexCharts); HTTP 8099 → `/login` 200,
+  `/dashboard` 302→login, CSS/JS/fontes 200.
+
+### Pipeline Drag & Drop + Loading State (2026-10-08)
+- **Problema (consola)**: `Alpine Expression Error: Unexpected token ')'` em todos os
+  `x-on:drop.prevent` dos cartões + `Detected multiple instances of Alpine running`.
+  **Causa raiz**: `resources/js/app.js` importava e arrancava um Alpine próprio
+  (`Alpine.start()`) enquanto o `livewire.js` traz o seu — o DOM era avaliado DUAS vezes
+  (handlers de drop duplicados, `move` disparado 2× por drop) e as expressões do drop
+  interpolavam Blade dentro de JS inline (`id: {{ $opportunity->id }}`, `stage: '{{ $stage }}'`).
+- **Correcção (estado final)**:
+  - `resources/js/app.js`: Alpine próprio **removido**; o componente `sidebar` passou a
+    registar-se em `document.addEventListener('alpine:init')` sobre `window.Alpine`
+    (o do Livewire), disparado ANTES de o Alpine percorrer o DOM.
+  - `layouts/app.blade.php` + `guest.blade.php`: `@livewireStyles` (head) e
+    `@livewireScripts` (fim do body) **explícitos** — a auto-inject do Livewire só
+    injecta se a página renderizou ≥ 1 componente Livewire; `/dashboard` e `/ui` não têm
+    e ficariam sem Alpine (sidebar/submenus `x-cloak` presos). Com as tags, todas as
+    páginas servem **exactamente 1× livewire.js + 1× app.js**.
+  - `pipeline.blade.php` reescrito **sem interpolação JS em expressões Alpine**:
+    - board: `x-data` com `loadingId` + `async drop(event, stage)` →
+      `await $wire.$call('move', id, stage)` dentro de `try/finally` (loading limpo
+      mesmo com erro); id lido do `dataTransfer`, guardado como string;
+    - coluna: `x-on:drop.prevent="$el.classList.remove('drag-over'); drop($event, $el.dataset.dropzone)"`
+      (único handler de drop — o cartão deixou de ter um, eliminando o dispatch duplo);
+    - cartão: `data-opp="{{ $opportunity->id }}"` (Blade só em atributos HTML) +
+      `x-on:dragstart` via `$el.dataset.opp` + `:class="{ 'opacity-50': loadingId === $el.dataset.opp, … }"`;
+    - spinner `x-show="loadingId === $el.dataset.opp"` com `data-opp` próprio → "A mover…"
+      só no cartão exacto enquanto o pedido está em curso.
+  - `Pipeline.php`: removidos `$listeners = ['kanbanMove' => 'move']` e `$movingId`
+    (mortos — nada despacha `kanban-move`); `move()` continua a mudar a fase via
+    `OpportunityService::changeStage()` e a despachar `opportunity-moved`.
+- **Verificação (mecânica, não visual)**:
+  - 113 testes / 580 assertions a passar; pint passed; build OK (`app-*.js` 1117 KB).
+  - Páginas servidas (teste temporário que fez dump e foi apagado): 1× livewire.js,
+    1× app.js, 1× estilos Livewire, `x-data="sidebar"` presente.
+  - 20 expressões Alpine extraídas do HTML servido → **parse OK** com o wrapper exacto
+    do Alpine (`new AsyncFunction('__self','scope','with (scope) { __self.result = … }')`).
+  - **Teste jsdom + Alpine real** (`alpinetest/test-dnd.mjs`, 12 asserções, ALL PASS):
+    1 chamada `$wire.$call('move', 7, 'qualificacao')` por drop (sem duplicação),
+    spinner/opacity durante o pedido e limpos na resposta, `drag-over` removido,
+    drop sem id ignorado. Requer `npm install jsdom` numa pasta temporária.
+
+### Correcção: kanban em vertical + loading preso nos cartões (2026-10-08)
+- **Sintomas reportados**: (1) "loop no loading nos card" (spinner "A mover…"
+  permanente); (2) "todos eles estão alinhados na vertical" (colunas em vez de
+  estarem lado a lado).
+- **Causa raiz**: `<div class="kanban-card">` (linha 67) **nunca tinha fecho** — a
+  correcção anterior que envolveu o conteúdo do cartão em `<div class="position-relative">`
+  (para servir de contexto de posicionamento ao overlay) + overlay +1 abertura mas o
+  `</div>` final fechava só o `position-relative`. Faltava **um `</div>` por cartão**:
+  - cartões aninhavam uns nos outros → as colunas seguintes acabavam por nascer
+    DENTRO dos cartões → toda a estrutura colapsava numa única cadeia vertical;
+  - o DOM malformado fazia o morph do Livewire falhar/travar no `move()` → a promise
+    de `$wire.$call` nunca assentava → o `finally` nunca corria → spinner preso.
+- **Correcção**: `pipeline.blade.php` — acrescentado o `</div>` de fecho do cartão
+  depois do `position-relative` (estrutura: `card > position-relative > [card-body,
+  overlay]`).
+- **Validação (jsdom + Alpine real sobre o HTML renderizado com 30 oportunidades —
+  `alpinetest/validate-real.mjs`, 14 asserções, ALL PASS)**: div balanceado no crudo
+  (346/346), 0 cartões aninhados, 30 cartões filhos directos de `.kanban-col-body`,
+  9 colunas filhas directas do board, board `d-flex gap-3`, 30 spinners escondidos no
+  arranque, 1× `$wire.$call('move')` por drop, spinner visível só no cartão arrastado
+  e limpo na resposta. 113 testes/580 assertions, pint, build estável (`app-DRY1tIMU.css`
+  657.33 KB).
+
+### Correcções de consola + sparklines do dashboard (2026-10-08)
+- **Aviso `undefined color - ApexCharts` (fillPath)**: `DashboardService` construía
+  `faturacaoMensalPayload` **sem `color`** → `salesAreaConfig` passava
+  `colors: [undefined]`. Correcção: payload com `'color' => self::SALES_COLOR`
+  (`#3454d1`, igual ao protótipo `dashboard-init.min.js`) + default defensivo
+  `payload.color || '#3454d1'` em `apexcharts-init.js`.
+- **3 sparklines do dashboard não renderizavam** (`taskCompletedChart`,
+  `newTasksChart`, `projectDoneChart`): `dashboard.blade.php` fazia
+  `@push('scripts')` mas **não existia nenhum `@stack()`** no projecto → script nunca
+  era emitido (`window.adgSmallCharts` indefinido). Acrescentado
+  `@stack('scripts')` em `layouts/app.blade.php` (antes de `@livewireScripts`;
+  os inline scripts correm no parse, o `app.js` (module) depois → ordem garantida).
+- **`Unexpected token '&'`**: o script pushado usava `{{ json_encode(...) }}` que
+  escapa `"` para `&quot;` dentro de `<script>` → trocado por `@json(...)`.
+  (Nos atributos `data-adg-chart="{{ json_encode(...) }}"` o escaping é correcto —
+  o browser decodifica as entidades no `dataset`.)
+- **Validação E2E (Chrome real + puppeteer-core, `browsertest/e2e-*.mjs`)**: login →
+  dashboard 4 gráficos com SVG, analytics 4 gráficos, **0 avisos `undefined color`,
+  0 erros de consola**; fluxo completo (`e2e-flow.mjs`): wire:navigate, 2 drags reais,
+  filtro, pesquisa — sempre 0 spinners visíveis e loading limpo. 113 testes/580
+  assertions; build `app-DMLx1amv.js` / `app-DRY1tIMU.css` 657.33 KB.
+
+### Loading dos cartões do kanban REMOVIDO (2026-10-08 — pedido do utilizador)
+- **Pedido**: "em pipeline os cards estão com loop de loading, remova o loading nos
+  card" — apesar de o problema não se reproduzir em browser limpo (validado E2E),
+  o utilizador pediu a remoção total.
+- **Removido** de `pipeline.blade.php`: overlay spinner "A mover…", `loadingId` +
+  `async/try/finally` do board, binding `:class` com `opacity-50` e o wrapper
+  `position-relative` (só existia para o overlay) → estrutura do cartão volta ao
+  original do protótipo (`kanban-card > card-body`). O drop ficou simples:
+  `drop(event, stage)` → valida id → `$wire.$call('move', id, stage)`.
+- **Validação**: jsdom `validate-real.mjs` **16/16 PASS** (divs 196/196, 0 aninhados,
+  0 elementos `x-show`, 1× `$call('move')` por drop); 113 testes/580 assertions;
+  Chrome real `e2e-noloading.mjs` **10/10 PASS** (0 x-show/0 spinners/0 "A mover"
+  no kanban, drag muda a coluna com `maxVisibleDuring=0`, cartão reposto, **consola
+  com 0 mensagens**); build `app-Bb8PbBCS.css` 657.27 KB + `app-DMLx1amv.js`.
+
+### Dashboard: 3 mini-cards em PT + gráficos finalmente visíveis (2026-10-08)
+- **Pedido do utilizador**: títulos/descrições em português, "não aparece nenhum
+  gráfico", descrição dos cards a aparecer FORA do card, e o Task Completed separado
+  dos outros dois → alinhar os 3 juntos. Decisões: Facturação full-width; prioridade
+  = descrição dentro do card.
+- **Layout** (`dashboard.blade.php`): Facturação Mensal passou a `col-xxl-12`; o Task
+  Completed saiu da row da Facturação; nova row única com **3 × `col-lg-4`** iguais
+  ao protótipo `[Mini]` (cartões `mb-4 stretch stretch-full`).
+- **Estrutura PT do protótipo**: `card-header` com ícone (`feather-star` /
+  `feather-file-text` / `feather-airplay`) + título + subtítulo X/Y à esquerda e
+  contador grande à direita; títulos **"Actividades Concluídas" / "Novas
+  Actividades" / "Encomendas Entregues"**; descrição "28%/34%/42% mais" +
+  **"desde a semana passada"** (antes "vs mês anterior").
+- **Descrição dentro do card**: os divs dos charts tinham `style="width: 100%"` que,
+  somado ao `text-nowrap` da descrição, fazia overflow de ~54px para fora do card.
+  Substituído por `flex: 1 1 auto; min-width: 0` → o chart ocupa só o espaço
+  restante e a descrição fica sempre dentro (`descDentroDoCard: true` nos 3).
+- **BUG RAIZ dos gráficos vazios** (pré-existente desde o Sprint 11): em
+  `apexcharts-init.js`, `salesAreaConfig`/`smallAreaConfig` faziam
+  `series: [{name, data: payload.series}]`, mas `payload.series` do
+  `DashboardService` **já era** `[{name, data:[…]}]` → o Apex recebia
+  `data = [object]` = **1 ponto** → y-axis default 0–6, uma única label
+  ("Nov/2025") e caminho degenerado `M 0 230` — o SVG existia mas o gráfico era
+  invisível (o mesmo acontecia à Facturação). Corrigido com helper `toSeries()`
+  (aceita `[{name,data}]` do `dashboardData` **e** `[n1,n2,…]` do `analyticsData`,
+  que eram formatos inconsistentes) + `yaxis.labels.formatter` compacto M/K.
+- **Contadores X/Y** (`DashboardService`, chave `minis`): concluídas/total,
+  criadas-30-dias/total, entregues (`data_fim < hoje`, não cancelados)/total. O
+  gráfico "Encomendas Entregues" passou a contar **entregues por mês (`data_fim`)**
+  em vez de renovados por `updated_at` — alinhado com o título do protótipo.
+- **Dados demo históricos** (era a 2ª causa de gráficos vazios): novo
+  `DashboardDemoSeeder` (idempotente, marca `[demo-hist]`): 25 actividades
+  distribuídas pelos últimos 6 meses (17 concluídas, `proxima_accao_prazo` NULL para
+  não poluir "Pendências Hoje") + 12 aprovações com `data_aprovacao` mensal
+  (facturação com 12 pontos de 6M a 71M). `ContractSeeder` corrigido: os nomes de
+  produto já não existiam no catálogo (fallback para qualquer produto) → 9 contratos
+  (5 com `data_fim` no passado = entregues, estados expirado/renovado/cancelado) —
+  footer da Facturação passou a mostrar 15M/33.5M/2.2M/50.7M em vez de zeros.
+- **Validação**: `e2e-measure.mjs` — 3 cards **mesma linha** (y=973),
+  `descDentroDoCard: true` ×3, títulos PT ✓, séries 17/35/7, Facturação
+  `col-xxl-12` ✓; `e2e-charts.mjs` — dashboard 4 + analytics 4 gráficos, 0 avisos/0
+  erros de consola; probe DOM — paths reais (facturação `dLen=1274` w=1109; minis
+  w=164); screenshot final confirma visual do protótipo; DashboardTest 4/4 (títulos
+  PT), suite **113 testes/580 assertions**, pint OK, build `app-Bb8PbBCS.css`
+  657.27 KB + `app-DMLx1amv.js`.
+
+### Painel Executivo: header único, KPIs sem overflow, charts reordenados (2026-10-08)
+- **Pedido do utilizador**: (1) remover o header duplicado com o badge "Somente
+  leitura"; (2) valores em dinheiro vazavam dos KPI cards quando maiores; (3) repetir
+  a correcção do dashboard — "Estado das Encomendas" para a row de baixo e "Vendas
+  Mensais" full-width.
+- **Header**: `analytics.blade.php` tinha um `content-area-header sticky-top` próprio
+  (igual ao do layout `x-ui.page-header` → 2 headers "Painel Executivo"). Removido o
+  bloco da blade; o badge **"Somente leitura"** passou para `<x-slot
+  name="pageHeaderRight">` em `analytics/index.blade.php` (padrão já usado em
+  `opportunities/*`) → **1 header** com título + breadcrumb + badge (igual ao
+  protótipo, que só tem um `.page-header`).
+- **KPIs**: `formatKz` completo ("Kz 305.200.000", 14 chars) não cabe em `col-xxl-3`
+  a ~1400–1600px (avatar-lg + gap-4 + padding ≈ 120px de chrome num card de 232–282px)
+  e fazia wrap feio ("Kz" numa linha). Correcção dupla: novo
+  `OpportunityService::formatKzCompact()` — `<1M` completo, `1–999M` com 1 decimal
+  ("Kz 305,2M"), `≥1G` em M inteiro ("Kz 1.503M"; precedente: footer da Facturação já
+  usava "15M/33.5M") — e classe `.kpi-money` no `app.css` com
+  `clamp(15px, 1.35vw, 22px)` + `white-space: nowrap` (fonte adaptativa ao viewport).
+  "Encomendas em Curso" ("6") mantém `fs-4`.
+- **Charts**: `execSalesChart` passou de `col-xxl-8 col-xl-7` → **`col-xxl-12`**;
+  "Estado das Encomendas" saiu da row de cima e juntou-se a "Pipeline por Estado" +
+  "Clientes por Segmento" numa row única **3 × `col-xxl-4 col-md-6`**.
+- **Bónus — donuts com % erradas (741%/123%/554%)**: o `dataLabels.formatter` dividia
+  o valor pelo `seriesTotals` outra vez, mas o Apex 7.x **já passa a percentagem**
+  (6/9=66,67 → 66,67/9×100=741). Passou a `Math.round(val)+'%'` → 67/11/11/11,
+  20/20/16/28/4/4/8 e 94/6 (somas 100%).
+- **Validação E2E** (`e2e-analytics-after.mjs`, 1600 **e** 1400px): 1 `.page-header` +
+  0 `.content-area-header` + badge ×1; KPIs `valorVazaDoCard:false`,
+  `bodyOverflowX:false` (280/280 e 230/230) nos 4 cards; `execSalesChart` `col-xxl-12`
+  (w=1148/948); `donutsY=[847,847,847]`/`[863,863,863]` (mesmo y); consola **0
+  mensagens**; screenshot `analytics-after.png` confirma visual. DashboardTest 4/4,
+  suite **113 testes/580 assertions**, pint OK, build `app-BZlEFgV4.css`
+  657.33 KB + `app-CqMpB9BH.js` 1,117.60 kB.
+
+### Agenda Comercial: 3 bugs raiz, menu e filtros no header (2026-10-08)
+- **Pedido do utilizador**: (1) menu com 2 opções redundantes "Actividades"/"Actividade";
+  (2) "ao criar não salva nada" (nunca via o registo na lista); (3) filtros por tipo/estado
+  "não funcionam"; (4) substituir o painel de filtros esquerdo de 300px (sobrepunha-se ao
+  conteúdo/footer em <1200px) por dropdowns no header — só na Agenda.
+- **BUG RAIZ #1 — itens da lista INVISÍVEIS (o utilizador tinha razão sem o saber)**:
+  o Tailwind 4 gera a utility `.collapse{visibility:collapse}` porque a classe `collapse`
+  aparece nas views, **colidindo com a `.collapse` do Bootstrap** (accordion/collapse).
+  Todos os `.card-body.collapse.show` ficavam com `visibility: collapse` → os 36 itens
+  ocupavam espaço mas não se viam (`innerText` vazio, `innerHTML` com o texto) — por isso
+  parecia que "criar não guardava" e que "os filtros não faziam nada" (a lógica funcionava).
+  O registo de prova era o id 11 "fdgdg" (gravado na BD às 02:57, invisível na lista).
+  Fix em `app.css` **fora de `@layer`** (ganha na cascata sobre a utility): `.collapse
+  { visibility: visible; }` — o `display:none` do Bootstrap não é tocado. Efeito lateral
+  positivo: accordion do Pipeline (`pipeline.blade.php:29`) também estava invisível.
+- **BUG RAIZ #2 — cada cartão de grupo com 7514px**: `.stretch.stretch-full` do
+  theme-extract tem `height: calc(100% - 24px)`; com N grupos o 100% resolvia contra a
+  soma do próprio contentor → 29 cartões × 7514px = 218.597px de scroll (29 grupos).
+  No protótipo os cartões são ~896px (contentor com altura definida). Fix escopado:
+  `.apps-tasks .content-area-body > .card.stretch { height: auto; }` → alturas naturais
+  (214/305/397px), scroll 7731px.
+- **Menu** (`sidebar.blade.php:63`): 3º item "Actividade" → **"Nova Actividade"**
+  (Calendário / Actividades / Nova Actividade).
+- **Lista** (`activity-list.blade.php`): removido o `content-sidebar` + gatilho hambúrguer;
+  header com **dropdown "Filtros"** (padrão `product-list`) com grupos etiquetados
+  **Estado** ("Todos os estados" + Pendentes/Concluídas/Canceladas) e **Tipo** ("Todos os
+  tipos" + Visitas/Chamadas/Reuniões/Propostas/Cobranças) e botão **"Nova Actividade"**;
+  pesquisa/ordenação mantidos. Não existe "subcategoria" no projecto — a confusão vinha do
+  painel sem legenda no grupo de estados; agora todos os grupos têm etiqueta.
+- **Formulário** (`activity-form.blade.php`): removido o `content-sidebar` (os links
+  "Todas/Tipo/Estado" navegavam para fora do form e perdiam dados preenchidos); adicionado
+  **resumo de erros de validação** no topo (`.alert-danger`) + botão com `wire:loading`
+  ("A guardar…"); header Lista/Calendário passou de `page-header-right-items` (painel
+  off-canvas do protótipo que aqui renderizava empilhado) para `hstack gap-2` (lado a lado).
+- **Feedback de criação**: `ActivityForm::save()` faz `session()->flash('actividade_criada')`
+  antes do redirect → a lista mostra aviso "Actividade guardada com sucesso" (dismissável).
+- **Calendário** (`activity-calendar.blade.php`): removido o `content-sidebar`; filtros de
+  tipo → **dropdown "Tipos"** (checkbox "Ver todas as actividades" + legenda com checkboxes
+  `wire:model.live="types"`, `data-bs-auto-close="outside"`); "Eventos e Agendamentos" →
+  **dropdown "Próximos"** (lista scrollável com data/cliente/próxima acção); botão
+  "Nova Actividade" no header.
+- **Testes**: `AgendaTest` actualizado (menu `>Nova Actividade</a>`, lista
+  `assertDontSee('content-sidebar')` + legendas "Todos os estados/tipos", calendário
+  `id="viewAllSchedules"`/`Próximos`, flash `actividade_criada`).
+- **Validação E2E** (`e2e-agenda-after.mjs`, Chrome real, 0 erros de consola): lista com
+  `visibility: visible`, 36 itens, fdgdg/Benguela no `innerText`; filtros Visitas → 2 itens
+  (fdgdg esconde) → "Todos os tipos" → 36; criar "TESTE E2E" → redirect `/agenda` + alerta
+  de sucesso + registo visível (37) → eliminar → 36; form sem sidebar, 44 clientes, datas
+  OK; validação sem required → resumo "Não foi possível guardar:…"; calendário 42 células,
+  15 eventos, dropdowns Tipos (6 opções)/Próximos (3 itens). Suite **113 testes/585
+  assertions**, pint OK, build `app-CJdTR_nW.css` + `app-CqMpB9BH.js`.
+
+---
+
+### Calendário da Agenda: modal de detalhes do evento (2026-10-08)
+
+**Pedido**: clicar num evento do Calendário abria o formulário "Nova Actividade" em modo
+edição (`wire:navigate` para `agenda.create?atividade=` com header "Nova Actividade" —
+parecia uma criação); o certo era **mostrar os detalhes**. Decisão do utilizador: **modal no
+calendário** (não página própria). O protótipo nem trata o clique (`clickSchedule` só fazia
+`console.log`).
+
+- **Estado Livewire** (`ActivityCalendar`): `$detalheId` + `abrirDetalhe()` (ignora id
+  inválido), `fecharDetalhe()`, `concluirDetalhe()` (`ActivityService::toggleStatus`) e
+  `eliminarDetalhe()` (`remove` + fecha); `render()` passa `detalhe`
+  (`Activity::with('opportunity')`).
+- **Evento na grelha**: `href="javascript:void(0);"` + `wire:click="abrirDetalhe(id)"`
+  (antes navegava para o form de edição); `title="Ver detalhes: …"`.
+- **Modal** (`#modalDetalheActividade`, markup puro — sem JS do Bootstrap): visibilidade
+  controlada pelo estado (`modal fade show d-block` / `display:none` + backdrop), fecha com
+  `wire:click.self` no backdrop, `.btn-close` e botão "Fechar". Conteúdo: badge de tipo,
+  descrição, Cliente, Estado (badge), Tipo, Data, Hora, Prazo, Próxima acção e Resultado;
+  footer com **Editar** (`wire:navigate` → form de edição — único caminho que abre o form),
+  **Concluir** (só se pendente), **Eliminar** (confirm do Alpine) e **Fechar**.
+- **Travão do body** (`modal-open`): 1.ª tentativa com `$wire.entangle('detalheId').live` +
+  `x-effect` **falhou** — `.live` devolve um objecto (sempre truthy) → a classe entrava no
+  page load e nunca saía; solução final: o PHP faz `$this->dispatch('modal-actividade',
+  aberto: bool)` em abrir/fechar/eliminar e a raiz do componente tem
+  `x-on:modal-actividade.window` com o toggle; `app.js` remove a classe em
+  `livewire:navigating`/`livewire:navigated` (caso "Editar": navega com o modal aberto e o
+  listener Alpine morre com o componente).
+- **Modal "opacitada" (bug visual corrigido)**: `theme-extract.css:625` tem
+  `body.modal-open .nxl-container,...{filter:blur(3px)}` — no protótipo os modais ficam
+  **depois de `</main>`** (fora do contentor) e o blur atinge só o chrome; aqui o modal vive
+  **dentro** de main (renderizado pelo Livewire) e o filtro borrava também o próprio modal.
+  Fix em `app.css`: `filter: none` nos 4 seletores da regra + mesmo blur no
+  `.modal-backdrop.show` via `backdrop-filter` — mas o minifier do build **dropa a
+  propriedade standard e só deixa o `-webkit-`** (Chrome ignora) → o blur do backdrop do
+  calendário está em **inline-style na view** (não passa pelo minifier). Resultado: fundo
+  borrado (igual ao protótipo), modal nítido.
+- **Testes**: 3 novos em `AgendaTest` (abre modal com detalhes/acções + `assertDispatched`,
+  id inválido ignorado, fecha; concluir/eliminar pelo modal) → **115 testes/607 assertions**
+  (+1 em DashboardTest para o modal de confirmação → **116/610**).
+- **E2E** (`e2e-calendario-detalhe.mjs`, Chrome real, 0 erros de consola): cria actividade →
+  clica evento → modal abre SEM navegar (detalhes completos, body travado, backdrop) →
+  Editar → form com prefill + body libertado → Concluir (badge "Concluída", botão some) →
+  Fechar (modal+backdrop escondidos, body libertado) → reabrir e fechar pelo backdrop →
+  Eliminar (abre modal de confirmação → confirma → evento sai da grelha) → lista volta ao
+  baseline (0 restos, 0 dialogs nativos); pint OK, build `app-CQXN0hf4.css` + `app-DZulwGZq.js`.
+
+---
+
+### Modal de confirmação global — substitui o window.confirm (2026-10-08)
+
+**Pedido**: os 6 fluxos de eliminação usavam o `confirm()` nativo do browser — substituir
+por um modal de confirmação com o estilo do sistema.
+
+- **Store Alpine** `confirmar` (registado em `alpine:init` no `app.js`): método
+  `abrir({ titulo, mensagem, confirmar, cancelar })` que devolve uma **Promise** e
+  `responder(bool)` que a resolve; trava/destrava o `modal-open` do body.
+- **Markup global** em `layouts/app.blade.php`, **depois de `</main>`** (mesma posição do
+  protótipo — nunca apanha blur do contentor): `#modalConfirmar` com `:class="{ 'show
+  d-block': $store.confirmar.visivel }"`, `x-text` nos títulos/botões, fecha por
+  `btn-close`, clique no backdrop, **ESC** (`@keydown.escape.window`) e botão Cancelar;
+  backdrop com `backdrop-filter: blur(3px)` em `:style` (inline, anti-minifier).
+- **Substituídos os 6 `confirm()`**: `activity-list`, `activity-calendar` (Eliminar do
+  modal de detalhes), `alert-list`, `product-list`, `conciliaction-list`,
+  `commercial-list` — todos com o padrão
+  `$store.confirmar.abrir({...}).then(ok => ok && $wire.remove(id))`.
+- **Teste**: `DashboardTest::test_layout_renders_global_confirm_modal_instead_of_native_alerts`
+  — assert do `#modalConfirmar` + varredura recursiva de TODAS as views garantindo zero
+  `confirm(` (regex `[^.\w]confirm\(` que não apanha `password.confirm`).
+- **E2E** (`e2e-confirmar.mjs`, Chrome real): **0 dialogs nativos** (contados no handler);
+  lista: cancelar por botão (título/mensagem/CANCELAR-ELIMINAR preenchidos, body travado,
+  backdrop `blur(3px)`, main sem blur) + cancelar por **ESC** + confirmar eliminação
+  (item some, body libertado); calendário: confirmação **empilhada sobre o modal de
+  detalhes** (elementFromPoint no confirm, blur nos dois backdrops, detalhes nítido) →
+   confirma → ambos fecham, evento some; baseline 34/34 e 0 restos. Suite **116 testes/610
+   assertions**, pint OK, build `app-CQXN0hf4.css` + `app-DZulwGZq.js`.
+
+---
+
+### Conciliações: sem sidebar vertical + tabela sem corte (2026-10-08)
+
+**Pedido**: aplicar à Conciliações o que fizemos na Agenda (remover o menu lateral
+vertical e passar os filtros para o header) e corrigir a tabela "desajustada".
+
+- **Causa raiz medida (Chrome, 1600×1000)**: o `content-sidebar` de 300px empurrava
+  `.content-area` para 580..1756 → 156px cortados pelo viewport (a página não tem scroll
+  horizontal) e a tabela (1218px naturais, células `white-space:nowrap` do tema) não
+  cabia no wrap de 1114px → scroll interno + coluna Acções cortada. Escondido o sidebar
+  por JS, `.content-area` encaixava em 280..1600 e a tabela cabia sem overflow.
+- **`conciliaction-list.blade.php`**: removidos `x-data sidebarOpen`, o bloco
+  `content-sidebar` (filtros + botão "Nova") e o gatilho hamburger; header ganhou
+  botão primário **`+ Nova Conciliação`** e o dropdown "Filtros" passou a ter grupos
+  `<h6>Classificação</h6>` ("Todas as classificações" + loop) e `<h6>Estado</h6>`
+  ("Todos os estados", Resolvidas, Pendentes) — igual à Agenda.
+- **`conciliaction-form.blade.php`**: removidos a sidebar (quase vazia) e o hamburger;
+  o dropdown do header já tinha "Ver todas / Nova Conciliação".
+- **CSS de contingência (`app.css`)**: em 1366px até sem sidebar havia corte de ~194px
+  (o min-content da tabela nowrap impedia os itens flex de encolher) → `min-width: 0`
+  em `.d-flex.flex-grow-1` e `.content-area` dentro de `apps-container + without-header`;
+  agora a tabela faz scroll interno normal (`table-responsive`).
+- **Testes**: `ConciliactionsTest` espelha o AgendaTest — `assertDontSee('content-sidebar')`
+  + `assertSee('Filtros'/'Todas as classificações'/'Todos os estados'/'Nova Conciliação')`.
+- **E2E** (`e2e-conciliacoes.mjs`): 1600px — 0 erros, sidebar ausente, `wrapRight 1569 ≤
+  1600`, sem overflow, dropdown com grupos, filtro "Resolvidas" → 4 linhas todas "Sim",
+  menu fecha, "Nova Conciliação" navega para o form (também sem sidebar); 1366px —
+  `clipado:false` (área = 1366) + scroll interno da tabela. Screenshots
+  `conc-lista-1600.png`/`conc-lista-1366.png`. Suite **116 testes/615 assertions**,
+  pint OK, build `app-DQdxitU4.css` + `app-DZulwGZq.js`.
+- **Nota**: o mesmo padrão vertical ainda existe em Produtos, Alertas, Comerciais e
+  Contratos (6 views) — pendente de pedido.
+
+---
+
+### Produtos, Alertas, Comerciais e Contratos: sem sidebar vertical (2026-10-08)
+
+**Pedido**: aplicar a todas as páginas restantes com `content-sidebar` o mesmo padrão da
+Agenda/Conciliações ("aplica a mesma mudança nessas").
+
+- **7 views afectadas**: `product-list`, `product-form`, `alert-list`, `commercial-list`,
+  `commercial-form`, `contract-list`, `contract-form` — removidos o bloco `content-sidebar`
+  (300px), o `x-data sidebarOpen` e o gatilho hamburger; cada ficheiro ganhou comentário
+  `sem content-sidebar` no topo (o Blade elimina comentários, logo o `assertDontSee`
+  continua a passar). Com isto **nenhuma view** do protótipo usa `content-sidebar`.
+- **Listas**: botão primário no header — `+ Novo Produto` / `+ Novo Comercial` /
+  `+ Novo Contrato` (Alertas não tem acção de criação); dropdown "Filtros" com grupos
+  `<h6>` — Produtos: **Estado** + **Comercial**; Alertas: **Tipo** + **Estado**;
+  Comerciais/Contratos: **Estado**; em Comerciais "Todos" passou a "Todos os estados".
+- **Formulários**: sidebar (quase vazia) + hamburger removidos; o dropdown do header já
+  continha "Ver todos / Novo X".
+- **Testes** (+20 assertions): nos 4 testes de lista, `assertDontSee('content-sidebar')`,
+  `assertSee('content-area-header')`, `Filtros`, `Novo X`, `Todos os estados`
+  (+ `Todos os comerciais` em Produtos); asserções antigas (feather-plus, rotas,
+  "Novo X" nos forms) mantêm-se válidas.
+- **E2E** (`e2e-listas-sem-sidebar.mjs`): 4 listas × [1600, 1366] — todas com
+  `semSidebar:true`, sem hamburger, `clipado:false` (área = viewport), dropdowns com os
+  grupos certos e botões Nova correctos; em 1366 Alertas/Contratos fazem scroll interno
+  normal da tabela; 3 formulários sem sidebar com `wire:submit="save"`; **0 erros de
+  consola**, `criticoOk:true`. Suite **116 testes/635 assertions**, pint OK,
+  build `app-DQdxitU4.css` + `app-DZulwGZq.js`.
+- **Nota**: a leitura de screenshots voltou a devolver PNGs trocados (gotcha da
+  plataforma) — verificação feita por medições DOM (objectivas: botões/grupos/medidas
+  por página) + hashes dos ficheiros.
+
+---
+
+### Coluna Observações desalinhada + varredura de tabelas (2026-10-08)
+
+**Pedido**: "a coluna Observações em Conciliações está mais em cima e não está dentro da
+tabela — verificar" + "verifica também em outras áreas que possuem tabelas, tem essa distorção".
+
+- **Causa raiz** (`theme-extract.css:163`): `.text-truncate-1-line` tem
+  `display:-webkit-box!important` + `-webkit-line-clamp:1`; aplicada **directamente ao
+  `<td>`** destruía o `table-cell` (computado `flow-root`) → célula com altura 53px vs
+  61px das restantes, conteúdo colado ao topo e tira branca no fundo das linhas vermelhas.
+- **Fix (3 views)**: classe sai do `<td>` e passa para um `<div class="text-truncate-1-line">`
+  interno (mesmo padrão da coluna Cliente) — `conciliaction-list` (Observações, 300px),
+  `commercial-list` (Descrição, 300px), `alert-list` (Mensagem, 400px).
+- **Verificação pós-fix** (`probe-obs.mjs`): nas 3 páginas, `display:table-cell`, alturas
+  iguais (`61=61`), centros do conteúdo alinhados (±4px), 0 erros de consola.
+- **Varredura global pedido "outras áreas"**: grep em todas as views → zero `<td>/<th>` com
+  classes que mudam `display` (text-truncate-1-line, d-block/d-flex/d-inline-block, styles
+  inline); runtime `probe-tabelas.mjs` em **13 páginas** (analytics, dashboard, pipeline,
+  pipeline/importar, agenda, calendário, contratos, produtos, comerciais, alertas,
+  conciliações, /ui, profile) → **346 `<td>` + 63 `<th>`, todas `table-cell`, 0 células
+  erradas, 0 erros**; preview da Importação verificado estaticamente (`<td>`s sem classes).
+  Cobertura completa: as 9 tabelas do protótipo.
+- **Validação**: 116 testes/635 assertions, pint OK, E2E `e2e-conciliacoes.mjs` +
+  `e2e-listas-sem-sidebar.mjs` verdes (`criticoOk:true`, 0 erros), build
+  `app-DQdxitU4.css` + `app-DZulwGZq.js` (inalterado — só mudaram Blades).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -533,3 +1028,18 @@ powershell -ExecutionPolicy Bypass -File ..\tools\extract-prototype-css.ps1
 | 2026-10-06 | **Sprint 9 concluído** (`75f06b2`) — Comerciais: Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-06 | **Sprint 10 concluído** (`5ea436a`) — Alertas: enum AlertType, migration alerts, Model/Factory/Seeder (5 registos), AlertService (5 tipos de alerta, não move leads), command alerts:generate (daily 06:00), NewAlert notification (email+database), Livewire AlertList (filtros, paginação, marcar lido/resolvido), header badge + dropdown notificações, sidebar accordion; 83 testes, 410 assertions, pint, build OK |
 | 2026-10-06 | **Sprint 12 concluído** (`hash`) — Testes e Lançamento: spatie/laravel-backup instalado e configurado (backup diário 02:00, cleanup 03:00, monitor 04:00), log channel backup, schedule de backup/cleanup/monitor, SSL preparado, testes finais 83 passed, projecto pronto para produção |
+| 2026-10-06 | **Revisão geral concluída** — bug raiz dos ícones no extractor de CSS (`@font-face` vazios + selector `i` descartado), crashes de `/analytics`, `/contratos`, 4 formulários e "editar" sem prefill, Chart.js ligado, sino/"marcar todas" do header, `wire:key`/`x-cloak` malformados, código morto Breeze removido, auditoria de `route()`; 113 testes (83→113), pint, build OK |
+| 2026-10-08 | **Pipeline drag & drop + loading state** — fix Alpine `$parent is not defined` via `CustomEvent` + `$listeners = ['kanbanMove' => 'move']`; adicionado `$movingId` + loading overlay no card (spinner "A mover...") via Alpine `x-show="loading"`; eventos `CustomEvent('kanban-move')` + listener Livewire; 113 testes passam. |
+| 2026-10-08 | **Drag & drop refeito + Alpine único (fase final)** — causa raiz do `Unexpected token ')'`/`Detected multiple instances of Alpine running`: `app.js` arrancava um 2.º Alpine; removido, `sidebar` passou a registar-se em `alpine:init`, `@livewireStyles`/`@livewireScripts` explícitos nos layouts (`/dashboard` e `/ui` não têm Livewire); drop do kanban sem interpolação JS (`data-opp`/`data-dropzone`) com `await $wire.$call('move', ...)` + loading `loadingId` (spinner "A mover..." só no cartão em curso); removidos `CustomEvent('kanban-move')`, `$listeners`, `$movingId` e `charts.js` (Chart.js morto — gráficos são ApexCharts); verificado: 113 testes/580 assertions, pint, build, 20 expressões Alpine parseadas, teste jsdom+Alpine 12/12 PASS. |
+| 2026-10-08 | **Fix kanban vertical + loading preso** — `<div class="kanban-card">` sem `</div>` de fecho (faltava 1 por cartão desde a adição do `position-relative`/overlay): cartões aninhavam → colunas nasciam dentro de cartões → kanban todo em vertical; morph do Livewire falhava no `move()` → spinner preso. Correcção: fecho do cartão; validado com `validate-real.mjs` (jsdom+Alpine sobre HTML real, 14/14 PASS, divs 346/346, 0 aninhados, 9 colunas planas, spinners escondidos e limpos); 113 testes/580 assertions, pint, build estável. |
+| 2026-10-08 | **Consola limpa + sparklines do dashboard** — fix aviso `undefined color - ApexCharts` (payload `faturacaoMensal` do DashboardService sem `color` → `colors: ['#3454d1']`, igual ao protótipo); 3 sparklines não renderizavam (`@push('scripts')` em dashboard.blade sem nenhum `@stack` no projecto → `@stack('scripts')` adicionado a `layouts/app.blade.php`); `Unexpected token '&'` no script pushado (`{{ json_encode }}` → `@json`); validado E2E com Chrome real (`browsertest/e2e-*.mjs`): dashboard 4 gráficos, analytics 4, 0 avisos/0 erros, fluxo wire:navigate+drags+filtro+pesquisa limpo; 113 testes/580 assertions, build `app-DMLx1amv.js`. |
+| 2026-10-08 | **Loading dos cartões do kanban removido** (pedido do utilizador) — removidos overlay "A mover…", `loadingId`+`async/finally`, `:class opacity-50` e wrapper `position-relative` de `pipeline.blade.php`; cartão volta à estrutura do protótipo (`kanban-card > card-body`); drop = `$wire.$call('move', id, stage)` directo; validado jsdom 16/16 + Chrome real 10/10 (0 x-show/0 spinners, drag OK, consola 0 mensagens), 113 testes/580 assertions, build `app-Bb8PbBCS.css`. |
+| 2026-10-08 | **Dashboard mini-cards PT + gráficos visíveis** — Facturação `col-xxl-12`, 3 mini-cards juntos numa row (`col-lg-4`) com títulos PT do protótipo (Actividades Concluídas/Novas Actividades/Encomendas Entregues), contadores X/Y do `DashboardService`, descrição "desde a semana passada" **dentro** do card (removido `width:100%` → `flex:1 1 auto; min-width:0`); fix raiz dos gráficos vazios em `apexcharts-init.js` (`data: payload.series` aninhava a série → Apex via 1 ponto → eixo 0-6; helper `toSeries()` + formatter M/K); `DashboardDemoSeeder` (actividades 6 meses + 12 aprovações) e `ContractSeeder` corrigido (produtos do catálogo antigo → fallback; 9 contratos com entregues/estados variados); DashboardTest títulos PT 4/4, 113 testes/580 assertions, pint, build `app-Bb8PbBCS.css` + `app-DMLx1amv.js`. |
+| 2026-10-08 | **Painel Executivo: header único + KPIs sem overflow + charts reordenados** — removido o `content-area-header` duplicado de `analytics.blade.php` (badge "Somente leitura" passou a `pageHeaderRight` em `analytics/index.blade.php` → 1 header igual ao protótipo); KPIs em dinheiro com novo `OpportunityService::formatKzCompact()` ("Kz 305,2M", precedente do footer da Facturação) + classe `.kpi-money` (`clamp(15px,1.35vw,22px)`, nowrap) — antes vazavam do card a ~1400px e faziam wrap; Vendas Mensais → `col-xxl-12` e "Estado das Encomendas" juntou-se a Pipeline/Segmento numa row de 3 donuts; **bónus**: `dataLabels.formatter` dos donuts corrigido (Apex 7.x já passa % — mostrava 741%/123%/554%, agora soma 100%); E2E 1600+1400px: 1 header, sem overflow, donuts no mesmo y (847/863), consola 0 mensagens; 113 testes/580 assertions, pint, build `app-BZlEFgV4.css` + `app-CqMpB9BH.js`. |
+| 2026-10-08 | **Agenda Comercial: 3 bugs raiz + menu/filtros no header** — **bug #1**: Tailwind gera `.collapse{visibility:collapse}` (utility) que colide com a `.collapse` do Bootstrap → **todos os itens da lista eram invisíveis** (o registo id 11 "fdgdg" estava na BD mas nunca se via → "criar não salva nada"/"filtros não funcionam"); fix `.collapse{visibility:visible}` fora de `@layer` em `app.css` (corrige também o accordion do Pipeline); **bug #2**: `.stretch-full{height:calc(100%-24px)}` dava 7514px por grupo de data (29 cartões, 218k de scroll) → `.apps-tasks .content-area-body > .card.stretch{height:auto}`; menu 3º item → "Nova Actividade"; painel esquerdo removido nas 3 páginas da Agenda → lista com dropdown "Filtros" (grupos Estado/Tipo etiquetados + "Todos os…") e botão Nova, calendário com dropdowns "Tipos" e "Próximos"; form sem sidebar (links saíam do form), resumo de erros + `wire:loading` + flash "Actividade guardada com sucesso" na lista; header Lista/Calendário em `hstack` (antes empilhado); E2E criar→visível→eliminar + filtros + validação OK, 113 testes/585 assertions, pint, build `app-CJdTR_nW.css` + `app-CqMpB9BH.js`. |
+| 2026-10-08 | **Calendário da Agenda: modal de detalhes do evento** — clique no evento deixou de abrir "Nova Actividade" (`wire:click="abrirDetalhe"` em vez de `wire:navigate` para `agenda.create?atividade=`); modal Bootstrap markup-puro controlado por estado Livewire (`$detalheId`, classes `show d-block`), com Cliente/Estado/Tipo/Data/Hora/Prazo/Próxima acção/Resultado + acções Editar (→ form com prefill), Concluir (só pendente), Eliminar (confirm Alpine) e Fechar; travão do body via `$this->dispatch('modal-actividade', aberto: …)` + listener Alpine na raiz (entangle `.live` descartado — devolve objecto truthy e prendia `modal-open` no page load) + limpeza global em `app.js` (`livewire:navigating/navigated`); 2 testes novos (115/607), pint, E2E `e2e-calendario-detalhe.mjs` 100% verde com 0 erros de consola (abrir/editar/concluir/fechar/backdrop/eliminar + baseline limpo), build `app-CJdTR_nW.css` + `app-CjzK-USo.js`. |
+| 2026-10-08 | **Modal nítido (fix "opacitada") + modal de confirmação global** — bug: `theme-extract` tem `body.modal-open .nxl-container{filter:blur(3px)}` e, como o nosso modal vive DENTRO de main (Livewire), o filtro borrava também o próprio modal (no protótipo os modais estão depois de `</main>`); fix: `filter:none` nos 4 seletores em `app.css` + blur passou para o `.modal-backdrop` (`backdrop-filter` em inline-style porque o minifier dropa a propriedade standard e só deixa `-webkit-`, que o Chrome ignora) → fundo borrado, modal nítido. Novo **modal de confirmação global** `#modalConfirmar` (store Alpine `confirmar` com Promise, `abrir()/responder()`, fecha por botão/ESC/backdrop, markup no layout depois de `</main>`) a substituir os 6 `confirm()` nativos (activity-list/calendar, alert-list, product-list, conciliaction-list, commercial-list) no padrão `$store.confirmar.abrir({...}).then(ok => ok && $wire.remove(id))`; teste DashboardTest com varredura recursiva de views proibindo `confirm(`; E2E `e2e-confirmar.mjs` (0 dialogs nativos, cancelar por botão/ESC, confirmar na lista, confirmação empilhada sobre o modal de detalhes com blur em ambos os backdrops) + `e2e-calendario-detalhe.mjs` actualizado; 116 testes/610 assertions, pint, build `app-CQXN0hf4.css` + `app-DZulwGZq.js`. |
+| 2026-10-08 | **Painel "Regras" removido da Nova Actividade** (pedido do utilizador — "a estragar o desempenho da interface") — removido o card lateral com as frases "Descrição, Próxima acção e Prazo são obrigatórios / Status inicia sempre em Pendente / Prazo vencido gera alerta PRAZO" de `activity-form.blade.php`; a coluna direita fica só com "Legenda de tipos" (stretch-full); assert `assertSee('Regras')` removido do AgendaTest; verificado em Chrome (0 erros, form completo, legenda presente); 116 testes/609 assertions, pint, build `app-CQXN0hf4.css` + `app-DZulwGZq.js`. |
+| 2026-10-08 | **Conciliações: sidebar vertical removida (padrão Agenda) + tabela desajustada corrigida** — `conciliaction-list` sem `content-sidebar` (botão `+ Nova Conciliação` e grupos "Classificação/Estado" no dropdown Filtros), `conciliaction-form` sem sidebar/hamburger; causa raiz: sidebar 300px cortava 156px do `.content-area` e a tabela nowrap não cabia no wrap; CSS `min-width:0` na cadeia flex corrige o corte em 1366px (passa a scroll interno); `ConciliactionsTest` espelha o AgendaTest; E2E 1600+1366 verdes (0 erros); 116 testes/615 assertions, pint, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
+| 2026-10-08 | **Produtos, Alertas, Comerciais e Contratos sem sidebar vertical (padrão Agenda/Conciliações)** — 7 views (`product-list/form`, `alert-list`, `commercial-list/form`, `contract-list/form`): removidos `content-sidebar`+`sidebarOpen`+hamburger; botões `+ Novo X` no header (Alertas sem criação), dropdowns Filtros com grupos `<h6>` (Produtos: Estado+Comercial; Alertas: Tipo+Estado; Comerciais/Contratos: Estado, "Todos"→"Todos os estados"); 4 testes de lista com novas asserções (+20); E2E `e2e-listas-sem-sidebar.mjs` 1600+1366 verdes (sem clip, 0 erros, forms sem sidebar); zero views com `content-sidebar`; 116 testes/635 assertions, pint, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |
+| 2026-10-08 | **Coluna Observações desalinhada + varredura de tabelas** — causa raiz: `theme-extract.css:163` mete `display:-webkit-box!important` (`.text-truncate-1-line`) directo no `<td>` → `flow-root` em vez de `table-cell` (altura 53 vs 61, conteúdo ao alto, tira branca nas linhas vermelhas); fix em 3 views (conciliaction-list Observações, commercial-list Descrição, alert-list Mensagem): classe movida para `<div>` interno; varredura global (grep + runtime em 13 páginas: 346 tds + 63 ths) confirma **0 células distorcidas no protótipo inteiro**; 116 testes/635 assertions, pint, 2 E2E verdes, build `app-DQdxitU4.css` + `app-DZulwGZq.js`. |

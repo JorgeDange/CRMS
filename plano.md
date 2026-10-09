@@ -1,8 +1,8 @@
 # PLANO DE EXECUÇÃO — Sistema ADG
 
 **Base:** `resposta.md` v4.0 (Outubro 2026)  
-**Estado actual:** Sprint 5 concluído (commit `49c2225` + `2b342a4`)  
-**Próximo:** Ajustes Sprint 2/3 → Sprint 6 (Conciliações)
+**Estado actual:** Sprints 0–12 concluídos + **Revisão geral** (ícones, crashes, estrutura) + **fix drag & drop do Pipeline / Alpine único** — 113 testes, pint, build OK  
+**Próximo:** Testes manuais com Adailson → feedback → deploy
 
 ---
 
@@ -22,7 +22,7 @@
 | 8 | Sprint 8 | Produtos | ✅ Concluído | `fc419f8` | **ALTA** | Livewire ProductList/ProductForm, views baseadas em customers.html, rotas produtos/produtos.nova/produtos.{produto}, sidebar acordeão; Model/Factory/Seeder já existiam |
 | 9 | Sprint 9 | Comerciais | ✅ Concluído | `75f06b2` | **MÉDIA** | Livewire CommercialList/CommercialForm, views baseadas no padrão, rotas comerciais/comerciais.nova/comerciais.{commercial}, sidebar accordion; Model/Factory/Seeder já existiam |
 | 10 | Sprint 10 | Alertas | ✅ Concluído | `5ea436a` | **ALTA** | Enum AlertType, migration alerts, Model/Factory/Seeder, AlertService (5 tipos, não move leads), command alerts:generate (06:00), NewAlert notification (email+database), Livewire AlertList, header badge+dropdown, sidebar accordion |
-| 11 | Sprint 11 | Dashboard + Painel Executivo | ✅ Concluído | `9531418` | **ALTA** | Dashboard (4 KPIs + Chart.js), Analytics (Painel Executivo), Chart.js, migration user_id, rotas dashboard/analytics, sidebar accordion; 83 testes, pint, build OK |
+| 11 | Sprint 11 | Dashboard + Painel Executivo | ✅ Concluído | `9531418` | **ALTA** | Dashboard (4 KPIs) + Analytics (Painel Executivo) com **ApexCharts** (protótipo; Chart.js do §4 descartado), migration user_id, rotas dashboard/analytics, sidebar accordion; 83 testes, pint, build OK |
 | 12 | Sprint 12 | Testes e Lançamento | ✅ Concluído | `hash` | — | spatie/laravel-backup, schedule backup/cleanup/monitor, log channel, SSL preparado, testes 83 passed, pronto para produção |
 
 ---
@@ -113,7 +113,7 @@
 
 ### 10. SPRINT 11 — Dashboard + Painel Executivo
 - [x] Dashboard → 4 KPI cards + charts (copiar de `index.html`)
-- [x] Painel Executivo → gráficos Chart.js (copiar de `analytics.html`)
+- [x] Painel Executivo → gráficos (copiar de `analytics.html`; **ApexCharts** conforme o protótipo)
 - [x] Stats cards, pipeline funnel, etc.
 - [x] Testes (suíte existente passa)
 
@@ -215,7 +215,35 @@ php artisan agenda:reminder
 | 2026-10-04 | 3 | Nova Oportunidade + Detalhe | `91d3514` |
 | 2026-10-04 | 4 | Importação Excel | `6fb0330` |
 | 2026-10-05 | 5 | Agenda Comercial | `49c2225` |
-| — | — | **PRÓXIMO: Ajustes Sprint 2/3** | — |
+| 2026-10-05 | 6–10 | Conciliações, Contratos, Produtos, Comerciais, Alertas | `cbdde3d`…`5ea436a` |
+| 2026-10-06 | 11–12 | Dashboard/Painel Executivo + Lançamento | `9531418`… |
+| 2026-10-06 | — | **Revisão geral: ícones, crashes, Chart.js, código morto** | *por commitar* |
+| 2026-10-08 | — | **Pipeline drag & drop refeito + Alpine único (fix consola), ApexCharts definitivo, `charts.js` removido** | *por commitar* |
+| — | — | **PRÓXIMO: testes manuais + deploy** | — |
+
+---
+
+## REVISÃO GERAL (2026-10-06) — estado
+
+Pedido: *"tem muitos erros..."*, *"o sistema não carrega nenhum ícone"*, *"a
+estrutura está desorganizada — verifique bem com o protótipo"*.
+
+- [x] **Ícones** — bug raiz no `tools/extract-prototype-css.ps1` (`@font-face` vazios
+  + selector `i` descartado); extração re-executada; fontes HTTP 200
+- [x] `/analytics` (7 × Undefined variable) → `app/Services/DashboardService.php`
+- [x] Gráficos ligados (`resources/js/charts.js` + `data-adg-chart` nos 8 canvases)
+- [x] `route('contracts.edit')` inexistente + `contracts.show` sem binding
+- [x] 4 formulários com blocos de filtro copiados da lista → removidos
+- [x] "Editar" sem prefill (views não passavam o registo ao componente)
+- [x] Sino do header não abria o dropdown; "Marcar todas como lidas" só navegava
+- [x] `x-cloak"` (×3) e `wire:key` dentro do `class` (×5)
+- [x] Auditoria de todas as `route()` vs `route:list` — todas resolvem
+- [x] Código morto Breeze removido (7 Auth controllers + views com rotas inexistentes)
+- [x] Sidebar confirmada contra `resposta.md` §7 (8 acordeões)
+- [x] Testes: **83 → 113** (Dashboard, Analytics, Alerts, Contracts, Products,
+  Commercials, Conciliações — antes sem nenhum)
+- [ ] Testes manuais no browser com o protótipo lado a lado
+- [ ] Verificar gráficos com dados reais (seed) no browser
 
 ---
 
