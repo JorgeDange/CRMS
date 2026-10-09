@@ -2,7 +2,50 @@
 
 {{-- Filtro + kanban copiados de leads.html (PROMPT_MASTER Sprint 2) --}}
 <div class="row">
-    <div class="col-lg-12">
+    <div class="col-lg-12"
+         x-data="{
+             boardEsq: 0,
+             boardMax: 0,
+             dirAuto: 0,
+             _autoRaf: null,
+             actualizarSetas() {
+                 const b = this.$refs.board;
+                 if (!b) return;
+                 this.boardEsq = b.scrollLeft;
+                 this.boardMax = Math.max(0, b.scrollWidth - b.clientWidth);
+             },
+             moverColunas(dir) {
+                 this.actualizarSetas();
+                 if (dir < 0 ? this.boardEsq <= 2 : this.boardEsq >= this.boardMax - 2) return;
+                 this.$refs.board.scrollBy({ left: dir * 564, behavior: 'smooth' });
+             },
+             iniciarAuto(dir) {
+                 this.dirAuto = dir;
+                 if (this._autoRaf !== null) return;
+                 const passo = () => {
+                     if (this.dirAuto === 0 || !this.$refs.board) { this._autoRaf = null; return; }
+                     this.$refs.board.scrollBy({ left: this.dirAuto * 14 });
+                     this._autoRaf = requestAnimationFrame(passo);
+                 };
+                 this._autoRaf = requestAnimationFrame(passo);
+             },
+             pararAuto() {
+                 this.dirAuto = 0;
+                 if (this._autoRaf !== null) { cancelAnimationFrame(this._autoRaf); this._autoRaf = null; }
+             },
+             boardDragOver(event) {
+                 const b = this.$refs.board;
+                 if (!b) return;
+                 const r = b.getBoundingClientRect();
+                 const margem = 72;
+                 if (event.clientX < r.left + margem) this.iniciarAuto(-1);
+                 else if (event.clientX > r.right - margem) this.iniciarAuto(1);
+                 else this.pararAuto();
+             },
+             _init() { this.actualizarSetas(); }
+         }"
+         x-init="_init()"
+         x-on:livewire:morphed.window="actualizarSetas()">
         <!--! BEGIN: [FilterBar Oportunidades] !-->
         <div class="card mb-3" id="oppFilterBar">
             <div class="card-body py-3">
@@ -22,7 +65,18 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3"></div>
+                    <div class="col-md-3 d-flex justify-content-end align-items-end gap-1">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnKanbanAnterior"
+                                title="Colunas anteriores" aria-label="Navegar para a esquerda"
+                                x-on:click="moverColunas(-1)" x-bind:disabled="boardEsq <= 2">
+                            <i class="feather-chevron-left"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="btnKanbanSeguinte"
+                                title="Colunas seguintes" aria-label="Navegar para a direita"
+                                x-on:click="moverColunas(1)" x-bind:disabled="boardEsq >= boardMax - 2">
+                            <i class="feather-chevron-right"></i>
+                        </button>
+                    </div>
                     <div class="col-md-2">
                         <button type="button" wire:click="clearFilters" class="btn btn-sm btn-outline-secondary" id="btnClearOppFilters">
                             <i class="feather-x me-1"></i>Limpar
@@ -32,14 +86,12 @@
             </div>
         </div>
         <!--! END: [FilterBar Oportunidades] !-->
-        <div class="kanban-board d-flex gap-3 overflow-auto pb-3" id="kanbanBoard"
-             x-data="{
-                 drop(event, stage) {
-                     const id = parseInt(event.dataTransfer.getData('text/plain'));
-                     if (isNaN(id)) return;
-                     $wire.$call('move', id, stage);
-                 }
-             }">
+        <div class="kanban-board d-flex gap-3 overflow-auto pb-3" id="kanbanBoard" x-ref="board"
+             x-on:scroll.passive="actualizarSetas()"
+             x-on:dragover="boardDragOver($event)"
+             x-on:dragleave="if (!$el.contains($event.relatedTarget)) pararAuto()"
+             x-on:drop="pararAuto()"
+             x-on:dragend.window="pararAuto()">
 
             @foreach ($columns as $stage => $config)
                 @if ($stageFilter === '' || $stageFilter === $stage)

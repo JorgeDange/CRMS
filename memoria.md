@@ -1179,6 +1179,27 @@ usavam a conversão M/K do dashboard e os valores vazavam dos cartões.
 
 ---
 
+### Kanban do Pipeline: navegação sem scroll lateral (2026-10-09)
+
+**Pedido**: para mover cartões entre colunas distantes era preciso descer a
+página até à scrollbar horizontal do board (9 colunas × 270px ≈ 2.430px).
+
+- **Setas ← → na FilterBar** (espaço vazio da grelha, junto a "Limpar"):
+  scroll suave de 2 colunas (564px), desactivadas nas extremidades, estado
+  recalculado no `scroll`, no `livewire:morphed` e antes de cada clique.
+- **Auto-scroll durante o drag** (padrão Trello): enquanto se arrasta, rato
+  a <72px das bordas do board → scroll automático de 14px/frame; para ao
+  centro, em `drop`/`dragend`/`dragleave` para fora — nunca há scroll
+  fantasma depois do arrasto.
+- `x-data` subiu para o wrapper `col-lg-12` (filter bar + board partilham
+  scope; `$refs.board`), `drop()` preservado.
+- E2E novo `e2e-kanban-navegacao.mjs` (1366px): estado inicial das setas,
+  navegar 0→564→0 com disabled correctos, auto-scroll direita e esquerda,
+  paragem no centro e pós-dragend, 0 erros — `criticoOk:true` ×2;
+  PipelineTest 9/9.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1217,3 +1238,4 @@ usavam a conversão M/K do dashboard e os valores vazavam dos cartões.
 | 2026-10-09 | **Modal de detalhe do alerta (sino + página Alertas)** — novo `AlertBell` (sino Livewire com badge live, item clicável, dropdown fecha sozinho, markup do `<a>` preservado para o regex de `AlertsTest`) + partial `detail-modal` (padrão Agenda: tipo/estado, mensagem completa, entidade com "Ver registo", criado por/em, prazo, acções lido/resolvido/eliminar-com-confirmação/fechar, IDs distintos Sino/Lista); `AlertList` ganha `abrirAlerta`/`fecharDetalhe` + Mensagem clicável, `remove` fecha a modal activa; 124 testes/668 assertions, pint, E2E novo `e2e-alerta-modal.mjs` (marcador auto-apagável) + re-verde de notificações, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Sprint 13 concluído — Tabela de Clientes** (`seguir.md`) — 6 campos novos denormalizados em `opportunities` (codigo/3 booleans/2 estados, migration+fillable+casts+factory), enums `ConciliacaoEstado`/`ContratoEstado` com `badgeClass()`, seeder 10 clientes CLI001–CLI010 (percentagens §10.2), componente `ClientTable` (pesquisa, filtros KAM/Compras/Conciliação/Contratos + contagem + reset, ordenação, 20/pág., só aprovados, relação `commercial()`), view `#customerList` 10 colunas + empty state + olho→`opportunities.show`, rota `clients.index` (`Route::view`), sidebar item standalone `feather-users`, sincronização §14.1 em `ConciliactionService`+`ContractService` (raw `update`, fallbacks PENDENTE/ACTIVO); 139 testes/725 assertions, pint, E2E novo `e2e-clientes.mjs` ×3 + re-verde de 3 E2Es, build `app-CDSVpqV-.css` + `app-DZulwGZq.js`. |
 | 2026-10-09 | **Pipeline: valores compactos (fix overflow)** — cartões "Pipeline Aberto/Aprovado (mês)/Ponderado" passam a `formatKzCompact()` (igual ao Painel Executivo, ex. "Kz 339,7M") com valor completo no `title`; kanban alinhado (total da coluna + valor do cartão, ambos com `title` completo); E2E `e2e-pipeline-valores.mjs` 1600+1366 sem overflow (4 stats + 9 totais + 50 cartões), 17 testes + pint OK, sem mudança de CSS/JS. |
+| 2026-10-09 | **Kanban: navegação sem scrollbar lateral** — setas ← → na FilterBar (scroll suave 2 colunas, disabled nas extremidades, estado via scroll/morphed) + auto-scroll durante o drag nas bordas do board (14px/frame, pára em drop/dragend/fora do board, sem scroll fantasma); `x-data` unificado no wrapper com `$refs.board`; E2E novo `e2e-kanban-navegacao.mjs` ×2 verde (0→564→0, auto-scroll direita/esquerda, 0 erros), PipelineTest 9/9. |
