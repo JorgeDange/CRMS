@@ -1,0 +1,1 @@
+cd C:\Users\JORGE DANGE\Documents\PROJECTOS DE CLIENTES\Otimize\CRM\prototipo\crm-prototipo\adg& "C:\Users\JORGE DANGE\.config\herd\bin\php84\php.exe" artisan serve --no-reload --port=8099

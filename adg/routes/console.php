@@ -26,17 +26,10 @@ Schedule::command('alerts:generate')
     ->runInBackground();
 
 /**
- * Sprint 10: alerts:generate diário às 06h.
- * Suposição §19.12: contratos expirados mudam estado (05h30, antes dos alertas).
+ * Sprint 10: contratos expirados mudam estado (05h30, antes dos alertas).
  */
 Schedule::command('contracts:expire')
     ->dailyAt('05:30')
-    ->timezone('Africa/Luanda')
-    ->withoutOverlapping()
-    ->runInBackground();
-
-Schedule::command('alerts:generate')
-    ->dailyAt('06:00')
     ->timezone('Africa/Luanda')
     ->withoutOverlapping()
     ->runInBackground();
