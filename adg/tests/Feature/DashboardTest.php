@@ -6,6 +6,7 @@ use App\Enums\ContractStatus;
 use App\Enums\OpportunityStage;
 use App\Models\Contract;
 use App\Models\Opportunity;
+use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -48,26 +49,71 @@ class DashboardTest extends TestCase
             // KPIs do prototype index.html
             ->assertSee('Clientes Activos')
             ->assertSee('Oportunidades Abertas')
-            ->assertSee('Encomendas em Curso')
+            ->assertSee('Produtos Activos') // BLOCO 2: antes "Encomendas em Curso"
             ->assertSee('Pendências Hoje')
-            // Gráfico principal (ApexCharts area)
-            ->assertSee('Facturação Mensal')
+            // Gráfico principal (ApexCharts area) — BLOCO 2: Pipeline por Mês
+            ->assertSee('Pipeline por Mês')
+            ->assertDontSee('Facturação Mensal')
             ->assertSee('id="paymentRecordsChart"', false)
             // Stats cards no footer do gráfico
             ->assertSee('Pendente')
             ->assertSee('Recebido')
             ->assertSee('Cancelado')
             ->assertSee('Total')
-            // 3 small area charts (títulos PT do protótipo)
-            ->assertSee('Actividades Concluídas')
-            ->assertSee('Novas Actividades')
-            ->assertSee('Encomendas Entregues')
-            ->assertSee('id="taskCompletedChart"', false)
-            ->assertSee('id="newTasksChart"', false)
-            ->assertSee('id="projectDoneChart"', false);
+            // BLOCO 2: 4 mini-cards do pipeline (antes 3 cards de actividades)
+            ->assertSee('Pipeline Aberto')
+            ->assertSee('Aprovado (mês)')
+            ->assertSee('Ponderado')
+            ->assertSee('Taxa Conversão')
+            ->assertDontSee('Actividades Concluídas')
+            ->assertDontSee('Novas Actividades')
+            ->assertDontSee('Encomendas Entregues');
 
         // Verifica payload do gráfico principal (data-adg-chart no div)
         $this->assertChartPayload($response->getContent(), 'paymentRecordsChart');
+    }
+
+    /**
+     * BLOCO 2.1: o gráfico principal soma o pipeline ABERTO (created_at),
+     * não a facturação (aprovadas).
+     */
+    public function test_pipeline_chart_sums_open_opportunities_not_approved(): void
+    {
+        Opportunity::factory()->count(2)->create([
+            'fase_atual' => OpportunityStage::PROPOSTA_NEGOCIACAO,
+            'valor_estimado' => 150000,
+            'created_at' => now(),
+        ]);
+        Opportunity::factory()->create([
+            'fase_atual' => OpportunityStage::CLIENTE_APROVADO,
+            'valor_estimado' => 900000,
+            'data_aprovacao' => now(),
+        ]);
+
+        $response = $this->actingAs($this->user())->get('/dashboard');
+
+        $matches = [];
+        $this->assertSame(1, preg_match('/id="paymentRecordsChart"[^>]*data-adg-chart="([^"]+)"/', $response->getContent(), $matches));
+        $payload = json_decode(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5), true);
+
+        $this->assertSame('Pipeline', $payload['series'][0]['name']);
+        // Último mês (actual) = 2 abertas x 150.000 = 300.000 (aprovada fora)
+        $this->assertSame(300000.0, (float) end($payload['series'][0]['data']));
+    }
+
+    /**
+     * BLOCO 2.3: KPI Produtos Activos = contagem de products.activo = true.
+     */
+    public function test_kpi_produtos_activos_counts_active_products(): void
+    {
+        Product::factory()->count(3)->create(['activo' => true]);
+        Product::factory()->count(1)->create(['activo' => false]);
+
+        $response = $this->actingAs($this->user())->get('/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertSee('<span class="counter">3</span>/<span class="counter">4</span>', false);
     }
 
     /**

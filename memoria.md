@@ -1287,6 +1287,33 @@ de Conciliações/Contratos/Produtos e mostrar os ícones directos na linha.
 
 ---
 
+### Sprint Ajustes BLOCO 2 — Dashboard (2026-10-10)
+
+**Pedido** (`mudancas.md`): reorganizar o dashboard conforme pedido do cliente.
+
+- **2.1 Gráfico principal:** "Facturação Mensal" → **"Pipeline por Mês"** —
+  soma do `valor_estimado` das oportunidades **abertas** (excepto
+  `cliente_aprovado`/`cliente_nao_aprovado`), agrupadas por `created_at`
+  (SUPOSIÇÃO: abertas não têm `data_aprovacao`); `faturacaoMensal` →
+  `pipelineMensal` no payload, série chamada "Pipeline".
+- **2.2 Mini-cards:** 3 (actividades/encomendas) → **4 do pipeline**
+  (Pipeline Aberto, Aprovado (mês), Ponderado, Taxa Conversão) — mesmos
+  cálculos do `Opportunities\Stats`, valores com `formatKzCompact` e
+  `title` com o valor completo; os 3 mini-charts sparkline saíram
+  (`window.adgSmallCharts` removido — `renderSmallCharts` no JS tem
+  guarda `if (!data) return`, sem erros).
+- **2.3 KPI:** "Encomendas em Curso" → **"Produtos Activos"**
+  (`products.activo = true`, ligação para `/produtos`).
+- **Testes:** DashboardTest actualizado + 2 novos
+  (`test_pipeline_chart_sums_open_opportunities_not_approved` — payload
+  do gráfico soma só abertas; `test_kpi_produtos_activos_counts_active_products`);
+  suíte **146/756**, pint OK, build OK.
+- **Browser:** E2E `e2e-bloco2-dashboard.mjs` verde (títulos, KPI, 4
+  mini-cards, gráfico renderizado com 12 labels, 0 erros);
+  `e2e-graficos.mjs` re-ajustado (dashboard 1 instância válida, analytics 4).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1330,3 +1357,4 @@ de Conciliações/Contratos/Produtos e mostrar os ícones directos na linha.
 | 2026-10-09 | **Fix `drop is not defined` no kanban** — o método `drop()` ficou para trás quando o `x-data` subiu do board para o wrapper (tarefa das setas); reposto no objecto Alpine. E2E novo `e2e-kanban-drop.mjs` valida drop real + reposição + `drag-over` limpo com 0 erros (×4), navegação ×2, PipelineTest 9/9, pint OK. |
 | 2026-10-09 | **Raiz `/` → login** — `Route::view('/', 'welcome')` (tela do Laravel) trocada por `Route::redirect('/', '/login')`; guest vê o login, autenticado cai no `/dashboard` (middleware `guest`), logout volta ao login. `ExampleTest` → `assertRedirect('/login')`; 140 testes / 730 assertions, pint OK. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 1 — ícones alinhados** — dropdown de 3 pontos removido das Acções de Conciliações/Contratos/Produtos; `.action-icons` (flex, gap 4px, `.btn-icon` 32×32) nas 3 listas; novo `ContractList::remove()` (soft delete); +4 testes → 144/749, pint/build OK; E2E `e2e-bloco1-icoes.mjs` valida alinhamento, 0 dropdowns, toggle a funcionar. |
+| 2026-10-10 | **Sprint Ajustes BLOCO 2 — Dashboard** — gráfico "Facturação Mensal"→"Pipeline por Mês" (soma abertas por `created_at`), 3 mini-cards→4 do pipeline (aberto/aprovado mês/ponderado/conversão, valores do Stats), KPI "Encomendas em Curso"→"Produtos Activos"; +2 testes → 146/756, pint/build OK; E2Es `e2e-bloco2-dashboard` e `e2e-graficos` verdes. |

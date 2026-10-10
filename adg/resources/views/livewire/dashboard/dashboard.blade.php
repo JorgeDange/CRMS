@@ -74,36 +74,36 @@
             </div>
         </div>
 
-        {{-- Encomendas em Curso --}}
+        {{-- Produtos Activos (BLOCO 2: antes "Encomendas em Curso") --}}
         <div class="col-xxl-3 col-md-6">
             <div class="card stretch stretch-full">
                 <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between mb-4">
                         <div class="d-flex gap-4 align-items-center">
                             <div class="avatar-text avatar-lg bg-gray-200">
-                                <i class="feather-briefcase"></i>
+                                <i class="feather-package"></i>
                             </div>
                             <div>
                                 <div class="fs-4 fw-bold text-dark">
-                                    <span class="counter">{{ $kpis['encomendasCurso']['entregues'] }}</span>/<span class="counter">{{ $kpis['encomendasCurso']['total'] }}</span>
+                                    <span class="counter">{{ $kpis['produtosActivos']['activos'] }}</span>/<span class="counter">{{ $kpis['produtosActivos']['total'] }}</span>
                                 </div>
-                                <h3 class="fs-13 fw-semibold text-truncate-1-line">Encomendas em Curso</h3>
+                                <h3 class="fs-13 fw-semibold text-truncate-1-line">Produtos Activos</h3>
                             </div>
                         </div>
-                        <a href="{{ route('contracts') }}">
+                        <a href="{{ route('products') }}">
                             <i class="feather-more-vertical"></i>
                         </a>
                     </div>
                     <div class="pt-4">
                         <div class="d-flex align-items-center justify-content-between">
-                            <a href="{{ route('contracts') }}" class="fs-12 fw-medium text-muted text-truncate-1-line">Encomendas em curso</a>
+                            <a href="{{ route('products') }}" class="fs-12 fw-medium text-muted text-truncate-1-line">Catálogo de produtos</a>
                             <div class="w-100 text-end">
-                                <span class="fs-12 text-dark">{{ $kpis['encomendasCurso']['entregues'] }} entregues</span>
-                                <span class="fs-11 text-muted">({{ $kpis['encomendasCurso']['percent'] }}%)</span>
+                                <span class="fs-12 text-dark">{{ $kpis['produtosActivos']['activos'] }} activos</span>
+                                <span class="fs-11 text-muted">({{ $kpis['produtosActivos']['percent'] }}%)</span>
                             </div>
                         </div>
                         <div class="progress mt-2 ht-3">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $kpis['encomendasCurso']['percent'] }}%"></div>
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ $kpis['produtosActivos']['percent'] }}%"></div>
                         </div>
                     </div>
                 </div>
@@ -147,12 +147,12 @@
         </div>
     </div>
 
-    {{-- Facturação Mensal — gráfico principal (ApexCharts area) --}}
+    {{-- Pipeline por Mês — gráfico principal (BLOCO 2: antes "Facturação Mensal") --}}
     <div class="row">
         <div class="col-xxl-12">
             <div class="card stretch stretch-full">
                 <div class="card-header">
-                    <h5 class="card-title">Facturação Mensal</h5>
+                    <h5 class="card-title">Pipeline por Mês</h5>
                     <div class="card-header-action">
                         <div class="card-header-btn">
                             <div data-bs-toggle="tooltip" title="Remover">
@@ -184,7 +184,7 @@
                     </div>
                 </div>
                 <div class="card-body custom-card-action p-0">
-                    <div id="paymentRecordsChart" style="min-height: 300px;" data-adg-chart="{{ json_encode($faturacaoMensal) }}"></div>
+                    <div id="paymentRecordsChart" style="min-height: 300px;" data-adg-chart="{{ json_encode($pipelineMensal) }}"></div>
                 </div>
                 <div class="card-footer">
                     <div class="row g-4">
@@ -205,88 +205,99 @@
         </div>
     </div>
 
-    {{-- [Mini] — 3 cards juntos numa única row (protótipo index.html) --}}
+    {{-- BLOCO 2: 4 mini-cards do pipeline (Pipeline Aberto, Aprovado (mês),
+         Ponderado, Taxa Conversão) — valores do Opportunities\Stats --}}
     <div class="row">
-        <div class="col-lg-4">
+        <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
-                            <i class="feather-star"></i>
+                            <i class="feather-bar-chart-2"></i>
                         </div>
                         <div>
-                            <div class="fw-semibold text-dark">Actividades Concluídas</div>
-                            <div class="fs-12 text-muted">{{ $minis['taskCompleted'] }} concluídas</div>
+                            <div class="fw-semibold text-dark">Pipeline Aberto</div>
+                            <div class="fs-12 text-muted">{{ $pipelineMinis['pipelineAberto']['count'] }} oportunidades</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark">{{ $minis['taskCompleted'] }}</div>
+                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['pipelineAberto']['valorCompleto'] }}">{{ $pipelineMinis['pipelineAberto']['valor'] }}</div>
                 </div>
-                <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                    <div id="taskCompletedChart" style="min-height: 120px; flex: 1 1 auto; min-width: 0;"></div>
-                    <div class="fs-12 text-muted text-nowrap">
-                        <span class="fw-semibold text-primary">28% mais</span><br />
-                        <span>desde a semana passada</span>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fs-12 text-muted">Valor total em aberto</span>
+                        <span class="fs-12 fw-semibold text-primary">Kz</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
+        <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
-                            <i class="feather-file-text"></i>
+                            <i class="feather-check-circle"></i>
                         </div>
                         <div>
-                            <div class="fw-semibold text-dark">Novas Actividades</div>
-                            <div class="fs-12 text-muted">{{ $minis['newTasks'] }} actividades</div>
+                            <div class="fw-semibold text-dark">Aprovado (mês)</div>
+                            <div class="fs-12 text-muted">{{ $pipelineMinis['aprovadoMes']['count'] }} aprovadas</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark">{{ $minis['newTasks'] }}</div>
+                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['aprovadoMes']['valorCompleto'] }}">{{ $pipelineMinis['aprovadoMes']['valor'] }}</div>
                 </div>
-                <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                    <div id="newTasksChart" style="min-height: 120px; flex: 1 1 auto; min-width: 0;"></div>
-                    <div class="fs-12 text-muted text-nowrap">
-                        <span class="fw-semibold text-success">34% mais</span><br />
-                        <span>desde a semana passada</span>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fs-12 text-muted">Facturado no mês corrente</span>
+                        <span class="fs-12 fw-semibold text-success">Kz</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-lg-4">
+        <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
                 <div class="card-header d-flex align-items-center justify-content-between">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
-                            <i class="feather-airplay"></i>
+                            <i class="feather-percent"></i>
                         </div>
                         <div>
-                            <div class="fw-semibold text-dark">Encomendas Entregues</div>
-                            <div class="fs-12 text-muted">{{ $minis['projectDone'] }} encomendas</div>
+                            <div class="fw-semibold text-dark">Ponderado</div>
+                            <div class="fs-12 text-muted">valor × probabilidade</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark">{{ $minis['projectDone'] }}</div>
+                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['ponderado']['valorCompleto'] }}">{{ $pipelineMinis['ponderado']['valor'] }}</div>
                 </div>
-                <div class="card-body d-flex align-items-center justify-content-between gap-4">
-                    <div id="projectDoneChart" style="min-height: 120px; flex: 1 1 auto; min-width: 0;"></div>
-                    <div class="fs-12 text-muted text-nowrap">
-                        <span class="fw-semibold text-danger">42% mais</span><br />
-                        <span>desde a semana passada</span>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fs-12 text-muted">Pipeline ajustado ao risco</span>
+                        <span class="fs-12 fw-semibold text-warning">Kz</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+            <div class="card mb-4 stretch stretch-full">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex gap-3 align-items-center">
+                        <div class="avatar-text">
+                            <i class="feather-trending-up"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-dark">Taxa Conversão</div>
+                            <div class="fs-12 text-muted">últimos 30 dias</div>
+                        </div>
+                    </div>
+                    <div class="fs-4 fw-bold text-dark">{{ $pipelineMinis['conversao']['percent'] }}%</div>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <span class="fs-12 text-muted">Aprovadas / finalizadas</span>
+                        <span class="fs-12 fw-semibold text-info">%</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-@push('scripts')
-<script>
-    window.adgSmallCharts = {
-        taskCompleted: @json($taskCompleted),
-        newTasks: @json($newTasks),
-        projectDone: @json($projectDone),
-    };
-</script>
-@endpush

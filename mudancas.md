@@ -341,14 +341,14 @@ Após a reunião com o Sr. Adailson, foram apresentadas várias sugestões de aj
 
 ### BLOCO 2 — Dashboard
 
-- [ ] `DashboardService::pipelineMensalPayload()`
-- [ ] `DashboardService::kpis()` actualizado
-- [ ] Mini-cards: 4 do pipeline
-- [ ] KPI Produtos Activos
-- [ ] View actualizada
-- [ ] Testes actualizados
-- [ ] Validação no browser
-- [ ] Commit
+- [x] `DashboardService::pipelineMensalPayload()` (antes `faturacaoMensal`)
+- [x] `DashboardService::kpis()` actualizado (`produtosActivos` no lugar de `encomendasCurso`)
+- [x] Mini-cards: 4 do pipeline (Pipeline Aberto, Aprovado (mês), Ponderado, Taxa Conversão)
+- [x] KPI Produtos Activos
+- [x] View actualizada
+- [x] Testes actualizados (+2 novos: soma do pipeline aberto, contagem de produtos)
+- [x] Validação no browser
+- [x] Commit
 
 ### BLOCO 3 — Agenda Tipo Outros
 

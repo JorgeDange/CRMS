@@ -7,6 +7,7 @@ use App\Enums\OpportunityStage;
 use App\Models\Activity;
 use App\Models\Contract;
 use App\Models\Opportunity;
+use App\Models\Product;
 
 /**
  * Dados para Dashboard (index.html) e Painel Executivo (analytics.html)
@@ -44,15 +45,17 @@ class DashboardService
      *     kpis: array{
      *         clientesActivos: array{total: int, activos: int, percent: int},
      *         oportunidadesAbertas: array{total: int, abertas: int, valor: float, percent: int},
-     *         encomendasCurso: array{entregues: int, total: int, percent: int},
+     *         produtosActivos: array{activos: int, total: int, percent: int},
      *         pendenciasHoje: array{vencidas: int, hoje: int, percent: int}
      *     },
-     *     faturacaoMensal: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
+     *     pipelineMensal: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
      *     statsCards: list<array{titulo: string, valor: string, progress: int, cor: string}>,
-     *     taskCompleted: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
-     *     newTasks: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
-     *     projectDone: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
-     *     minis: array{taskCompleted: string, newTasks: string, projectDone: string},
+     *     pipelineMinis: array{
+     *         pipelineAberto: array{valor: string, valorCompleto: string, count: int},
+     *         aprovadoMes: array{valor: string, valorCompleto: string, count: int},
+     *         ponderado: array{valor: string, valorCompleto: string},
+     *         conversao: array{percent: int}
+     *     }
      * }
      */
     public function dashboardData(): array
@@ -67,8 +70,9 @@ class DashboardService
         $totalOportunidades = Opportunity::count();
         $oportunidadesAbertas = Opportunity::whereIn('fase_atual', $open)->count();
         $valorPipeline = Opportunity::whereIn('fase_atual', $open)->sum('valor_estimado');
-        $totalContratos = Contract::count();
-        $entregues = Contract::where('estado', ContractStatus::ACTIVO)->count();
+        // BLOCO 2.3 (mudancas.md): KPI "Encomendas em Curso" -> "Produtos Activos".
+        $totalProdutos = Product::count();
+        $produtosActivos = Product::where('activo', true)->count();
 
         // Activities usa coluna 'proxima_accao_prazo' (date) e status 'pendente', 'concluida', 'cancelada'
         $vencidas = Activity::where('proxima_accao_prazo', '<', $now->toDateString())
@@ -87,10 +91,10 @@ class DashboardService
                 'valor' => (float) $valorPipeline,
                 'percent' => $totalOportunidades > 0 ? round($oportunidadesAbertas / $totalOportunidades * 100) : 0,
             ],
-            'encomendasCurso' => [
-                'entregues' => $entregues,
-                'total' => $totalContratos,
-                'percent' => $totalContratos > 0 ? round($entregues / $totalContratos * 100) : 0,
+            'produtosActivos' => [
+                'activos' => $produtosActivos,
+                'total' => $totalProdutos,
+                'percent' => $totalProdutos > 0 ? round($produtosActivos / $totalProdutos * 100) : 0,
             ],
             'pendenciasHoje' => [
                 'vencidas' => $vencidas,
@@ -99,22 +103,26 @@ class DashboardService
             ],
         ];
 
-        // Facturação Mensal (12 meses) - area chart
-        $faturacaoMensal = [];
-        $seriesData = [];
+        // BLOCO 2.1 (mudancas.md): "Factura Mensal" -> "Pipeline por Mes".
+        // Pipeline = oportunidades abertas (excepto cliente_aprovado e
+        // cliente_nao_aprovado), soma do valor estimado mes a mes.
+        // SUPOSICAO: o agrupamento e por created_at (entrada no pipeline),
+        // porque oportunidades abertas nao têm data de aprovacao.
+        $pipelineLabels = [];
+        $pipelineSeries = [];
         for ($i = 11; $i >= 0; $i--) {
             $mes = $now->copy()->subMonths($i);
-            $faturacaoMensal[] = $mes->format('M/Y');
-            $seriesData[] = (float) Opportunity::where('fase_atual', OpportunityStage::CLIENTE_APROVADO)
-                ->whereYear('data_aprovacao', $mes->year)
-                ->whereMonth('data_aprovacao', $mes->month)
+            $pipelineLabels[] = $mes->format('M/Y');
+            $pipelineSeries[] = (float) Opportunity::whereIn('fase_atual', $open)
+                ->whereYear('created_at', $mes->year)
+                ->whereMonth('created_at', $mes->month)
                 ->sum('valor_estimado');
         }
 
-        $faturacaoMensalPayload = [
+        $pipelineMensalPayload = [
             'type' => 'area',
-            'labels' => $faturacaoMensal,
-            'series' => [['name' => 'Facturação', 'data' => $seriesData]],
+            'labels' => $pipelineLabels,
+            'series' => [['name' => 'Pipeline', 'data' => $pipelineSeries]],
             'color' => self::SALES_COLOR,
         ];
 
@@ -133,66 +141,54 @@ class DashboardService
             ['titulo' => 'Total', 'valor' => self::formatKz($totalFaturacao), 'progress' => 100, 'cor' => 'bg-dark'],
         ];
 
-        // Task Completed area chart (6 meses) - activities com status 'concluida'
-        $taskLabels = [];
-        $taskCompletedData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $mes = $now->copy()->subMonths($i);
-            $taskLabels[] = $mes->format('M/Y');
-            $taskCompletedData[] = Activity::where('status', 'concluida')
-                ->whereYear('updated_at', $mes->year)
-                ->whereMonth('updated_at', $mes->month)->count();
-        }
+        // BLOCO 2.2 (mudancas.md): 4 mini-cards do pipeline (valores do
+        // Opportunities\Stats — pipeline aberto, aprovado no mes, ponderado
+        // e taxa de conversao).
+        $abertasQuery = Opportunity::whereIn('fase_atual', $open);
+        $pipelineValor = (float) $abertasQuery->sum('valor_estimado');
 
-        // New Tasks area chart
-        $newTasksData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $mes = $now->copy()->subMonths($i);
-            $newTasksData[] = Activity::whereYear('created_at', $mes->year)
-                ->whereMonth('created_at', $mes->month)->count();
-        }
+        $aprovadasMes = Opportunity::where('fase_atual', OpportunityStage::CLIENTE_APROVADO)
+            ->where('data_aprovacao', '>=', $now->copy()->startOfMonth());
+        $aprovadasMesValor = (float) $aprovadasMes->sum('valor_estimado');
+        $aprovadasMesCount = (clone $aprovadasMes)->count();
 
-        // Project Done area chart (encomendas entregues: data_fim no mês, não canceladas)
-        $projectLabels = [];
-        $projectDoneData = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $mes = $now->copy()->subMonths($i);
-            $projectLabels[] = $mes->format('M/Y');
-            $projectDoneData[] = Contract::where('estado', '!=', ContractStatus::CANCELADO->value)
-                ->whereYear('data_fim', $mes->year)
-                ->whereMonth('data_fim', $mes->month)->count();
-        }
+        $ponderadoValor = (float) (clone $abertasQuery)->get()->sum(
+            fn (Opportunity $opp): float => (float) $opp->valor_estimado * $opp->probabilidade / 100
+        );
 
-        // Contadores X/Y dos 3 mini-cards (protótipo: "22/35 concluídas" etc.)
-        $totalActividades = Activity::count();
-        $concluidas = Activity::where('status', 'concluida')->count();
-        $novas30 = Activity::where('created_at', '>=', $now->copy()->subDays(30))->count();
-        $entreguesTotal = Contract::where('estado', '!=', ContractStatus::CANCELADO->value)
-            ->where('data_fim', '<', $now->toDateString())->count();
+        $finalizadas = Opportunity::whereIn('fase_atual', [
+            OpportunityStage::CLIENTE_APROVADO->value,
+            OpportunityStage::CLIENTE_NAO_APROVADO->value,
+        ])->where('updated_at', '>=', $now->copy()->subDays(30));
+        $finalizadasCount = $finalizadas->count();
+        $aprovadasFinalizadas = (clone $finalizadas)->where('fase_atual', OpportunityStage::CLIENTE_APROVADO)->count();
+        $conversao = $finalizadasCount > 0 ? (int) round($aprovadasFinalizadas / $finalizadasCount * 100) : 0;
 
-        $minis = [
-            'taskCompleted' => $concluidas.'/'.$totalActividades,
-            'newTasks' => $novas30.'/'.$totalActividades,
-            'projectDone' => $entreguesTotal.'/'.$totalContratos,
+        $pipelineMinis = [
+            'pipelineAberto' => [
+                'valor' => OpportunityService::formatKzCompact($pipelineValor),
+                'valorCompleto' => OpportunityService::formatKz($pipelineValor),
+                'count' => Opportunity::whereIn('fase_atual', $open)->count(),
+            ],
+            'aprovadoMes' => [
+                'valor' => OpportunityService::formatKzCompact($aprovadasMesValor),
+                'valorCompleto' => OpportunityService::formatKz($aprovadasMesValor),
+                'count' => $aprovadasMesCount,
+            ],
+            'ponderado' => [
+                'valor' => OpportunityService::formatKzCompact($ponderadoValor),
+                'valorCompleto' => OpportunityService::formatKz($ponderadoValor),
+            ],
+            'conversao' => [
+                'percent' => $conversao,
+            ],
         ];
 
         return [
             'kpis' => $kpis,
-            'faturacaoMensal' => $faturacaoMensalPayload,
+            'pipelineMensal' => $pipelineMensalPayload,
             'statsCards' => $statsCards,
-            'minis' => $minis,
-            'taskCompleted' => [
-                'labels' => $taskLabels,
-                'series' => [['name' => 'Concluídas', 'data' => $taskCompletedData]],
-            ],
-            'newTasks' => [
-                'labels' => $taskLabels,
-                'series' => [['name' => 'Novas', 'data' => $newTasksData]],
-            ],
-            'projectDone' => [
-                'labels' => $projectLabels,
-                'series' => [['name' => 'Concluídos', 'data' => $projectDoneData]],
-            ],
+            'pipelineMinis' => $pipelineMinis,
         ];
     }
 
