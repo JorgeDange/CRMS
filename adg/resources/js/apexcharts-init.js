@@ -21,7 +21,12 @@ function parseChartData(el) {
 }
 
 function formatKz(value) {
-    return new Intl.NumberFormat('pt-PT').format(value);
+    // Números reais com separador de milhares por PONTO (igual ao
+    // formatKz do PHP: 1.640.720.000) — sem abreviar M/K, conforme
+    // pedido pelo cliente no dashboard (BLOCO 2 feedback).
+    return Math.round(value)
+        .toString()
+        .replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
 // Payloads do projeto chegam de 2 formas:
@@ -47,6 +52,10 @@ function toSeries(series, fallbackName) {
 // ============================================================
 
 function salesAreaConfig(payload) {
+    // Payloads de contagem (moeda: false) mostram só o nº inteiro;
+    // payloads de dinheiro mantêm o prefixo "Kz".
+    const ehMoeda = payload.moeda !== false;
+    const fmtEixo = (val) => (ehMoeda ? formatKz(val) : String(Math.round(val)));
     return {
         chart: {
             type: 'area',
@@ -59,11 +68,8 @@ function salesAreaConfig(payload) {
         colors: [payload.color || '#3454d1'],
         yaxis: {
             labels: {
-                formatter: (val) => {
-                    if (Math.abs(val) >= 1_000_000) return `${(val / 1_000_000).toFixed(0)}M`;
-                    if (Math.abs(val) >= 1_000) return `${(val / 1_000).toFixed(0)}K`;
-                    return val;
-                },
+                // Valores reais sem abreviação (antes: 1640M / 1.6K).
+                formatter: fmtEixo,
             },
         },
         fill: {
@@ -83,7 +89,7 @@ function salesAreaConfig(payload) {
         },
         tooltip: {
             theme: 'dark',
-            y: { formatter: (val) => `Kz ${formatKz(val)}` },
+            y: { formatter: (val) => (ehMoeda ? `Kz ${formatKz(val)}` : `${Math.round(val)} oportunidades`) },
         },
         legend: { show: false },
     };

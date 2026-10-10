@@ -104,10 +104,9 @@ class DashboardService
         ];
 
         // BLOCO 2.1 (mudancas.md): "Factura Mensal" -> "Pipeline por Mes".
-        // Pipeline = oportunidades abertas (excepto cliente_aprovado e
-        // cliente_nao_aprovado), soma do valor estimado mes a mes.
-        // SUPOSICAO: o agrupamento e por created_at (entrada no pipeline),
-        // porque oportunidades abertas nao têm data de aprovacao.
+        // Contagem de oportunidades abertas (excepto cliente_aprovado e
+        // cliente_nao_aprovado) ENTRADAS por mes (created_at) — não soma
+        // de valores em Kz (feedback do cliente: escala deve ser contagem).
         $pipelineLabels = [];
         $pipelineSeries = [];
         for ($i = 11; $i >= 0; $i--) {
@@ -116,7 +115,7 @@ class DashboardService
             $pipelineSeries[] = (float) Opportunity::whereIn('fase_atual', $open)
                 ->whereYear('created_at', $mes->year)
                 ->whereMonth('created_at', $mes->month)
-                ->sum('valor_estimado');
+                ->count();
         }
 
         $pipelineMensalPayload = [
@@ -124,6 +123,7 @@ class DashboardService
             'labels' => $pipelineLabels,
             'series' => [['name' => 'Pipeline', 'data' => $pipelineSeries]],
             'color' => self::SALES_COLOR,
+            'moeda' => false, // contagem — tooltip sem prefixo "Kz"
         ];
 
         // Stats cards abaixo do gráfico principal

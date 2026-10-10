@@ -74,12 +74,12 @@ class DashboardTest extends TestCase
     }
 
     /**
-     * BLOCO 2.1: o gráfico principal soma o pipeline ABERTO (created_at),
-     * não a facturação (aprovadas).
+     * BLOCO 2.1: o gráfico principal conta oportunidades ABERTAS por mês
+     * (created_at), não soma valores em Kz nem conta aprovadas.
      */
-    public function test_pipeline_chart_sums_open_opportunities_not_approved(): void
+    public function test_pipeline_chart_counts_open_opportunities_by_month(): void
     {
-        Opportunity::factory()->count(2)->create([
+        Opportunity::factory()->count(3)->create([
             'fase_atual' => OpportunityStage::PROPOSTA_NEGOCIACAO,
             'valor_estimado' => 150000,
             'created_at' => now(),
@@ -97,8 +97,9 @@ class DashboardTest extends TestCase
         $payload = json_decode(html_entity_decode($matches[1], ENT_QUOTES | ENT_HTML5), true);
 
         $this->assertSame('Pipeline', $payload['series'][0]['name']);
-        // Último mês (actual) = 2 abertas x 150.000 = 300.000 (aprovada fora)
-        $this->assertSame(300000.0, (float) end($payload['series'][0]['data']));
+        $this->assertFalse($payload['moeda']);
+        // Mês actual: 3 abertas (aprovada fora) — contagem, não valor
+        $this->assertSame(3.0, (float) end($payload['series'][0]['data']));
     }
 
     /**
