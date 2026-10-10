@@ -7,7 +7,8 @@ use App\Models\Opportunity;
 use Illuminate\Support\Facades\Route;
 use Maatwebsite\Excel\Facades\Excel;
 
-Route::view('/', 'welcome');
+// Raiz → login (o utilizador autenticado é encaminhado pelo middleware guest).
+Route::redirect('/', '/login');
 
 Route::view('dashboard', 'dashboard.index')
     ->middleware(['auth', 'verified'])

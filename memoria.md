@@ -1247,6 +1247,22 @@ ao soltar cartões no pipeline.
 
 ---
 
+### Raiz `/` → login (2026-10-09)
+
+**Pedido**: *"ao iniciar o projecto ele vem em uma tela, devia vir apenas na tela de login"*.
+
+- **Antes:** `Route::view('/', 'welcome')` — a página de boas-vindas do Laravel.
+- **Fix:** `Route::redirect('/', '/login')` em `routes/web.php`.
+- **Comportamento verificado no browser:** guest `/` → `/login` (200);
+  autenticado `/` → `/login` → middleware `guest` → `/dashboard` (o
+  `RedirectIfAuthenticated` do framework escolhe a rota `dashboard` por
+  omissão); logout → `/` → login.
+- `ExampleTest` actualizado para `assertRedirect('/login')`.
+- Validação: suíte **140 testes / 730 assertions**, pint OK, E2Es não abrem
+  `/` directamente (sempre `/login`).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1288,3 +1304,4 @@ ao soltar cartões no pipeline.
 | 2026-10-09 | **Kanban: navegação sem scrollbar lateral** — setas ← → na FilterBar (scroll suave 2 colunas, disabled nas extremidades, estado via scroll/morphed) + auto-scroll durante o drag nas bordas do board (14px/frame, pára em drop/dragend/fora do board, sem scroll fantasma); `x-data` unificado no wrapper com `$refs.board`; E2E novo `e2e-kanban-navegacao.mjs` ×2 verde (0→564→0, auto-scroll direita/esquerda, 0 erros), PipelineTest 9/9. |
 | 2026-10-09 | **"Apagar não funciona" → Agenda 500 por activities órfãs** — raiz: `DashboardDemoSeeder` ligava actividades às opps `[demo-hist]` e soft-deletava-as no mesmo run (cascade das FKs não corre em soft delete); `/agenda` dava 500 em `$activity->opportunity->nome`. Fixes: seeder exclui demo do pluck + apaga activities antes do soft delete, `whereHas('opportunity')` em ActivityList/Calendar, guards `?->?? '—'` em 6 views, 4 órfãs removidas da BD, teste de regressão; E2E `e2e-apagar-todos.mjs` valida apagar em 4 listas + alertas (0 erros), suite 140/729, pint OK. |
 | 2026-10-09 | **Fix `drop is not defined` no kanban** — o método `drop()` ficou para trás quando o `x-data` subiu do board para o wrapper (tarefa das setas); reposto no objecto Alpine. E2E novo `e2e-kanban-drop.mjs` valida drop real + reposição + `drag-over` limpo com 0 erros (×4), navegação ×2, PipelineTest 9/9, pint OK. |
+| 2026-10-09 | **Raiz `/` → login** — `Route::view('/', 'welcome')` (tela do Laravel) trocada por `Route::redirect('/', '/login')`; guest vê o login, autenticado cai no `/dashboard` (middleware `guest`), logout volta ao login. `ExampleTest` → `assertRedirect('/login')`; 140 testes / 730 assertions, pint OK. |
