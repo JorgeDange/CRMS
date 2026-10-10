@@ -63,6 +63,19 @@ class ContractList extends Component
         app(ContractService::class)->cancelar($contract);
     }
 
+    public function remove(int $contractId): void
+    {
+        $contract = Contract::find($contractId);
+
+        if (! $contract) {
+            return;
+        }
+
+        $contract->delete();
+
+        $this->dispatch('contract-removed');
+    }
+
     public function render()
     {
         $contracts = Contract::with(['opportunity', 'commercial', 'product'])

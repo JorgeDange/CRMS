@@ -164,40 +164,34 @@
                                                 <div class="text-truncate-1-line" style="max-width: 300px;">{{ $conciliaction->observacoes ?: '—' }}</div>
                                             </td>
                                             <td class="text-end">
-                                                <div class="hstack gap-2 justify-content-end">
+                                                {{-- BLOCO 1: ícones directos (sem dropdown de 3 pontos) --}}
+                                                <div class="action-icons">
                                                     <a href="{{ route('conciliactions.edit', ['conciliaction' => $conciliaction->uuid]) }}"
-                                                       class="avatar-text avatar-md" title="Editar" wire:navigate>
+                                                       class="btn btn-icon" title="Editar" wire:navigate>
                                                         <i class="feather-edit-3"></i>
                                                     </a>
                                                     @if (! $conciliaction->resolvido)
                                                         <button type="button"
-                                                                class="avatar-text avatar-md btn-success"
+                                                                class="btn btn-icon"
                                                                 title="Marcar como resolvida"
                                                                 wire:click="resolver({{ $conciliaction->id }})">
                                                             <i class="feather-check"></i>
                                                         </button>
                                                     @endif
-                                                    <div class="dropdown">
-                                                        <a href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="dropdown">
-                                                            <i class="feather-more-vertical"></i>
-                                                        </a>
-                                                        <div class="dropdown-menu dropdown-menu-end">
-                                                            @foreach ($classificacoes as $c)
-                                                                <a class="dropdown-item"
-                                                                   href="javascript:void(0);"
-                                                                   wire:click="classificar({{ $conciliaction->id }}, '{{ $c->value }}')">
-                                                                    <i class="{{ $c->icon() }} me-2"></i>
-                                                                    {{ $c->label() }}
-                                                                </a>
-                                                            @endforeach
-                                                            <div class="dropdown-divider"></div>
-                                                            <a class="dropdown-item text-danger"
-                                                               href="javascript:void(0);"
-                                                                @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar conciliação', mensagem: 'Eliminar esta conciliação? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $conciliaction->id }}))">
-                                                                <i class="feather-trash-2 me-2"></i>Eliminar
-                                                            </a>
-                                                        </div>
-                                                    </div>
+                                                    @foreach ($classificacoes as $c)
+                                                        <button type="button"
+                                                                class="btn btn-icon {{ $conciliaction->classificacao === $c ? 'text-primary' : '' }}"
+                                                                title="{{ $c->label() }}"
+                                                                wire:click="classificar({{ $conciliaction->id }}, '{{ $c->value }}')">
+                                                            <i class="{{ $c->icon() }}"></i>
+                                                        </button>
+                                                    @endforeach
+                                                    <button type="button"
+                                                            class="btn btn-icon text-danger"
+                                                            title="Eliminar"
+                                                            @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar conciliação', mensagem: 'Eliminar esta conciliação? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $conciliaction->id }}))">
+                                                        <i class="feather-trash-2"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

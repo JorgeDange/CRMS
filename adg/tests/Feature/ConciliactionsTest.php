@@ -43,6 +43,23 @@ class ConciliactionsTest extends TestCase
             ->assertSee('Nova Conciliação');
     }
 
+    public function test_list_shows_direct_action_icons_without_dropdown(): void
+    {
+        // BLOCO 1 (mudancas.md): acções em ícones directos, sem dropdown de 3 pontos.
+        Conciliaction::factory()->create();
+
+        $response = $this->actingAs($this->user())->get(route('conciliactions'));
+
+        $response
+            ->assertOk()
+            ->assertSee('action-icons', false)
+            ->assertSee('feather-check-circle')   // Concordante
+            ->assertSee('feather-x-circle')       // Discordante
+            ->assertSee('feather-alert-triangle') // Pendente
+            ->assertSee('feather-trash-2')        // Eliminar
+            ->assertDontSee('feather-more-vertical');
+    }
+
     public function test_conciliaction_create_renders_form(): void
     {
         $response = $this->actingAs($this->user())->get(route('conciliactions.create'));

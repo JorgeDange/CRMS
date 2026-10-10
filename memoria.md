@@ -1263,6 +1263,30 @@ ao soltar cartões no pipeline.
 
 ---
 
+### Sprint Ajustes BLOCO 1 — Ícones alinhados (2026-10-10)
+
+**Pedido** (`mudancas.md`): remover o dropdown de 3 pontos das colunas Acções
+de Conciliações/Contratos/Produtos e mostrar os ícones directos na linha.
+
+- **Views:** as 3 listas passam a usar `<div class="action-icons">` com
+  botões `.btn-icon` 32×32 (CSS novo no fim do `app.css`); ícones por
+  módulo: conciliações ✓/✗/⚠ classificação + 🗑, contratos ✓ activar /
+  🔄 renovar / ✗ cancelar / 🗑 (condicionados pelo estado), produtos
+  ▶/⏸ toggle + 🗑; manter Editar/Ver já directos.
+- **Contratos:** novo `ContractList::remove()` (soft delete +
+  `dispatch('contract-removed')`) — Eliminar não existia, só saía do
+  dropdown de outros módulos.
+- **Testes:** +4 (`test_list_shows_direct_action_icons_without_dropdown`
+  ×3 com `assertSee('action-icons')`/`assertDontSee('feather-more-*')` e
+  `test_remove_deletes_contract` com `assertSoftDeleted`); suíte
+  **144/749**, pint OK, build OK.
+- **Browser (E2E `e2e-bloco1-icoes.mjs`):** nas 3 listas `.action-icons`
+  com `display:flex`, `gap:4px`, botões 32×32 alinhados, **0 dropdowns de
+  3 pontos**, 0 erros de consola; toggle de produto funcionando
+  (Activar↔Desactivar).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1305,3 +1329,4 @@ ao soltar cartões no pipeline.
 | 2026-10-09 | **"Apagar não funciona" → Agenda 500 por activities órfãs** — raiz: `DashboardDemoSeeder` ligava actividades às opps `[demo-hist]` e soft-deletava-as no mesmo run (cascade das FKs não corre em soft delete); `/agenda` dava 500 em `$activity->opportunity->nome`. Fixes: seeder exclui demo do pluck + apaga activities antes do soft delete, `whereHas('opportunity')` em ActivityList/Calendar, guards `?->?? '—'` em 6 views, 4 órfãs removidas da BD, teste de regressão; E2E `e2e-apagar-todos.mjs` valida apagar em 4 listas + alertas (0 erros), suite 140/729, pint OK. |
 | 2026-10-09 | **Fix `drop is not defined` no kanban** — o método `drop()` ficou para trás quando o `x-data` subiu do board para o wrapper (tarefa das setas); reposto no objecto Alpine. E2E novo `e2e-kanban-drop.mjs` valida drop real + reposição + `drag-over` limpo com 0 erros (×4), navegação ×2, PipelineTest 9/9, pint OK. |
 | 2026-10-09 | **Raiz `/` → login** — `Route::view('/', 'welcome')` (tela do Laravel) trocada por `Route::redirect('/', '/login')`; guest vê o login, autenticado cai no `/dashboard` (middleware `guest`), logout volta ao login. `ExampleTest` → `assertRedirect('/login')`; 140 testes / 730 assertions, pint OK. |
+| 2026-10-10 | **Sprint Ajustes BLOCO 1 — ícones alinhados** — dropdown de 3 pontos removido das Acções de Conciliações/Contratos/Produtos; `.action-icons` (flex, gap 4px, `.btn-icon` 32×32) nas 3 listas; novo `ContractList::remove()` (soft delete); +4 testes → 144/749, pint/build OK; E2E `e2e-bloco1-icoes.mjs` valida alinhamento, 0 dropdowns, toggle a funcionar. |

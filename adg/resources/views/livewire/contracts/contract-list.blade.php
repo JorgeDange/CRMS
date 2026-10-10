@@ -146,53 +146,46 @@
                                                 </span>
                                             </td>
                                             <td class="text-end">
-                                                <div class="hstack gap-2 justify-content-end">
+                                                {{-- BLOCO 1: ícones directos (sem dropdown de 3 pontos) --}}
+                                                <div class="action-icons">
                                                     <a href="{{ route('contracts.show', $contract) }}"
-                                                       class="avatar-text avatar-md" title="Ver detalhe" wire:navigate>
+                                                       class="btn btn-icon" title="Ver detalhe" wire:navigate>
                                                         <i class="feather-eye"></i>
                                                     </a>
-                                                    <div class="dropdown">
-                                                        <a href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="dropdown">
-                                                            <i class="feather-more-horizontal"></i>
-                                                        </a>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="{{ route('contracts.edit', ['contract' => $contract->uuid]) }}"
-                                                                   wire:navigate>
-                                                                    <i class="feather-edit-3 me-3"></i>
-                                                                    <span>Editar</span>
-                                                                </a>
-                                                            </li>
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="javascript:void(0);"
-                                                                   wire:click="updateStatus({{ $contract->id }}, 'activo')"
-                                                                   @if($contract->estado->value === 'activo') style="display:none" @endif>
-                                                                    <i class="feather-check-circle me-3"></i>
-                                                                    <span>Marcar Activo</span>
-                                                                </a>
-                                                            </li>
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="javascript:void(0);"
-                                                                   wire:click="updateStatus({{ $contract->id }}, 'renovado')"
-                                                                   @if($contract->estado->value !== 'activo' && $contract->estado->value !== 'expirado') style="display:none" @endif>
-                                                                    <i class="feather-refresh-cw me-3"></i>
-                                                                    <span>Renovar</span>
-                                                                </a>
-                                                            </li>
-                                                            <li>
-                                                                <a class="dropdown-item text-danger"
-                                                                   href="javascript:void(0);"
-                                                                   wire:click="cancelar({{ $contract->id }})"
-                                                                   @if($contract->estado->value === 'cancelado') style="display:none" @endif>
-                                                                    <i class="feather-x-circle me-3"></i>
-                                                                    <span>Cancelar</span>
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
+                                                    <a href="{{ route('contracts.edit', ['contract' => $contract->uuid]) }}"
+                                                       class="btn btn-icon" title="Editar" wire:navigate>
+                                                        <i class="feather-edit-3"></i>
+                                                    </a>
+                                                    @if ($contract->estado->value !== 'activo')
+                                                        <button type="button"
+                                                                class="btn btn-icon"
+                                                                title="Marcar Activo"
+                                                                wire:click="updateStatus({{ $contract->id }}, 'activo')">
+                                                            <i class="feather-check-circle"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if (in_array($contract->estado->value, ['activo', 'expirado'], true))
+                                                        <button type="button"
+                                                                class="btn btn-icon"
+                                                                title="Renovar"
+                                                                wire:click="updateStatus({{ $contract->id }}, 'renovado')">
+                                                            <i class="feather-refresh-cw"></i>
+                                                        </button>
+                                                    @endif
+                                                    @if ($contract->estado->value !== 'cancelado')
+                                                        <button type="button"
+                                                                class="btn btn-icon text-danger"
+                                                                title="Cancelar"
+                                                                wire:click="cancelar({{ $contract->id }})">
+                                                            <i class="feather-x-circle"></i>
+                                                        </button>
+                                                    @endif
+                                                    <button type="button"
+                                                            class="btn btn-icon text-danger"
+                                                            title="Eliminar"
+                                                            @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar contrato', mensagem: 'Eliminar este contrato? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $contract->id }}))">
+                                                        <i class="feather-trash-2"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

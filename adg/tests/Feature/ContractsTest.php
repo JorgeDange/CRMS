@@ -3,9 +3,11 @@
 namespace Tests\Feature;
 
 use App\Enums\ContractStatus;
+use App\Livewire\Contracts\ContractList;
 use App\Models\Contract;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class ContractsTest extends TestCase
@@ -41,6 +43,35 @@ class ContractsTest extends TestCase
             ->assertSee('Filtros')
             ->assertSee('Novo Contrato')
             ->assertSee('Todos os estados');
+    }
+
+    public function test_list_shows_direct_action_icons_without_dropdown(): void
+    {
+        // BLOCO 1 (mudancas.md): acções em ícones directos, sem dropdown de 3 pontos.
+        Contract::factory()->create(['estado' => ContractStatus::ACTIVO]);
+
+        $response = $this->actingAs($this->user())->get('/contratos');
+
+        $response
+            ->assertOk()
+            ->assertSee('action-icons', false)
+            ->assertSee('feather-refresh-cw')     // Renovar (activo)
+            ->assertSee('feather-x-circle')       // Cancelar
+            ->assertSee('feather-trash-2')        // Eliminar
+            ->assertDontSee('feather-more-horizontal');
+    }
+
+    public function test_remove_deletes_contract(): void
+    {
+        // BLOCO 1: Eliminar directo (novo ícone nos contratos).
+        $contract = Contract::factory()->create();
+
+        $this->actingAs($this->user());
+
+        Livewire::test(ContractList::class)
+            ->call('remove', $contract->id);
+
+        $this->assertSoftDeleted('contracts', ['id' => $contract->id]);
     }
 
     public function test_contract_create_renders_form(): void

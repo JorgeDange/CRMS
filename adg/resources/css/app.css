@@ -210,3 +210,24 @@ body.modal-open .page-header {
 .apps-container .nxl-content.without-header .main-content .content-area {
     min-width: 0;
 }
+
+/* --------------------------------------------------------------- */
+/* Acções das listas (Sprint Ajustes BLOCO 1): em vez do dropdown   */
+/* de 3 pontos, os ícones ficam directos na linha, alinhados.       */
+/* Usa o .btn-icon do protótipo (theme-extract) com 32x32.           */
+/* --------------------------------------------------------------- */
+.action-icons {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.action-icons .btn-icon {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

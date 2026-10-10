@@ -164,41 +164,24 @@
                                                 @endif
                                             </td>
                                             <td class="text-end">
-                                                <div class="hstack gap-2 justify-content-end">
+                                                {{-- BLOCO 1: ícones directos (sem dropdown de 3 pontos) --}}
+                                                <div class="action-icons">
                                                     <a href="{{ route('products.edit', ['produto' => $product->uuid]) }}"
-                                                       class="avatar-text avatar-md" title="Editar" wire:navigate>
+                                                       class="btn btn-icon" title="Editar" wire:navigate>
                                                         <i class="feather-edit-3"></i>
                                                     </a>
                                                     <button type="button"
-                                                            class="avatar-text avatar-md {{ $product->activo ? 'btn-warning' : 'btn-success' }}"
+                                                            class="btn btn-icon {{ $product->activo ? 'text-warning' : 'text-success' }}"
                                                             title="{{ $product->activo ? 'Desactivar' : 'Activar' }}"
                                                             wire:click="toggleStatus({{ $product->id }})">
                                                         <i class="feather-{{ $product->activo ? 'pause' : 'play' }}"></i>
                                                     </button>
-                                                    <div class="dropdown">
-                                                        <a href="javascript:void(0);" class="avatar-text avatar-md" data-bs-toggle="dropdown">
-                                                            <i class="feather-more-horizontal"></i>
-                                                        </a>
-                                                        <ul class="dropdown-menu dropdown-menu-end">
-                                                            <li>
-                                                                <a class="dropdown-item"
-                                                                   href="{{ route('products.edit', ['produto' => $product->uuid]) }}"
-                                                                   wire:navigate>
-                                                                    <i class="feather-edit-3 me-3"></i>
-                                                                    <span>Editar</span>
-                                                                </a>
-                                                            </li>
-                                                            <li class="dropdown-divider"></li>
-                                                            <li>
-                                                                <a class="dropdown-item text-danger"
-                                                                   href="javascript:void(0);"
-                                                                    @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar produto', mensagem: 'Eliminar este produto? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $product->id }}))">
-                                                                    <i class="feather-trash-2 me-3"></i>
-                                                                    <span>Eliminar</span>
-                                                                </a>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
+                                                    <button type="button"
+                                                            class="btn btn-icon text-danger"
+                                                            title="Eliminar"
+                                                            @click.prevent="$store.confirmar.abrir({ titulo: 'Eliminar produto', mensagem: 'Eliminar este produto? Esta acção não pode ser desfeita.', confirmar: 'Eliminar' }).then(ok => ok && $wire.remove({{ $product->id }}))">
+                                                        <i class="feather-trash-2"></i>
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

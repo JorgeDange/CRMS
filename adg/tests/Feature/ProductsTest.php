@@ -43,6 +43,21 @@ class ProductsTest extends TestCase
             ->assertSee('Todos os comerciais');
     }
 
+    public function test_list_shows_direct_action_icons_without_dropdown(): void
+    {
+        // BLOCO 1 (mudancas.md): acções em ícones directos, sem dropdown de 3 pontos.
+        Product::factory()->create(['activo' => true]);
+
+        $response = $this->actingAs($this->user())->get('/produtos');
+
+        $response
+            ->assertOk()
+            ->assertSee('action-icons', false)
+            ->assertSee('feather-pause')       // Desactivar (activo)
+            ->assertSee('feather-trash-2')     // Eliminar
+            ->assertDontSee('feather-more-horizontal');
+    }
+
     public function test_product_create_renders_form(): void
     {
         $response = $this->actingAs($this->user())->get('/produtos/nova');
