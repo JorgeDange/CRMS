@@ -9,6 +9,8 @@ enum ActivityType: string
     case REUNIAO = 'reuniao';
     case PROPOSTA = 'proposta';
     case COBRANCA = 'cobranca';
+    // BLOCO 3 (mudancas.md): tipo personalizado com texto em tipo_outros.
+    case OUTROS = 'outros';
 
     /**
      * Legenda de tipos do prototipo: apps-notes.html (select do formulario)
@@ -22,6 +24,7 @@ enum ActivityType: string
             self::REUNIAO => 'Reunião',
             self::PROPOSTA => 'Proposta',
             self::COBRANCA => 'Cobrança',
+            self::OUTROS => 'Outros',
         };
     }
 
@@ -36,6 +39,7 @@ enum ActivityType: string
             self::REUNIAO => 'Reuniões',
             self::PROPOSTA => 'Propostas',
             self::COBRANCA => 'Cobranças',
+            self::OUTROS => 'Outros',
         };
     }
 
@@ -50,6 +54,7 @@ enum ActivityType: string
             self::REUNIAO => '#d13b4c',
             self::PROPOSTA => '#17a2b8',
             self::COBRANCA => '#e49e3d',
+            self::OUTROS => '#6c757d',
         };
     }
 
@@ -64,6 +69,7 @@ enum ActivityType: string
             self::REUNIAO => 'bg-soft-indigo text-primary',
             self::PROPOSTA => 'bg-soft-teal text-teal',
             self::COBRANCA => 'bg-soft-danger text-danger',
+            self::OUTROS => 'bg-soft-gray text-muted',
         };
     }
 
@@ -86,6 +92,7 @@ enum ActivityType: string
             self::REUNIAO => 'feather-users',
             self::PROPOSTA => 'feather-file-text',
             self::COBRANCA => 'feather-dollar-sign',
+            self::OUTROS => 'feather-more-horizontal',
         };
     }
 }

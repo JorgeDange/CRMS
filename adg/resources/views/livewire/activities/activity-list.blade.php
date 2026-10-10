@@ -131,7 +131,7 @@
                                                     <i class="feather-check me-1"></i>Concluir
                                                 </button>
                                             @endif
-                                            <div class="badge {{ $activity->tipo->badge() }} d-md-inline-block d-none">{{ $activity->tipo->labelPlural() }}</div>
+                                            <div class="badge {{ $activity->tipo->badge() }} d-md-inline-block d-none">{{ $activity->tipo === \App\Enums\ActivityType::OUTROS ? $activity->tipoDisplay() : $activity->tipo->labelPlural() }}</div>
                                             @if ($activity->proxima_accao_prazo)
                                                 <div class="d-md-inline-block d-none me-3">{{ $activity->proxima_accao_prazo->format('d M, Y') }}</div>
                                             @endif

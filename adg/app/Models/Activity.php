@@ -18,6 +18,7 @@ class Activity extends Model
         'opportunity_id',
         'user_id',
         'tipo',
+        'tipo_outros',
         'descricao',
         'resultado',
         'data',
@@ -50,6 +51,19 @@ class Activity extends Model
         }
 
         return substr($this->hora, 0, 5);
+    }
+
+    /**
+     * Rotulo do tipo para apresentacao (lista/calendario): quando o tipo e
+     * "outros", mostra o texto personalizado de tipo_outros (BLOCO 3).
+     */
+    public function tipoDisplay(): string
+    {
+        if ($this->tipo === ActivityType::OUTROS && $this->tipo_outros !== null && $this->tipo_outros !== '') {
+            return $this->tipo_outros;
+        }
+
+        return $this->tipo->label();
     }
 
     protected static function booted(): void

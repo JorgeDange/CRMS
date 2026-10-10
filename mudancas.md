@@ -352,13 +352,13 @@ Após a reunião com o Sr. Adailson, foram apresentadas várias sugestões de aj
 
 ### BLOCO 3 — Agenda Tipo Outros
 
-- [ ] Enum `ActivityType::OUTROS`
-- [ ] Migration `tipo_outros`
-- [ ] Form com campo condicional
-- [ ] Lista/calendário com texto personalizado
-- [ ] Testes
-- [ ] Validação no browser
-- [ ] Commit
+- [x] Enum `ActivityType::OUTROS`
+- [x] Migration `tipo_outros`
+- [x] Form com campo condicional
+- [x] Lista/calendário com texto personalizado
+- [x] Testes (+5 novos)
+- [x] Validação no browser
+- [x] Commit
 
 ### BLOCO 4 — Aba Actividade
 

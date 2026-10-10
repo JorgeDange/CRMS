@@ -590,4 +590,117 @@ class AgendaTest extends TestCase
 
         $this->assertSame(0, Alert::where('tipo', AlertType::AGENDA)->count());
     }
+
+    // ------------------------------------------------------------------
+    // BLOCO 3 — tipo "Outros" com texto personalizado (tipo_outros)
+    // ------------------------------------------------------------------
+
+    public function test_outros_type_requires_custom_text(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+        $this->actingAs($user);
+
+        Livewire::test(ActivityForm::class)
+            ->set('tipo', 'outros')
+            ->set('opportunity_id', $opportunity->id)
+            ->set('descricao', 'Actividade com tipo personalizado')
+            ->set('proxima_accao', 'Accao qualquer')
+            ->set('proxima_accao_prazo', now()->addDays(2)->toDateString())
+            ->set('data', now()->toDateString())
+            ->call('save')
+            ->assertHasErrors(['tipo_outros']);
+
+        $this->assertSame(0, Activity::count());
+    }
+
+    public function test_outros_type_saves_custom_text_and_shows_in_list(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+        $this->actingAs($user);
+
+        Livewire::test(ActivityForm::class)
+            ->set('tipo', 'outros')
+            ->set('tipo_outros', 'Visita técnica à bomba')
+            ->set('opportunity_id', $opportunity->id)
+            ->set('descricao', 'Actividade com tipo Outros')
+            ->set('proxima_accao', 'Ligar ao cliente')
+            ->set('proxima_accao_prazo', now()->addDays(2)->toDateString())
+            ->set('data', now()->toDateString())
+            ->call('save')
+            ->assertRedirect(route('agenda'));
+
+        $this->assertDatabaseHas('activities', [
+            'tipo' => 'outros',
+            'tipo_outros' => 'Visita técnica à bomba',
+            'descricao' => 'Actividade com tipo Outros',
+        ]);
+
+        // Lista mostra o texto personalizado (badge), nao "Outros".
+        $this->get('/agenda')
+            ->assertOk()
+            ->assertSee('Visita técnica à bomba');
+    }
+
+    public function test_other_types_do_not_persist_tipo_outros(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+        $this->actingAs($user);
+
+        Livewire::test(ActivityForm::class)
+            ->set('tipo', 'chamada')
+            ->set('tipo_outros', 'Texto que nao deve guardar')
+            ->set('opportunity_id', $opportunity->id)
+            ->set('descricao', 'Chamada normal')
+            ->set('proxima_accao', 'Enviar email')
+            ->set('proxima_accao_prazo', now()->addDays(2)->toDateString())
+            ->set('data', now()->toDateString())
+            ->call('save')
+            ->assertRedirect(route('agenda'));
+
+        $this->assertDatabaseHas('activities', [
+            'tipo' => 'chamada',
+            'tipo_outros' => null,
+        ]);
+    }
+
+    public function test_calendar_detail_modal_shows_custom_outros_text(): void
+    {
+        $user = $this->user();
+        $opportunity = $this->opportunity();
+
+        $activity = Activity::factory()->create([
+            'opportunity_id' => $opportunity->id,
+            'user_id' => $user->id,
+            'tipo' => ActivityType::OUTROS,
+            'tipo_outros' => 'Workshop de segurança',
+            'descricao' => 'Actividade Outros no calendario',
+            'data' => now()->toDateString(),
+            'hora' => '11:00',
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(ActivityCalendar::class)
+            ->call('abrirDetalhe', $activity->id)
+            ->assertSee('Workshop de segurança');
+    }
+
+    public function test_outros_form_field_shows_and_hides_conditionally(): void
+    {
+        $this->opportunity();
+        $this->actingAs($this->user());
+
+        $component = Livewire::test(ActivityForm::class);
+
+        // Por omissao (tipo=visita) nao mostra o campo.
+        $component->assertDontSee('Especifique');
+
+        // Quando tipo=outros, mostra o campo.
+        $component
+            ->set('tipo', 'outros')
+            ->assertSee('Especifique');
+    }
 }

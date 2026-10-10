@@ -49,7 +49,7 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Tipo <span class="text-danger">*</span></label>
-                                        <select class="form-control" wire:model="tipo" required>
+                                        <select class="form-control" wire:model.live="tipo" required>
                                             @foreach ($tipos as $tipoCase)
                                                 <option value="{{ $tipoCase->value }}">{{ $tipoCase->label() }}</option>
                                             @endforeach
@@ -67,6 +67,16 @@
                                         @error('opportunity_id')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                                     </div>
                                 </div>
+
+                                {{-- BLOCO 3: campo condicional quando o tipo e "Outros" --}}
+                                @if ($tipo === 'outros')
+                                    <div class="mb-3">
+                                        <label class="form-label">Especifique <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" wire:model="tipo_outros" maxlength="100"
+                                               placeholder="Descrição personalizada do tipo de actividade" required>
+                                        @error('tipo_outros')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                                    </div>
+                                @endif
 
                                 <div class="mb-3">
                                     <label class="form-label">Descrição <span class="text-danger">*</span></label>

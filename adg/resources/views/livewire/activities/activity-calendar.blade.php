@@ -164,7 +164,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <div class="d-flex align-items-center gap-2 flex-wrap me-3">
-                                <span class="badge {{ $detalhe->tipo->badge() }}">{{ $detalhe->tipo->label() }}</span>
+                                <span class="badge {{ $detalhe->tipo->badge() }}">{{ $detalhe->tipoDisplay() }}</span>
                                 <h5 class="modal-title mb-0">{{ $detalhe->descricao }}</h5>
                             </div>
                             <button type="button" class="btn-close" wire:click="fecharDetalhe" aria-label="Fechar"></button>
@@ -181,7 +181,7 @@
                                 </div>
                                 <div class="col-sm-3">
                                     <span class="fs-11 fw-semibold text-muted text-uppercase d-block mb-1">Tipo</span>
-                                    <span class="fs-13 fw-semibold">{{ $detalhe->tipo->labelPlural() }}</span>
+                                    <span class="fs-13 fw-semibold">{{ $detalhe->tipoDisplay() }}</span>
                                 </div>
                                 <div class="col-sm-4">
                                     <span class="fs-11 fw-semibold text-muted text-uppercase d-block mb-1">Data</span>

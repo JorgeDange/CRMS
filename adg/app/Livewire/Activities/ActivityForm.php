@@ -15,6 +15,9 @@ class ActivityForm extends Component
 
     public string $tipo = 'visita';
 
+    // BLOCO 3: texto personalizado quando tipo = 'outros'.
+    public string $tipo_outros = '';
+
     public ?int $opportunity_id = null;
 
     public string $descricao = '';
@@ -48,6 +51,7 @@ class ActivityForm extends Component
 
         $this->activityId = $activity->id;
         $this->tipo = $activity->tipo->value;
+        $this->tipo_outros = (string) $activity->tipo_outros;
         $this->opportunity_id = $activity->opportunity_id;
         $this->descricao = (string) $activity->descricao;
         $this->resultado = (string) $activity->resultado;
@@ -65,6 +69,8 @@ class ActivityForm extends Component
     {
         return [
             'tipo' => ['required', 'in:'.implode(',', array_column(ActivityType::cases(), 'value'))],
+            // BLOCO 3: obrigatorio apenas quando o tipo e 'outros'.
+            'tipo_outros' => ['nullable', 'string', 'max:100', 'required_if:tipo,outros'],
             'opportunity_id' => ['required', 'integer', 'exists:opportunities,id'],
             'descricao' => ['required', 'string', 'max:4000'],
             'resultado' => ['nullable', 'string', 'max:8000'],
@@ -80,6 +86,15 @@ class ActivityForm extends Component
         $data = $this->validate();
 
         $data['resultado'] = $data['resultado'] !== '' ? $data['resultado'] : null;
+
+        // BLOCO 3: guarda o texto apenas quando o tipo e 'outros'.
+        if ($data['tipo'] !== ActivityType::OUTROS->value) {
+            $data['tipo_outros'] = null;
+        } elseif (trim($data['tipo_outros']) === '') {
+            $data['tipo_outros'] = null;
+        } else {
+            $data['tipo_outros'] = trim($data['tipo_outros']);
+        }
 
         if ($this->activityId !== null) {
             app(ActivityService::class)->update(
