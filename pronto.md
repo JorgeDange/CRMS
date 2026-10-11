@@ -209,9 +209,16 @@ cd <root> && git pull \
 - **Ferramenta:** Spatie Backup 10 (já configurado)
 - **Agendado:** diário às 02h30 (só BD, gzip) + retenção automática
 - **Retenção:** 7 dias (todos) · 16 diários · 8 semanais · 6 mensais · 2 anuais
-- **Destino local:** `storage/app/backups/` (dentro da VPS)
+- **Destino local:** `storage/app/private/ADG/` (dentro da VPS)
+- **Destino externo:** **opcional e já implementado** — pôr `BACKUP_CLOUD_DISK=s3` no `.env` (+ endpoint/bucket/credenciais) para enviar cópia também para Wasabi, Backblaze B2, Cloudflare R2, MinIO ou S3. Sem a variável, o backup é só local (como sempre).
 
-**⚠️ Recomendado:** configurar destino externo (Wasabi/S3/Google Drive) no `config/backup.php` — um backup dentro da mesma VPS não protege contra falha do disco/servidor. Fase 2.
+**⚠️ `mysqldump` tem de estar no PATH.** Se faltar, o comando **não falha rápido — "trava" ~10 minutos** (3 tentativas × 5 min de espera) antes de desistir. Verificar no VPS:
+```bash
+which mysqldump      # deve responder, ex.: /usr/bin/mysqldump
+php artisan backup:run --only-db   # deve terminar em segundos
+```
+
+**⚠️ Backup externo recomendado:** um backup só na mesma VPS não protege contra falha do disco ou perda do servidor. Activar `BACKUP_CLOUD_DISK=s3` no lançamento.
 
 ---
 

@@ -60,6 +60,24 @@ return [
             'report' => false,
         ],
 
+        /*
+        | Disco exclusivo do backup externo (fase.md PENDÊNCIA 4).
+        | Compatível com qualquer fornecedor S3: Wasabi, Backblaze B2,
+        | Cloudflare R2, MinIO ou AWS. Só é usado se BACKUP_CLOUD_DISK=s3.
+        | Credenciais próprias — não mistura com o disco 's3' acima.
+        */
+        'backup-cloud' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_CLOUD_KEY'),
+            'secret' => env('BACKUP_CLOUD_SECRET'),
+            'region' => env('BACKUP_CLOUD_REGION', 'us-east-1'),
+            'bucket' => env('BACKUP_CLOUD_BUCKET'),
+            'endpoint' => env('BACKUP_CLOUD_ENDPOINT'),
+            'use_path_style_endpoint' => env('BACKUP_CLOUD_PATH_STYLE', true),
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

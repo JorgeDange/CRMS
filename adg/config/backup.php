@@ -57,9 +57,11 @@ return [
                 'compression_method' => ZipArchive::CM_DEFAULT,
                 'compression_level' => 9,
                 'filename_prefix' => 'ADG_',
-                'disks' => [
-                    'local',
-                ],
+                // Local sempre. Externo (Wasabi/B2/R2/S3) só se
+                // BACKUP_CLOUD_DISK=s3 — fase.md PENDÊNCIA 4.
+                'disks' => env('BACKUP_CLOUD_DISK') === 's3'
+                    ? ['local', 'backup-cloud']
+                    : ['local'],
                 'continue_on_failure' => false,
             ],
 
