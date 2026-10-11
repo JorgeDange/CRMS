@@ -371,17 +371,17 @@ Após a reunião com o Sr. Adailson, foram apresentadas várias sugestões de aj
 
 ### BLOCO 5 — Aba Nota
 
-- [ ] Migration `notes` + `note_attachments`
-- [ ] Enum `NoteType`
-- [ ] Models `Note` e `NoteAttachment`
-- [ ] Componentes `NoteList` e `NoteForm`
-- [ ] Views
-- [ ] Upload de anexos (privado)
-- [ ] Fixar/desafixar
-- [ ] Pesquisa e filtro
-- [ ] Testes
-- [ ] Validação no browser
-- [ ] Commit
+- [x] Migration `notes` + `note_attachments`
+- [x] Enum `NoteType`
+- [x] Models `Note` e `NoteAttachment`
+- [x] Componentes `NoteList` e `NoteForm`
+- [x] Views
+- [x] Upload de anexos (privado)
+- [x] Fixar/desafixar
+- [x] Pesquisa e filtro
+- [x] Testes (+12 novos)
+- [x] Validação no browser
+- [x] Commit
 
 ### BLOCO 6 — Aba Proposta
 

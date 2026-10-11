@@ -83,19 +83,9 @@
             @livewire('opportunities.opportunity-activities', ['opportunityId' => $opportunity->id], key('opp-activities-'.$opportunity->id))
         </div>
 
-        {{-- [ Notas ] --}}
+        {{-- [ Notas ] — BLOCO 5 --}}
         <div class="tab-pane fade {{ $activeTab === 'notes' ? 'show active' : '' }}" id="notesTab" role="tabpanel">
-            <div class="card card-body">
-                <div class="d-flex align-items-center justify-content-center" style="min-height: 300px">
-                    <div class="text-center">
-                        <h2 class="fs-16 fw-semibold">Ainda sem notas!</h2>
-                        <p class="fs-12 text-muted">Ainda não foram criadas notas.</p>
-                        <a href="javascript:void(0);" class="avatar-text bg-soft-primary text-primary mx-auto" data-bs-toggle="tooltip" title="Criar nota">
-                            <i class="feather-plus"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
+            @livewire('notes.note-list', ['opportunityId' => $opportunity->id], key('opp-notes-'.$opportunity->id))
         </div>
 
         {{-- [ Relatório de Visita ] — aba nova (PROMPT_MASTER Sprint 3) --}}

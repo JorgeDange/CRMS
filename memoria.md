@@ -1362,6 +1362,39 @@ passa a usar a lógica da Agenda (modo cópia).
 
 ---
 
+### Sprint Ajustes BLOCO 5 — Aba Nota (2026-10-11)
+
+**Pedido** (`mudancas.md`): aba "Nota" com estrutura cronológica, tipos e
+anexos privados.
+
+- **Migrations:** `notes` (id, uuid, opportunity_id, user_id, titulo
+  nullable, conteudo, tipo, fixada, timestamps) e `note_attachments`
+  (note_id FK cascade, nome_original, caminho, tamanho, mime_type).
+- **Enum `NoteType`:** INFORMACAO/DECISAO/LEMBRETE/REUNIAO com
+  label/badge/icon.
+- **Models:** `Note` (casts enum+boolean, uuid, relations user/opportunity/
+  attachments, factory) e `NoteAttachment`.
+- **Componentes:** `Notes\NoteForm` (titulo opcional → null se vazio,
+  conteudo required, tipo, upload múltiplo com `WithFileUploads` →
+  `storage/app/private/notes/{note_id}/` via disco `local`, max 10 MB);
+  `Notes\NoteList` (fixadas no topo, pesquisa titulo/conteudo, filtro por
+  tipo, toggleFix/remove escopados à opp, remove apaga anexos físicos,
+  form abre/fecha via eventos `note-saved`/`note-form-closed`,
+  `flashSuccess` propriedade — session flash não atravessa requests
+  Livewire).
+- **Bug corrigido durante E2E:** `{!! nl2br(e(...)) !!}` estava dentro do
+  atributo `class` do `<p>`; flash de sessão substituído por propriedade.
+- **Aba Notas** no `opportunity-view.blade.php` → `@livewire
+  ('notes.note-list', ...)` (placeholder "Ainda sem notas!" substituído).
+- **Testes:** `NoteTest` novo (12 testes: CRUD, required, titulo vazio→null,
+  edição, escopo opp, fixadas primeiro, toggle/remove escopados, pesquisa
+  e filtro, anexo em disco fake, remoção física de anexos, fluxo form);
+  suíte **167/835**, pint OK, build OK.
+- **Browser:** E2E `e2e-bloco5-notas.mjs` verde (lista, form, criação com
+  badge tipo, fixar, flash sucesso, 0 erros).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1408,3 +1441,4 @@ passa a usar a lógica da Agenda (modo cópia).
 | 2026-10-10 | **Sprint Ajustes BLOCO 2 — Dashboard** — gráfico "Facturação Mensal"→"Pipeline por Mês" (contagem de abertas/mês, escala 0..N sem Kz — feedback do cliente), 3 mini-cards→4 do pipeline (aberto/aprovado mês/ponderado/conversão, valores do Stats), KPI "Encomendas em Curso"→"Produtos Activos"; +2 testes → 146/757, pint/build OK; E2Es `e2e-bloco2-dashboard`, `e2e-eixo-y-reais` e `e2e-graficos` verdes. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 3 — Agenda tipo Outros** — enum `ActivityType::OUTROS`, migration `tipo_outros`, campo "Especifique" condicional no form (`required_if`), `tipoDisplay()` na lista e no modal do calendário; +5 testes → 151/772, pint/build OK; E2E `e2e-bloco3-outros` verde. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 4 — Aba Actividade** — componente `OpportunityActivities` (filtra por opp, toggle/remove escopados), aba substitui placeholder, form com `?oportunidade={id}` pré-seleccionado + redirect ao detalhe; +4 testes → 155/789, pint/build OK; E2E `e2e-bloco4-aba-actividades` verde. |
+| 2026-10-11 | **Sprint Ajustes BLOCO 5 — Aba Nota** — tabelas `notes`/`note_attachments`, enum `NoteType`, models+factory, componentes `NoteList`/`NoteForm` (fixadas, pesquisa, filtro, anexos privados em `local`, toggle/remove escopados); +12 testes → 167/835, pint/build OK; E2E `e2e-bloco5-notas` verde. |

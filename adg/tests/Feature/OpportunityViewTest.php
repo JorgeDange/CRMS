@@ -68,7 +68,7 @@ class OpportunityViewTest extends TestCase
             ->assertSee('>Relatório de Visita</button>', false)
             ->assertSee('Ainda sem propostas!')
             ->assertSee('Ainda sem actividades!')
-            ->assertSee('Ainda sem notas!')
+            ->assertSee('Não existem notas para os filtros seleccionados.')
             ->assertSee('Ainda sem relatórios de visita.')
             ->assertSee('>Oportunidades</li>', false)
             ->assertSee('>Nova Oportunidade</a>', false);
