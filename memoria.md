@@ -1395,6 +1395,42 @@ anexos privados.
 
 ---
 
+### Sprint Ajustes BLOCO 6 — Aba Proposta (2026-10-11)
+
+**Pedido** (`mudancas.md`): aba "Proposta" da oportunidade com 9 campos
+directos (uma proposta por oportunidade).
+
+- **Migration** `add_proposta_fields_to_opportunities_table`: 9 campos
+  nullable em `opportunities` — `proposta_produto_id` (FK products,
+  nullOnDelete), `proposta_preco`, `proposta_volume` (decimals 15,2),
+  `proposta_volume_unidade` (varchar 10: L ou m³), `proposta_periodo_inicio`
+  / `proposta_periodo_fim` (dates), `proposta_credito`,
+  `proposta_facturacao`, `proposta_non_oil` (decimals 15,2).
+- **Model `Opportunity`:** 9 campos em fillable + casts (decimals e dates)
+  + relação `propostaProduto()` (belongsTo Product).
+- **Componente** `Opportunities\OpportunityProposal`: mount carrega valores
+  existentes, valida (`exists:products`, `min:0`, `in:L,m³`,
+  `after_or_equal` no período), `save()` normaliza strings vazias → null e
+  persiste; propriedade `saved` (session flash não atravessa Livewire).
+- **View** `opportunity-proposal.blade.php`: form com os 9 campos (produto
+  = select de activos, unidade = L/m³), alerta de sucesso com botão
+  fechar, validações inline, resumo leitura abaixo quando preenchida
+  (Kz formatado pt-PT, datas dd/mm/yyyy).
+- **Aba Proposta** no `opportunity-view.blade.php` → `@livewire
+  ('opportunities.opportunity-proposal', ...)` (placeholder "Ainda sem
+  propostas!" substituído).
+- **Testes:** `OpportunityViewTest` +6 (render dos 9 campos, guardar e
+  persistir, edição com valores pré-existentes, validação com erros,
+  campos vazios → null, relação propostaProduto); suíte **173/884**, pint
+  OK, build OK.
+- **Browser:** E2E `e2e-bloco6-proposta.mjs` verde (aba abre com form e
+  9 campos, guardar com flash+resumo+badge Preenchida, reload mantém
+  todos os valores, validação de período rejeita, 0 erros). Setup/cleanup
+  em `setup-e2e-bloco6.php`/`cleanup-e2e-bloco6.php` (product `codigo`
+  é NOT NULL — corrigido durante debugging).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1442,3 +1478,4 @@ anexos privados.
 | 2026-10-10 | **Sprint Ajustes BLOCO 3 — Agenda tipo Outros** — enum `ActivityType::OUTROS`, migration `tipo_outros`, campo "Especifique" condicional no form (`required_if`), `tipoDisplay()` na lista e no modal do calendário; +5 testes → 151/772, pint/build OK; E2E `e2e-bloco3-outros` verde. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 4 — Aba Actividade** — componente `OpportunityActivities` (filtra por opp, toggle/remove escopados), aba substitui placeholder, form com `?oportunidade={id}` pré-seleccionado + redirect ao detalhe; +4 testes → 155/789, pint/build OK; E2E `e2e-bloco4-aba-actividades` verde. |
 | 2026-10-11 | **Sprint Ajustes BLOCO 5 — Aba Nota** — tabelas `notes`/`note_attachments`, enum `NoteType`, models+factory, componentes `NoteList`/`NoteForm` (fixadas, pesquisa, filtro, anexos privados em `local`, toggle/remove escopados); +12 testes → 167/835, pint/build OK; E2E `e2e-bloco5-notas` verde. |
+| 2026-10-11 | **Sprint Ajustes BLOCO 6 — Aba Proposta** — migration com 9 campos em `opportunities` (produto FK, preço, volume+unidade L/m³, período, crédito, facturação, non-oil), model fillable/casts/reção `propostaProduto()`, componente `OpportunityProposal` (validação `in:L,m³`, `after_or_equal`, vazios→null), aba substitui placeholder com form + resumo; +6 testes → 173/884, pint/build OK; E2E `e2e-bloco6-proposta` verde. **Sprint de Ajustes (BLOCOS 1–6) concluído.** |

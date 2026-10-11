@@ -385,13 +385,13 @@ Após a reunião com o Sr. Adailson, foram apresentadas várias sugestões de aj
 
 ### BLOCO 6 — Aba Proposta
 
-- [ ] Migration com 9 campos
-- [ ] Model `Opportunity` actualizado
-- [ ] Formulário da proposta
-- [ ] Lógica de guardar
-- [ ] Testes
-- [ ] Validação no browser
-- [ ] Commit
+- [x] Migration com 9 campos
+- [x] Model `Opportunity` actualizado
+- [x] Formulário da proposta
+- [x] Lógica de guardar
+- [x] Testes (+6 novos)
+- [x] Validação no browser
+- [x] Commit
 
 ---
 

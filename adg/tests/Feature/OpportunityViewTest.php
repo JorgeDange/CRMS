@@ -7,9 +7,11 @@ use App\Enums\OpportunityStage;
 use App\Livewire\Activities\ActivityForm;
 use App\Livewire\Activities\VisitReportForm;
 use App\Livewire\Opportunities\OpportunityActivities;
+use App\Livewire\Opportunities\OpportunityProposal;
 use App\Livewire\Opportunities\OpportunityView;
 use App\Models\Activity;
 use App\Models\Opportunity;
+use App\Models\Product;
 use App\Models\User;
 use App\Models\VisitReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,7 +68,7 @@ class OpportunityViewTest extends TestCase
             ->assertSee('>Actividades</button>', false)
             ->assertSee('>Notas</button>', false)
             ->assertSee('>Relatório de Visita</button>', false)
-            ->assertSee('Ainda sem propostas!')
+            ->assertSee('Guardar proposta')
             ->assertSee('Ainda sem actividades!')
             ->assertSee('Não existem notas para os filtros seleccionados.')
             ->assertSee('Ainda sem relatórios de visita.')
@@ -292,5 +294,152 @@ class OpportunityViewTest extends TestCase
             'opportunity_id' => $opportunity->id,
             'descricao' => 'Actividade criada a partir da opp',
         ]);
+    }
+
+    // ------------------------------------------------------------------
+    // BLOCO 6 — aba Proposta (9 campos directos em opportunities)
+    // ------------------------------------------------------------------
+
+    public function test_proposal_tab_renders_form_with_all_fields(): void
+    {
+        $user = User::factory()->create();
+        $opportunity = $this->makeOpportunity();
+
+        $this->actingAs($user)
+            ->get('/pipeline/'.$opportunity->id)
+            ->assertOk()
+            ->assertSee('Guardar proposta')
+            ->assertSee('Produto')
+            ->assertSee('Preço (Kz)')
+            ->assertSee('Volume')
+            ->assertSee('Unidade')
+            ->assertSee('Período — Início')
+            ->assertSee('Período — Fim')
+            ->assertSee('Crédito (Kz)')
+            ->assertSee('Facturação (Kz)')
+            ->assertSee('Non-oil (Kz)');
+    }
+
+    public function test_proposal_is_saved_and_persisted(): void
+    {
+        $user = User::factory()->create();
+        $opportunity = $this->makeOpportunity();
+        $produto = Product::factory()->create(['activo' => true]);
+        $this->actingAs($user);
+
+        Livewire::test(OpportunityProposal::class, ['opportunityId' => $opportunity->id])
+            ->set('proposta_produto_id', $produto->id)
+            ->set('proposta_preco', '850.50')
+            ->set('proposta_volume', '5000')
+            ->set('proposta_volume_unidade', 'm³')
+            ->set('proposta_periodo_inicio', '2026-11-01')
+            ->set('proposta_periodo_fim', '2027-10-31')
+            ->set('proposta_credito', '100000')
+            ->set('proposta_facturacao', '2500000')
+            ->set('proposta_non_oil', '300000')
+            ->call('save')
+            ->assertSet('saved', true)
+            ->assertHasNoErrors();
+
+        $opportunity->refresh();
+
+        $this->assertSame($produto->id, $opportunity->proposta_produto_id);
+        $this->assertEquals(850.50, (float) $opportunity->proposta_preco);
+        $this->assertEquals(5000, (float) $opportunity->proposta_volume);
+        $this->assertSame('m³', $opportunity->proposta_volume_unidade);
+        $this->assertSame('2026-11-01', $opportunity->proposta_periodo_inicio->format('Y-m-d'));
+        $this->assertSame('2027-10-31', $opportunity->proposta_periodo_fim->format('Y-m-d'));
+        $this->assertEquals(100000, (float) $opportunity->proposta_credito);
+        $this->assertEquals(2500000, (float) $opportunity->proposta_facturacao);
+        $this->assertEquals(300000, (float) $opportunity->proposta_non_oil);
+    }
+
+    public function test_proposal_loads_existing_values_for_editing(): void
+    {
+        $user = User::factory()->create();
+        $produto = Product::factory()->create(['activo' => true, 'nome' => 'Gasóleo']);
+
+        $opportunity = $this->makeOpportunity();
+        $opportunity->update([
+            'proposta_produto_id' => $produto->id,
+            'proposta_preco' => '900',
+            'proposta_volume' => '2000',
+            'proposta_volume_unidade' => 'L',
+            'proposta_periodo_inicio' => '2026-12-01',
+            'proposta_periodo_fim' => '2027-06-30',
+            'proposta_credito' => '50000',
+            'proposta_facturacao' => '1800000',
+            'proposta_non_oil' => '150000',
+        ]);
+
+        $this->actingAs($user);
+
+        Livewire::test(OpportunityProposal::class, ['opportunityId' => $opportunity->id])
+            ->assertSet('proposta_produto_id', $produto->id)
+            ->assertSet('proposta_preco', '900.00')
+            ->assertSet('proposta_volume', '2000.00')
+            ->assertSet('proposta_volume_unidade', 'L')
+            ->assertSet('proposta_periodo_inicio', '2026-12-01')
+            ->assertSet('proposta_periodo_fim', '2027-06-30')
+            ->assertSet('proposta_credito', '50000.00')
+            ->assertSet('proposta_facturacao', '1800000.00')
+            ->assertSet('proposta_non_oil', '150000.00')
+            ->assertSee('Resumo da proposta')
+            ->assertSee('Gasóleo');
+    }
+
+    public function test_proposal_validation_rejects_invalid_data(): void
+    {
+        $user = User::factory()->create();
+        $opportunity = $this->makeOpportunity();
+        $this->actingAs($user);
+
+        Livewire::test(OpportunityProposal::class, ['opportunityId' => $opportunity->id])
+            ->set('proposta_volume_unidade', 'galoes')
+            ->set('proposta_preco', '-5')
+            ->set('proposta_periodo_inicio', '2027-01-01')
+            ->set('proposta_periodo_fim', '2026-01-01')
+            ->call('save')
+            ->assertHasErrors([
+                'proposta_volume_unidade' => 'in',
+                'proposta_preco' => 'min',
+                'proposta_periodo_fim' => 'after_or_equal',
+            ]);
+
+        $opportunity->refresh();
+        $this->assertNull($opportunity->proposta_preco);
+    }
+
+    public function test_proposal_empty_fields_are_saved_as_null(): void
+    {
+        $user = User::factory()->create();
+        $opportunity = $this->makeOpportunity();
+        $this->actingAs($user);
+
+        Livewire::test(OpportunityProposal::class, ['opportunityId' => $opportunity->id])
+            ->set('proposta_volume_unidade', 'L')
+            ->call('save')
+            ->assertSet('saved', true);
+
+        $opportunity->refresh();
+
+        $this->assertNull($opportunity->proposta_produto_id);
+        $this->assertNull($opportunity->proposta_preco);
+        $this->assertNull($opportunity->proposta_volume);
+        $this->assertNull($opportunity->proposta_credito);
+        $this->assertNull($opportunity->proposta_facturacao);
+        $this->assertNull($opportunity->proposta_non_oil);
+    }
+
+    public function test_proposal_product_relation_resolves_name(): void
+    {
+        $user = User::factory()->create();
+        $produto = Product::factory()->create(['nome' => 'Gasolina']);
+        $opportunity = $this->makeOpportunity();
+        $opportunity->update(['proposta_produto_id' => $produto->id]);
+
+        $this->actingAs($user);
+
+        $this->assertSame('Gasolina', $opportunity->fresh()->propostaProduto->nome);
     }
 }

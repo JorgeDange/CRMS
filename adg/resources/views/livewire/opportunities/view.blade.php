@@ -63,19 +63,9 @@
             </div>
         </div>
 
-        {{-- [ Proposta ] --}}
+        {{-- [ Proposta ] — BLOCO 6 --}}
         <div class="tab-pane fade {{ $activeTab === 'proposal' ? 'show active' : '' }}" id="proposalTab" role="tabpanel">
-            <div class="card card-body">
-                <div class="d-flex align-items-center justify-content-center" style="min-height: 300px">
-                    <div class="text-center">
-                        <h2 class="fs-16 fw-semibold">Ainda sem propostas!</h2>
-                        <p class="fs-12 text-muted">Ainda não foram criadas propostas.</p>
-                        <a href="javascript:void(0);" class="avatar-text bg-soft-primary text-primary mx-auto" data-bs-toggle="tooltip" title="Criar proposta">
-                            <i class="feather-plus"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
+            @livewire('opportunities.opportunity-proposal', ['opportunityId' => $opportunity->id], key('opp-proposal-'.$opportunity->id))
         </div>
 
         {{-- [ Actividades ] — BLOCO 4: lista filtrada por oportunidade --}}

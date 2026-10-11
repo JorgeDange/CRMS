@@ -51,6 +51,16 @@ class Opportunity extends Model
         'data_aprovacao',
         'ultima_actividade_em',
         'ultimo_contacto_em',
+        // BLOCO 6: campos de proposta (uma por oportunidade).
+        'proposta_produto_id',
+        'proposta_preco',
+        'proposta_volume',
+        'proposta_volume_unidade',
+        'proposta_periodo_inicio',
+        'proposta_periodo_fim',
+        'proposta_credito',
+        'proposta_facturacao',
+        'proposta_non_oil',
     ];
 
     protected function casts(): array
@@ -69,6 +79,14 @@ class Opportunity extends Model
             'data_aprovacao' => 'datetime',
             'ultima_actividade_em' => 'datetime',
             'ultimo_contacto_em' => 'datetime',
+            // BLOCO 6.
+            'proposta_preco' => 'decimal:2',
+            'proposta_volume' => 'decimal:2',
+            'proposta_periodo_inicio' => 'date',
+            'proposta_periodo_fim' => 'date',
+            'proposta_credito' => 'decimal:2',
+            'proposta_facturacao' => 'decimal:2',
+            'proposta_non_oil' => 'decimal:2',
         ];
     }
 
@@ -97,6 +115,14 @@ class Opportunity extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * BLOCO 6: produto escolhido na proposta.
+     */
+    public function propostaProduto(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'proposta_produto_id');
     }
 
     public function user(): BelongsTo
