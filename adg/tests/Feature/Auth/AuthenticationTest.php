@@ -18,7 +18,9 @@ class AuthenticationTest extends TestCase
         $response
             ->assertOk()
             ->assertSeeVolt('pages.auth.login')
-            ->assertSee('auth-cover-wrapper');
+            ->assertSee('app-viewport')
+            ->assertSee('auth-section')
+            ->assertSee('showcase-section');
     }
 
     public function test_users_can_authenticate_using_the_login_screen(): void
