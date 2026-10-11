@@ -35,6 +35,16 @@ Schedule::command('contracts:expire')
     ->runInBackground();
 
 /**
+ * Backup diário às 02h30 (ANTES do clean às 03h — sem run, clean/monitor
+ * nunca têm backups para gerir). Só BD (ficheiros privados: notes/storage).
+ */
+Schedule::command('backup:run', ['--only-db'])
+    ->dailyAt('02:30')
+    ->timezone('Africa/Luanda')
+    ->withoutOverlapping()
+    ->runInBackground();
+
+/**
  * Sprint 12: cleanup de backups antigos diário às 03h.
  */
 Schedule::command('backup:clean')
