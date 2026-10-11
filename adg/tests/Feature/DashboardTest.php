@@ -55,11 +55,13 @@ class DashboardTest extends TestCase
             ->assertSee('Pipeline por Mês')
             ->assertDontSee('Facturação Mensal')
             ->assertSee('id="paymentRecordsChart"', false)
-            // Stats cards no footer do gráfico
-            ->assertSee('Pendente')
-            ->assertSee('Recebido')
-            ->assertSee('Cancelado')
-            ->assertSee('Total')
+            // Stats cards no footer do gráfico — fases principais da pipeline
+            ->assertSee('Lead')
+            ->assertSee('Qualificação')
+            ->assertSee('Proposta/Negociação')
+            ->assertSee('Cliente Aprovado')
+            ->assertDontSee('Recebido')
+            ->assertDontSee('Cancelado')
             // BLOCO 2: 4 mini-cards do pipeline (antes 3 cards de actividades)
             ->assertSee('Pipeline Aberto')
             ->assertSee('Aprovado (mês)')
@@ -100,6 +102,39 @@ class DashboardTest extends TestCase
         $this->assertFalse($payload['moeda']);
         // Mês actual: 3 abertas (aprovada fora) — contagem, não valor
         $this->assertSame(3.0, (float) end($payload['series'][0]['data']));
+    }
+
+    /**
+     * Stats cards do footer do gráfico: as 4 fases principais da pipeline
+     * (Lead, Qualificação, Proposta/Negociação, Cliente Aprovado) com a
+     * QUANTIDADE de oportunidades — substituem Pendente/Recebido/Cancelado/Total.
+     */
+    public function test_stats_cards_show_main_pipeline_stage_counts(): void
+    {
+        Opportunity::factory()->count(4)->create(['fase_atual' => OpportunityStage::LEAD]);
+        Opportunity::factory()->count(2)->create(['fase_atual' => OpportunityStage::QUALIFICACAO]);
+        Opportunity::factory()->count(3)->create(['fase_atual' => OpportunityStage::PROPOSTA_NEGOCIACAO]);
+        Opportunity::factory()->count(1)->create([
+            'fase_atual' => OpportunityStage::CLIENTE_APROVADO,
+            'data_aprovacao' => now(),
+        ]);
+        // Fases fora dos 4 cards — não podem aparecer
+        Opportunity::factory()->count(5)->create(['fase_atual' => OpportunityStage::VISITA]);
+
+        $response = $this->actingAs($this->user())->get('/dashboard');
+
+        $response
+            ->assertOk()
+            ->assertSee('4 oportunidades')   // Lead
+            ->assertSee('2 oportunidades')   // Qualificação
+            ->assertSee('3 oportunidades')   // Proposta/Negociação
+            ->assertSee('1 oportunidade')    // Cliente Aprovado
+            ->assertSee('Lead')
+            ->assertSee('Qualificação')
+            ->assertSee('Proposta/Negociação')
+            ->assertSee('Cliente Aprovado')
+            ->assertDontSee('Recebido')
+            ->assertDontSee('Cancelado');
     }
 
     /**

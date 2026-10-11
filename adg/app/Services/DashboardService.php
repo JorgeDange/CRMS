@@ -49,7 +49,7 @@ class DashboardService
      *         pendenciasHoje: array{vencidas: int, hoje: int, percent: int}
      *     },
      *     pipelineMensal: array{labels: list<string>, series: list<array{name: string, data: list<float>}>},
-     *     statsCards: list<array{titulo: string, valor: string, progress: int, cor: string}>,
+     *     statsCards: list<array{titulo: string, valor: int, progress: int, cor: string, link: string}>,
      *     pipelineMinis: array{
      *         pipelineAberto: array{valor: string, valorCompleto: string, count: int},
      *         aprovadoMes: array{valor: string, valorCompleto: string, count: int},
@@ -126,20 +126,37 @@ class DashboardService
             'moeda' => false, // contagem — tooltip sem prefixo "Kz"
         ];
 
-        // Stats cards abaixo do gráfico principal
-        $pendente = Contract::where('estado', ContractStatus::ACTIVO)
-            ->where('data_fim', '>=', $now->toDateString())->sum('valor');
-        $recebido = Contract::where('estado', ContractStatus::ACTIVO)
-            ->where('data_fim', '<', $now->toDateString())->sum('valor');
-        $cancelado = Contract::where('estado', ContractStatus::CANCELADO)->sum('valor');
-        $totalFaturacao = $pendente + $recebido + $cancelado;
+        // Stats cards abaixo do gráfico principal — fases principais da
+        // pipeline com QUANTIDADE de oportunidades (feedback do cliente:
+        // substituir os cards de facturação Pendente/Recebido/Cancelado/Total).
+        $totalOpps = max(Opportunity::count(), 1);
 
-        $statsCards = [
-            ['titulo' => 'Pendente', 'valor' => self::formatKz($pendente), 'progress' => $totalFaturacao > 0 ? round($pendente / $totalFaturacao * 100) : 0, 'cor' => 'bg-primary'],
-            ['titulo' => 'Recebido', 'valor' => self::formatKz($recebido), 'progress' => $totalFaturacao > 0 ? round($recebido / $totalFaturacao * 100) : 0, 'cor' => 'bg-success'],
-            ['titulo' => 'Cancelado', 'valor' => self::formatKz($cancelado), 'progress' => $totalFaturacao > 0 ? round($cancelado / $totalFaturacao * 100) : 0, 'cor' => 'bg-danger'],
-            ['titulo' => 'Total', 'valor' => self::formatKz($totalFaturacao), 'progress' => 100, 'cor' => 'bg-dark'],
+        $fasesCards = [
+            OpportunityStage::LEAD,
+            OpportunityStage::QUALIFICACAO,
+            OpportunityStage::PROPOSTA_NEGOCIACAO,
+            OpportunityStage::CLIENTE_APROVADO,
         ];
+
+        $statsCards = array_map(function (OpportunityStage $fase) use ($totalOpps): array {
+            $count = Opportunity::where('fase_atual', $fase)->count();
+
+            return [
+                'titulo' => $fase->label(),
+                'valor' => $count,
+                'progress' => round($count / $totalOpps * 100),
+                'cor' => match ($fase) {
+                    OpportunityStage::LEAD => 'bg-primary',
+                    OpportunityStage::QUALIFICACAO => 'bg-info',
+                    OpportunityStage::PROPOSTA_NEGOCIACAO => 'bg-warning',
+                    OpportunityStage::CLIENTE_APROVADO => 'bg-success',
+                },
+                'link' => match ($fase) {
+                    OpportunityStage::CLIENTE_APROVADO => route('clients.index'),
+                    default => route('pipeline'),
+                },
+            ];
+        }, $fasesCards);
 
         // BLOCO 2.2 (mudancas.md): 4 mini-cards do pipeline (valores do
         // Opportunities\Stats — pipeline aberto, aprovado no mes, ponderado

@@ -190,13 +190,15 @@
                     <div class="row g-4">
                         @foreach ($statsCards as $card)
                         <div class="col-lg-3">
-                            <div class="p-3 border border-dashed rounded">
-                                <div class="fs-12 text-muted mb-1">{{ $card['titulo'] }}</div>
-                                <h6 class="fw-bold text-dark">{{ $card['valor'] }}</h6>
-                                <div class="progress mt-2 ht-3">
-                                    <div class="progress-bar {{ $card['cor'] }}" role="progressbar" style="width: {{ $card['progress'] }}%"></div>
+                            <a href="{{ $card['link'] }}" class="text-decoration-none">
+                                <div class="p-3 border border-dashed rounded h-100">
+                                    <div class="fs-12 text-muted mb-1">{{ $card['titulo'] }}</div>
+                                    <h6 class="fw-bold text-dark">{{ $card['valor'] }} {{ \Illuminate\Support\Str::plural('oportunidade', $card['valor']) }}</h6>
+                                    <div class="progress mt-2 ht-3">
+                                        <div class="progress-bar {{ $card['cor'] }}" role="progressbar" style="width: {{ $card['progress'] }}%" title="{{ $card['progress'] }}% do total"></div>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                         @endforeach
                     </div>
