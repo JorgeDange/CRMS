@@ -138,6 +138,14 @@ php -m | tr '\n' ' '   # confirmar que todas aparecem
    Autostart: ✓ · Auto-restart: ✓
    ```
 6. **PHP-FPM** → confirmar `memory_limit = 256M` e `upload_max_filesize = 20M` (anexos de notas máx 10 MB)
+7. **Firewall (UFW)** → no terminal do VPS:
+   ```bash
+   sudo ufw allow OpenSSH
+   sudo ufw allow 'Nginx Full'
+   sudo ufw enable
+   sudo ufw status          # deve mostrar OpenSSH + Nginx ALLOW
+   ```
+   (o CloudPanel pode ter o próprio firewall — nesse caso, garantir que só 22/80/443 ficam abertos)
 
 ---
 
@@ -252,10 +260,11 @@ php artisan backup:run --only-db   # deve terminar em segundos
 
 | # | Item | Impacto | Estado |
 |---|---|---|---|
-| 1 | **PWA** (app no telemóvel) | Requisito #11 do cliente | ❌ não implementado — decidir com o cliente |
-| 2 | Validação do cliente | Blocos 1–6 + novo login | ⏳ aguarda revisão do Adailson |
-| 3 | Backup destino externo | Resiliência | 🔲 fase 2 |
-| 4 | 2FA / auditoria | Segurança extra | 🔲 fase 2 (utilizador único, risco baixo) |
+| 1 | **PWA** (app no telemóvel) | Requisito #11 do cliente | ✅ **versão leve implementada** (manifest + SW de assets) — cache offline completo é fase 2 |
+| 2 | Validação do cliente | Blocos 1–6 + novo login | ⏳ aguarda revisão do Adailson (`VALIDACAO_CLIENTE.md` pronto para enviar) |
+| 3 | Backup destino externo | Resiliência | ✅ **implementado** — falta só activar `BACKUP_CLOUD_DISK=s3` no `.env` do VPS |
+| 4 | Password definitiva | Segurança | ✅ comando `user:password` pronto — definir `ADMIN_PASSWORD` forte |
+| 5 | 2FA / auditoria | Segurança extra | 🔲 fase 2 (utilizador único, risco baixo) |
 
 ---
 
@@ -274,9 +283,12 @@ php artisan backup:run --only-db   # deve terminar em segundos
 - [ ] Caches (`config/route/view`)
 - [ ] Cron `schedule:run` activo (confirmar com `schedule:list`)
 - [ ] Supervisor com `queue:work` activo
+- [ ] Firewall UFW activo (só SSH/HTTP/HTTPS — ver §4.7)
+- [ ] `mysqldump` no PATH (`which mysqldump` responde)
 - [ ] Teste manual: login com password forte criada pelo seeder
 - [ ] Teste manual: enviar email de teste (criar alerta ou correr `agenda:reminder --dry-run` se existir)
-- [ ] Teste manual: `php artisan backup:run --only-db` e confirmar ficheiro em `storage/app/backups`
+- [ ] Teste manual: `php artisan backup:run --only-db` e confirmar ficheiro em `storage/app/private/ADG/`
+- [ ] (Recomendado) `BACKUP_CLOUD_DISK=s3` activo → cópia externa de backup
 - [ ] UptimeRobot a monitorizar
 - [ ] Ficheiros demo do protótipo **não** commitados (`DatabaseSeeder` com demo nunca correr)
 
