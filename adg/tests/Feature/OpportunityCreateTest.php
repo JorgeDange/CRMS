@@ -46,8 +46,8 @@ class OpportunityCreateTest extends TestCase
             ->assertSee('Qualificação')
             ->assertSee('Aprovação')
             ->assertSee('Cliente Aprovado')
-            ->assertSee('Cliente Não Aprovado')
-            ->assertSee('Dicas');
+            ->assertSee('Cliente Não Aprovado');
+        // Nota: o card "Dicas" foi removido da página pelo cliente (2026-10-11).
     }
 
     public function test_create_page_breadcrumb_matches_prototype(): void

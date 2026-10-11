@@ -129,16 +129,7 @@
                             @endforeach
                         </div>
                     </div>
-                    <div class="card stretch stretch-full">
-                        <div class="card-header">
-                            <h5 class="card-title mb-0">Dicas</h5>
-                        </div>
-                        <div class="card-body fs-13">
-                            <p class="mb-2"><i class="feather-info text-primary me-1"></i> Data, Cliente e Valor são obrigatórios.</p>
-                            <p class="mb-2"><i class="feather-info text-primary me-1"></i> Classificação: <strong>Concordante</strong> = valores batem; <strong>Discordante</strong> = diferença a investigar; <strong>Pendente</strong> = aguarda informação.</p>
-                            <p class="mb-0"><i class="feather-info text-primary me-1"></i> Use "Marcar como resolvida" para fechar a conciliação.</p>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </div>

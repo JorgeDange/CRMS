@@ -196,16 +196,7 @@
                                                         @endforeach
                                                     </div>
                                                 </div>
-                                                <div class="card stretch stretch-full">
-                                                    <div class="card-header">
-                                                        <h5 class="card-title mb-0">Dicas</h5>
-                                                    </div>
-                                                    <div class="card-body fs-13">
-                                                        <p class="mb-2"><i class="feather-info text-primary me-1"></i> Oportunidade, Produto, Número do Contrato, Data Início, Data Fim e Valor são obrigatórios.</p>
-                                                        <p class="mb-2"><i class="feather-info text-primary me-1"></i> Data Fim deve ser posterior ou igual à Data Início.</p>
-                                                        <p class="mb-0"><i class="feather-info text-primary me-1"></i> Estados: <strong>Activo</strong> = em vigor; <strong>Expirado</strong> = data fim passada; <strong>Renovado</strong> = prolongado; <strong>Cancelado</strong> = anulado.</p>
-                                                    </div>
-                                                </div>
+                                                
                                             </div>
                                         </div>
                                     </div>

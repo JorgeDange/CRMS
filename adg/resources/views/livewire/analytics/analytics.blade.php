@@ -211,19 +211,7 @@
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-12">
-                    <div class="card stretch stretch-full">
-                        <div class="card-body">
-                            <p class="fs-12 text-muted mb-0">
-                                <i class="feather-eye text-primary me-1"></i>
-                                <strong>Painel Executivo</strong> — vista somente leitura para a Direcção.
-                                Métricas consolidadas de vendas, pipeline, encomendas e crédito.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            
         </div>
     </div>
 </div>

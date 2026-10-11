@@ -153,8 +153,8 @@
             <div class="card text-center">
                 <div class="card-body">
                     <i class="feather-sunrise fs-4 text-dark"></i>
-                    <h6 class="mt-4 text-dark fw-bolder">Lead Inteligente</h6>
-                    <p class="fs-11 my-3 text-dark">Sistema de gestão comercial B2B — protótipo para validação.</p>
+                    <h6 class="mt-4 text-dark fw-bolder">CS & AN</h6>
+                    <p class="fs-11 my-3 text-dark">Lead Inteligente</p>
                 </div>
             </div>
         </div>

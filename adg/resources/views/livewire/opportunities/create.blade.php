@@ -197,16 +197,6 @@
                 </ul>
             </div>
         </div>
-        <div class="card stretch stretch-full">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Dicas</h5>
-            </div>
-            <div class="card-body fs-13">
-                <p class="mb-2"><i class="feather-info text-primary me-1"></i> Cliente, Título e Valor são obrigatórios.</p>
-                <p class="mb-2"><i class="feather-info text-primary me-1"></i> Probabilidade alimenta o valor ponderado do pipeline.</p>
-                <p class="mb-2"><i class="feather-info text-primary me-1"></i> Data de fecho alimenta os alertas de prazo.</p>
-                <p class="mb-0"><i class="feather-info text-primary me-1"></i> Comercial e Produto são opcionais mas recomendados para relatórios.</p>
-            </div>
-        </div>
+        
     </div>
 </div>
