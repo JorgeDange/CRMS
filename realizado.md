@@ -1,7 +1,7 @@
 # REALIZADO — Projecto ADG (CRM protótipo)
 
-**Actualizado:** 2026-10-09
-**Estado:** funcional em desenvolvimento — 140 testes / 729 assertions ✅ · pint ✅ · 44 commits
+**Actualizado:** 2026-10-11
+**Estado:** funcional em desenvolvimento — 174 testes / 899 assertions ✅ · pint ✅ · build ✅ · PWA leve ✅
 
 ---
 
@@ -46,7 +46,7 @@ Histórico completo: `git log --oneline` (44 commits).
 
 ## 4. Qualidade
 
-- **Testes:** 140 testes / 729 assertions — todos verdes (`php artisan test`).
+- **Testes:** 174 testes / 899 assertions — todos verdes (`php artisan test`).
 - **Código:** `vendor/bin/pint --test` sem observações.
 - **E2E (browser, Chrome headless):** clientes, pipeline (valores + navegação + drop real),
   apagar em 4 listas, alertas, notificações, gráficos, listas sem sidebar — **0 erros de consola**.

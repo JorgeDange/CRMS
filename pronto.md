@@ -62,7 +62,7 @@ Alertas e lembretes são enviados por **email (SMTP) + notificação na BD** —
 | Servidor de fila | Laravel database queue (sem Redis) |
 | Sessões / Cache | database (sem Redis/Memcached) |
 
-**Tamanho real do código:** 44 rotas · 24 migrations · 173 testes (886 assertions, todos verdes) · pint OK · build OK.
+**Tamanho real do código:** 44 rotas · 24 migrations · 174 testes (899 assertions, todos verdes) · pint OK · build OK.
 
 ---
 

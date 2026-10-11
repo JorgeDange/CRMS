@@ -77,7 +77,7 @@ Abrir http://127.0.0.1:8000 (em dev foi usado a porta **8099**:
 
 ```powershell
 cd adg
-php artisan test          # 140 testes / 730 assertions
+php artisan test          # 174 testes / 899 assertions
 vendor/bin/pint           # formatação PSR-12 (pint --test para verificar)
 ```
 
