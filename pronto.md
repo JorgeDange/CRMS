@@ -270,6 +270,7 @@ php artisan backup:run --only-db   # deve terminar em segundos
 - [ ] `.env` preenchido (BD, SMTP, ADMIN_PASSWORD, ALERTS_EMAIL) + `key:generate`
 - [ ] `php artisan migrate --force` sem erros
 - [ ] `ProductionSeeder` corrigido (1 utilizador, sem demo)
+- [ ] Password definitiva definida (`ADMIN_PASSWORD` forte, ou `php artisan user:password` após o deploy)
 - [ ] Caches (`config/route/view`)
 - [ ] Cron `schedule:run` activo (confirmar com `schedule:list`)
 - [ ] Supervisor com `queue:work` activo
@@ -286,12 +287,21 @@ php artisan backup:run --only-db   # deve terminar em segundos
 ```bash
 php artisan schedule:list                  # ver tarefas agendadas
 php artisan queue:work --tries=3           # worker manual (se precisar testar)
-php artisan backup:run --only-db           # backup manual
+php artisan backup:run --only-db           # backup manual (mysqldump tem de estar no PATH!)
 php artisan backup:monitor                 # saúde dos backups
 php artisan alerts:generate --dry-run      # simular alertas sem criar
 php artisan about                          # diagnóstico da app
 tail -f storage/logs/laravel-*.log         # logs em tempo real
+
+# Password do utilizador (fase.md PENDÊNCIA 6) — valida força mínima:
+# 12+ caracteres, maiúscula, minúscula, número e símbolo
+php artisan user:password                  # pede nova password duas vezes
+php artisan user:password --generate       # gera uma forte e mostra-a uma vez
+php artisan user:password adailson@otimize.ao   # alvo explícito
 ```
+
+> A password inicial vem de `ADMIN_PASSWORD` no `.env` (usada pelo `ProductionSeeder`).
+> Para a mudar depois do deploy, usar `user:password` — não editar a BD à mão.
 
 ---
 
