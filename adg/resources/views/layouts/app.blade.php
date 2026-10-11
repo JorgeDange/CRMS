@@ -14,6 +14,15 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
+    {{-- PWA leve (fase.md PENDÊNCIA 1 — Opção B): manifest + ícones + tema --}}
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}" />
+    <meta name="theme-color" content="#3454d1" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Lead Inteligente" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/images/pwa-180.png') }}" />
+
     <!-- Fonts (Inter — PROMPT_MASTER §3) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -99,6 +108,16 @@
 
     @stack('scripts')
     @livewireScripts
+
+    {{-- Registo do Service Worker (PWA leve) — só assets estáticos, sem risco
+         para o Livewire. Falha em silêncio (ex.: http sem SW). --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+            });
+        }
+    </script>
 </body>
 
 </html>

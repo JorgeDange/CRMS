@@ -11,6 +11,13 @@
 
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/images/favicon.ico') }}" />
 
+    {{-- PWA leve (fase.md PENDÊNCIA 1) — manifest também no login --}}
+    <link rel="manifest" href="{{ asset('manifest.webmanifest') }}" />
+    <meta name="theme-color" content="#3454d1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Lead Inteligente" />
+    <link rel="apple-touch-icon" href="{{ asset('assets/images/pwa-180.png') }}" />
+
     <!-- Fonts: Plus Jakarta Sans (design do protótipo de login) + Inter (app) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
