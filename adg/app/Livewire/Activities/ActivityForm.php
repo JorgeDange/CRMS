@@ -32,10 +32,29 @@ class ActivityForm extends Component
 
     public string $data = '';
 
+    /**
+     * BLOCO 4: true quando o form foi aberto a partir da aba Actividades
+     * da oportunidade (/agenda/nova?oportunidade={id}) — usado no redirect
+     * pos-save para voltar ao detalhe da oportunidade.
+     */
+    public bool $fromOpportunity = false;
+
     public function mount(): void
     {
         $this->data = now()->format('Y-m-d');
         $this->proxima_accao_prazo = now()->addWeekday()->format('Y-m-d');
+
+        // BLOCO 4: pré-seleccionar cliente quando vindo da oportunidade.
+        $opportunityParam = request()->query('oportunidade');
+
+        if (is_string($opportunityParam) && ctype_digit($opportunityParam)) {
+            $opportunity = Opportunity::query()->find((int) $opportunityParam);
+
+            if ($opportunity) {
+                $this->opportunity_id = $opportunity->id;
+                $this->fromOpportunity = true;
+            }
+        }
 
         $uuid = request()->query('atividade');
 
@@ -106,6 +125,17 @@ class ActivityForm extends Component
         }
 
         session()->flash('actividade_criada', true);
+
+        // BLOCO 4: quando aberto a partir da oportunidade, volta ao detalhe.
+        if ($this->fromOpportunity && $this->opportunity_id !== null) {
+            $opportunity = Opportunity::find($this->opportunity_id);
+
+            if ($opportunity) {
+                $this->redirect(route('opportunities.show', $opportunity), navigate: true);
+
+                return;
+            }
+        }
 
         $this->redirect(route('agenda'), navigate: true);
     }

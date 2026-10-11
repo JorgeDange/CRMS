@@ -362,12 +362,12 @@ Após a reunião com o Sr. Adailson, foram apresentadas várias sugestões de aj
 
 ### BLOCO 4 — Aba Actividade
 
-- [ ] Componente/lista de actividades da oportunidade
-- [ ] View da aba actualizada
-- [ ] Botão "Nova Actividade" com cliente pré-selecionado
-- [ ] Testes
-- [ ] Validação no browser
-- [ ] Commit
+- [x] Componente/lista de actividades da oportunidade (`OpportunityActivities`)
+- [x] View da aba actualizada
+- [x] Botão "Nova Actividade" com cliente pré-seleccionado (`?oportunidade={id}`)
+- [x] Testes (+4 novos)
+- [x] Validação no browser
+- [x] Commit
 
 ### BLOCO 5 — Aba Nota
 

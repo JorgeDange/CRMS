@@ -1339,6 +1339,29 @@ de Conciliações/Contratos/Produtos e mostrar os ícones directos na linha.
 
 ---
 
+### Sprint Ajustes BLOCO 4 — Aba Actividade da oportunidade (2026-10-10)
+
+**Pedido** (`mudancas.md`): aba "Actividades" do detalhe da oportunidade
+passa a usar a lógica da Agenda (modo cópia).
+
+- **Componente:** `Opportunities\OpportunityActivities` — filtra
+  `where('opportunity_id', ...)`, ordena data desc; `toggle()`/`remove()`
+  **escopados à oportunidade** (ids de outras opps são ignorados).
+- **View:** `opportunity-activities.blade.php` — cabeçalho com contagem +
+  botão "Nova Actividade"; empty state "Ainda sem actividades!" (mantém
+  o assert do teste de página); lista `single-task-list` (checkbox,
+  concluir, badge tipo, prazo, dropdown editar/eliminar com modal).
+- **Form:** `ActivityForm` lê `?oportunidade={id}` no mount
+  (`opportunity_id` pré-seleccionado + flag `fromOpportunity`); `save()`
+  com `fromOpportunity` redireciona para o detalhe da oportunidade.
+- **Testes:** +4 em `OpportunityViewTest` (filtragem por opp, empty state,
+  toggle/remove escopados, pré-selecção + redirect); suíte
+  **155/789**, pint OK, build OK.
+- **Browser:** E2E `e2e-bloco4-aba-actividades.mjs` verde (aba filtra
+  correcto, link Nova Actividade com `?oportunidade=`, 0 erros).
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1384,3 +1407,4 @@ de Conciliações/Contratos/Produtos e mostrar os ícones directos na linha.
 | 2026-10-10 | **Sprint Ajustes BLOCO 1 — ícones alinhados** — dropdown de 3 pontos removido das Acções de Conciliações/Contratos/Produtos; `.action-icons` (flex, gap 4px, `.btn-icon` 32×32) nas 3 listas; novo `ContractList::remove()` (soft delete); +4 testes → 144/749, pint/build OK; E2E `e2e-bloco1-icoes.mjs` valida alinhamento, 0 dropdowns, toggle a funcionar. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 2 — Dashboard** — gráfico "Facturação Mensal"→"Pipeline por Mês" (contagem de abertas/mês, escala 0..N sem Kz — feedback do cliente), 3 mini-cards→4 do pipeline (aberto/aprovado mês/ponderado/conversão, valores do Stats), KPI "Encomendas em Curso"→"Produtos Activos"; +2 testes → 146/757, pint/build OK; E2Es `e2e-bloco2-dashboard`, `e2e-eixo-y-reais` e `e2e-graficos` verdes. |
 | 2026-10-10 | **Sprint Ajustes BLOCO 3 — Agenda tipo Outros** — enum `ActivityType::OUTROS`, migration `tipo_outros`, campo "Especifique" condicional no form (`required_if`), `tipoDisplay()` na lista e no modal do calendário; +5 testes → 151/772, pint/build OK; E2E `e2e-bloco3-outros` verde. |
+| 2026-10-10 | **Sprint Ajustes BLOCO 4 — Aba Actividade** — componente `OpportunityActivities` (filtra por opp, toggle/remove escopados), aba substitui placeholder, form com `?oportunidade={id}` pré-seleccionado + redirect ao detalhe; +4 testes → 155/789, pint/build OK; E2E `e2e-bloco4-aba-actividades` verde. |
