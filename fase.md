@@ -183,10 +183,12 @@ BACKUP_CLOUD_SECRET=
 
 ## ORDEM DE EXECUÇÃO
 
-1. ~~PENDÊNCIA 1 — PWA~~ ✅
-2. ~~PENDÊNCIA 2 — Validação do cliente~~ ✅
-3. ~~PENDÊNCIA 3 — Nº de testes~~ ✅
-4. PENDÊNCIA 4 — Backup destino externo
-5. PENDÊNCIA 5 — Variáveis de produção
-6. PENDÊNCIA 6 — Password definitiva
-7. PENDÊNCIA 7 — Checklist VPS
+1. ~~PENDÊNCIA 1 — PWA~~ ✅ (`7f6d8e2`)
+2. ~~PENDÊNCIA 2 — Validação do cliente~~ ✅ (`5013ce0`)
+3. ~~PENDÊNCIA 3 — Nº de testes~~ ✅ (`e836113`) — 174/899 confirmados
+4. ~~PENDÊNCIA 4 — Backup destino externo~~ ✅ (`f2e6547`) — disco `backup-cloud` + teste
+5. ~~PENDÊNCIA 5 — Variáveis de produção~~ ✅ (`d61b8a8`) — template conferido (138 env auditadas)
+6. ~~PENDÊNCIA 6 — Password definitiva~~ ✅ (`4678c53`) — comando `user:password` + 8 testes
+7. ~~PENDÊNCIA 7 — Checklist VPS~~ ✅ (`71d716b`) — firewall, mysqldump, estados
+
+**TODAS AS PENDÊNCIAS DO `fase.md` CONCLUÍDAS** (11/10/2026). Suíte final: **186 testes / 940 assertions, todos verdes**.
