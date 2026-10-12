@@ -10,21 +10,6 @@
 
     <x-slot name="pageHeaderRight">
         <span class="badge bg-soft-{{ $stageVariant }} text-{{ $stageVariant }} fs-12 px-3 py-2">{{ $stageLabel }}</span>
-        <a href="javascript:void(0);" class="btn btn-light-brand">
-            <i class="feather-edit-3 me-2"></i>Editar
-        </a>
-        <div class="dropdown">
-            <a class="btn btn-icon btn-light-brand" data-bs-toggle="dropdown" data-bs-offset="0, 10" data-bs-auto-close="outside">
-                <i class="feather-more-vertical"></i>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end">
-                <a href="javascript:void(0)" class="dropdown-item"><i class="feather-calendar me-3"></i><span>Agendar actividade</span></a>
-                <a href="javascript:void(0)" class="dropdown-item"><i class="feather-check-circle me-3"></i><span>Marcar como Aprovado</span></a>
-                <a href="javascript:void(0)" class="dropdown-item text-danger"><i class="feather-x-circle me-3"></i><span>Marcar como Não Aprovado</span></a>
-                <div class="dropdown-divider"></div>
-                <a href="javascript:void(0)" class="dropdown-item text-danger"><i class="feather-trash-2 me-3"></i><span>Eliminar</span></a>
-            </div>
-        </div>
     </x-slot>
 
     {{-- Barra de tabs (leads-view.html) — entre page-header e main-content --}}
