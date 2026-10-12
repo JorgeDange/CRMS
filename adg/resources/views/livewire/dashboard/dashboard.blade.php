@@ -209,10 +209,19 @@
 
     {{-- BLOCO 2: 4 mini-cards do pipeline (Pipeline Aberto, Aprovado (mês),
          Ponderado, Taxa Conversão) — valores do Opportunities\Stats --}}
+    {{-- Estilo dos mini-cards: o tema força .card .card-header a display:flex
+         (theme-extract.css L549), o que mantinha o valor ao lado do titulo e
+         transbordava em cards estreitos (col-lg-3 = 4 por linha, ~200px).
+         mini-stat-stack empilha (display:block) com especificidade (0,3,0) para
+         sobrepor ao tema (0,2,0); o valor passa à propria linha, com largura
+         total do card. Escopo local — sem necessidade de rebuild do Vite. --}}
+    <style>
+        .card .card-header.mini-stat-stack { display: block; }
+    </style>
     <div class="row">
         <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
-                <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-header mini-stat-stack">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
                             <i class="feather-bar-chart-2"></i>
@@ -222,7 +231,7 @@
                             <div class="fs-12 text-muted">{{ $pipelineMinis['pipelineAberto']['count'] }} oportunidades</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['pipelineAberto']['valorCompleto'] }}">{{ $pipelineMinis['pipelineAberto']['valor'] }}</div>
+                    <div class="kpi-money fw-bold text-dark mt-2" title="{{ $pipelineMinis['pipelineAberto']['valorCompleto'] }}">{{ $pipelineMinis['pipelineAberto']['valor'] }}</div>
                 </div>
                 <div class="card-body pt-0">
                     <div class="d-flex align-items-center justify-content-between">
@@ -235,7 +244,7 @@
 
         <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
-                <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-header mini-stat-stack">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
                             <i class="feather-check-circle"></i>
@@ -245,7 +254,7 @@
                             <div class="fs-12 text-muted">{{ $pipelineMinis['aprovadoMes']['count'] }} aprovadas</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['aprovadoMes']['valorCompleto'] }}">{{ $pipelineMinis['aprovadoMes']['valor'] }}</div>
+                    <div class="kpi-money fw-bold text-dark mt-2" title="{{ $pipelineMinis['aprovadoMes']['valorCompleto'] }}">{{ $pipelineMinis['aprovadoMes']['valor'] }}</div>
                 </div>
                 <div class="card-body pt-0">
                     <div class="d-flex align-items-center justify-content-between">
@@ -258,7 +267,7 @@
 
         <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
-                <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-header mini-stat-stack">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
                             <i class="feather-percent"></i>
@@ -268,7 +277,7 @@
                             <div class="fs-12 text-muted">valor × probabilidade</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark" title="{{ $pipelineMinis['ponderado']['valorCompleto'] }}">{{ $pipelineMinis['ponderado']['valor'] }}</div>
+                    <div class="kpi-money fw-bold text-dark mt-2" title="{{ $pipelineMinis['ponderado']['valorCompleto'] }}">{{ $pipelineMinis['ponderado']['valor'] }}</div>
                 </div>
                 <div class="card-body pt-0">
                     <div class="d-flex align-items-center justify-content-between">
@@ -281,7 +290,7 @@
 
         <div class="col-lg-3 col-md-6">
             <div class="card mb-4 stretch stretch-full">
-                <div class="card-header d-flex align-items-center justify-content-between">
+                <div class="card-header mini-stat-stack">
                     <div class="d-flex gap-3 align-items-center">
                         <div class="avatar-text">
                             <i class="feather-trending-up"></i>
@@ -291,7 +300,7 @@
                             <div class="fs-12 text-muted">últimos 30 dias</div>
                         </div>
                     </div>
-                    <div class="fs-4 fw-bold text-dark">{{ $pipelineMinis['conversao']['percent'] }}%</div>
+                    <div class="kpi-money fw-bold text-dark mt-2">{{ $pipelineMinis['conversao']['percent'] }}%</div>
                 </div>
                 <div class="card-body pt-0">
                     <div class="d-flex align-items-center justify-content-between">
