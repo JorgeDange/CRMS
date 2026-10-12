@@ -1,29 +1,21 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
-    </x-slot>
+{{-- Perfil do utilizador — reconstruído no tema do sistema (Bootstrap) e em
+     PT-PT. Substitui o scaffold Breeze/Tailwind original (que não combinava
+     com o resto do CRM). Quatro blocos: os meus dados, alterar palavra-passe,
+     criar conta de utilizador (novo) e eliminar conta. --}}
+<x-app-layout :pageHeaderBreadcrumb="['Definições', 'Meu Perfil']">
+    <x-slot name="header">Meu Perfil</x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-profile-information-form />
-                </div>
-            </div>
+    <div class="row">
+        {{-- Coluna esquerda: definições pessoais --}}
+        <div class="col-xl-7">
+            <livewire:profile.update-profile-information-form />
+            <livewire:profile.update-password-form />
+        </div>
 
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.update-password-form />
-                </div>
-            </div>
-
-            <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
-                <div class="max-w-xl">
-                    <livewire:profile.delete-user-form />
-                </div>
-            </div>
+        {{-- Coluna direita: gestão de utilizadores --}}
+        <div class="col-xl-5">
+            <livewire:profile.create-user-form />
+            <livewire:profile.delete-user-form />
         </div>
     </div>
 </x-app-layout>

@@ -9,7 +9,7 @@ new class extends Component
     public string $password = '';
 
     /**
-     * Delete the currently authenticated user.
+     * Elimina a conta do utilizador autenticado (após confirmar a palavra-passe).
      */
     public function deleteUser(Logout $logout): void
     {
@@ -23,57 +23,30 @@ new class extends Component
     }
 }; ?>
 
-<section class="space-y-6">
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Delete Account') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, please download any data or information that you wish to retain.') }}
-        </p>
-    </header>
-
-    <x-danger-button
-        x-data=""
-        x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    >{{ __('Delete Account') }}</x-danger-button>
-
-    <x-modal name="confirm-user-deletion" :show="$errors->isNotEmpty()" focusable>
-        <form wire:submit="deleteUser" method="POST" class="p-6">
-
-            <h2 class="text-lg font-medium text-gray-900">
-                {{ __('Are you sure you want to delete your account?') }}
-            </h2>
-
-            <p class="mt-1 text-sm text-gray-600">
-                {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
+<section>
+    <div class="card stretch stretch-full border-danger-subtle">
+        <div class="card-header">
+            <h5 class="card-title mb-0 text-danger">Eliminar conta</h5>
+        </div>
+        <div class="card-body">
+            <p class="fs-13 text-muted mb-4">
+                Ao eliminar a sua conta, todos os seus dados serão apagados de forma permanente.
+                Introduza a sua palavra-passe para confirmar.
             </p>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Password') }}" class="sr-only" />
+            <form wire:submit="deleteUser" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label" for="del-password">Palavra-passe <span class="text-danger">*</span></label>
+                    <input type="password" class="form-control" wire:model="password" id="del-password"
+                           required autocomplete="current-password" placeholder="Confirme com a sua palavra-passe">
+                    @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
 
-                <x-text-input
-                    wire:model="password"
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Password') }}"
-                />
-
-                <x-input-error :messages="$errors->get('password')" class="mt-2" />
-            </div>
-
-            <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
-                    {{ __('Cancel') }}
-                </x-secondary-button>
-
-                <x-danger-button class="ms-3">
-                    {{ __('Delete Account') }}
-                </x-danger-button>
-            </div>
-        </form>
-    </x-modal>
+                <button type="submit" class="btn btn-danger" wire:loading.attr="disabled" wire:target="deleteUser">
+                    <i class="feather-trash-2 me-2"></i>Eliminar conta
+                </button>
+            </form>
+        </div>
+    </div>
 </section>

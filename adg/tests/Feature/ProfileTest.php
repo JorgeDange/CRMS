@@ -21,7 +21,8 @@ class ProfileTest extends TestCase
             ->assertOk()
             ->assertSeeVolt('profile.update-profile-information-form')
             ->assertSeeVolt('profile.update-password-form')
-            ->assertSeeVolt('profile.delete-user-form');
+            ->assertSeeVolt('profile.delete-user-form')
+            ->assertSeeVolt('profile.create-user-form');
     }
 
     public function test_profile_information_can_be_updated(): void
@@ -97,5 +98,64 @@ class ProfileTest extends TestCase
             ->assertNoRedirect();
 
         $this->assertNotNull($user->fresh());
+    }
+
+    public function test_user_can_be_created_from_profile(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $component = Volt::test('profile.create-user-form')
+            ->set('name', 'Novo Utilizador')
+            ->set('username', 'novo.user')
+            ->set('email', 'novo@example.com')
+            ->set('password', 'password-123')
+            ->set('password_confirmation', 'password-123')
+            ->call('createUser');
+
+        $component->assertHasNoErrors();
+
+        $this->assertDatabaseHas('users', [
+            'username' => 'novo.user',
+            'email' => 'novo@example.com',
+        ]);
+    }
+
+    public function test_create_user_requires_unique_username_and_email(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $component = Volt::test('profile.create-user-form')
+            ->set('name', 'Duplicado')
+            ->set('username', $user->username)
+            ->set('email', $user->email)
+            ->set('password', 'password-123')
+            ->set('password_confirmation', 'password-123')
+            ->call('createUser');
+
+        $component->assertHasErrors([
+            'username' => 'unique',
+            'email' => 'unique',
+        ]);
+    }
+
+    public function test_profile_username_can_be_updated(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user);
+
+        $component = Volt::test('profile.update-profile-information-form')
+            ->set('name', $user->name)
+            ->set('username', 'novo.username')
+            ->set('email', $user->email)
+            ->call('updateProfileInformation');
+
+        $component->assertHasNoErrors();
+
+        $this->assertSame('novo.username', $user->refresh()->username);
     }
 }

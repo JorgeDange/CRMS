@@ -2,26 +2,40 @@
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rule;
 use Livewire\Volt\Component;
 
 new class extends Component
 {
     public string $name = '';
+
+    public string $username = '';
+
     public string $email = '';
 
+    /** Bandeira de sucesso — mostra o alerta "dados actualizados". */
+    public bool $guardado = false;
+
     /**
-     * Mount the component.
+     * Prefill com os dados do utilizador autenticado.
      */
     public function mount(): void
     {
         $this->name = Auth::user()->name;
+        $this->username = Auth::user()->username;
         $this->email = Auth::user()->email;
     }
 
     /**
-     * Update the profile information for the currently authenticated user.
+     * Esconde o alerta de sucesso assim que o utilizador volta a editar.
+     */
+    public function updated(): void
+    {
+        $this->guardado = false;
+    }
+
+    /**
+     * Actualiza os dados do utilizador autenticado.
      */
     public function updateProfileInformation(): void
     {
@@ -29,87 +43,66 @@ new class extends Component
 
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class)->ignore($user->id)],
+            'username' => ['required', 'string', 'min:3', 'max:50', 'regex:/^[A-Za-z0-9._-]+$/', Rule::unique(User::class, 'username')->ignore($user->id)],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique(User::class, 'email')->ignore($user->id)],
         ]);
 
         $user->fill($validated);
 
+        // Se o email mudou, invalida a verificação (mantém comportamento Breeze).
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
         }
 
         $user->save();
 
-        $this->dispatch('profile-updated', name: $user->name);
-    }
-
-    /**
-     * Send an email verification notification to the current user.
-     */
-    public function sendVerification(): void
-    {
-        $user = Auth::user();
-
-        if ($user->hasVerifiedEmail()) {
-            $this->redirectIntended(default: route('dashboard', absolute: false));
-
-            return;
-        }
-
-        $user->sendEmailVerificationNotification();
-
-        Session::flash('status', 'verification-link-sent');
+        $this->guardado = true;
     }
 }; ?>
 
 <section>
-    <header>
-        <h2 class="text-lg font-medium text-gray-900">
-            {{ __('Profile Information') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600">
-            {{ __("Update your account's profile information and email address.") }}
-        </p>
-    </header>
-
-    <form wire:submit="updateProfileInformation" method="POST" class="mt-6 space-y-6">
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input wire:model="name" id="name" name="name" type="text" class="mt-1 block w-full" required autofocus autocomplete="name" />
-            <x-input-error class="mt-2" :messages="$errors->get('name')" />
+    <div class="card stretch stretch-full mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Os meus dados</h5>
         </div>
+        <div class="card-body">
+            <p class="fs-13 text-muted mb-4">Actualize o seu nome, nome de utilizador e endereço de email.</p>
 
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
-
-            @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
-                        {{ __('Your email address is unverified.') }}
-
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            {{ __('Click here to re-send the verification email.') }}
-                        </button>
-                    </p>
-
-                    @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
-                            {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
-                    @endif
+            @if ($guardado)
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                    <i class="feather-check-circle me-2"></i>
+                    <span>Os seus dados foram actualizados com sucesso.</span>
                 </div>
             @endif
-        </div>
 
-        <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <form wire:submit="updateProfileInformation" method="POST">
+                @csrf
+                <div class="mb-3">
+                    <label class="form-label" for="profile-name">Nome <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" wire:model="name" id="profile-name"
+                           required autocomplete="name" placeholder="Ex.: Adailson Nogueira">
+                    @error('name')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
 
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
-            </x-action-message>
+                <div class="mb-3">
+                    <label class="form-label" for="profile-username">Nome de utilizador <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" wire:model="username" id="profile-username"
+                           required autocomplete="username" placeholder="Ex.: adailson">
+                    <div class="form-text">Usado para iniciar sessão (junto com o email). Letras, números, ponto (.), hífen (-) ou sublinhado (_).</div>
+                    @error('username')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label" for="profile-email">Email <span class="text-danger">*</span></label>
+                    <input type="email" class="form-control" wire:model="email" id="profile-email"
+                           required autocomplete="username" placeholder="Ex.: adailson@csangroup.tech">
+                    @error('email')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                </div>
+
+                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="updateProfileInformation">
+                    <i class="feather-save me-2"></i>Guardar alterações
+                </button>
+            </form>
         </div>
-    </form>
+    </div>
 </section>
