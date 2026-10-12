@@ -1,0 +1,9 @@
+# Backups manuais do utilizador — NUNCA commitar
+*.rar
+*.zip
+*.7z
+
+# Sistema / editor
+Thumbs.db
+desktop.ini
+.DS_Store
