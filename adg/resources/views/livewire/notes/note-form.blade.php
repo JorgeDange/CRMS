@@ -5,7 +5,7 @@
         <button type="button" class="btn-close" wire:click="cancel" aria-label="Fechar"></button>
     </div>
     <div class="card-body">
-        <form wire:submit="save">
+        <form wire:submit="save" method="POST">
             @if ($errors->any())
                 <div class="alert alert-danger" role="alert">
                     <h6 class="alert-heading fw-bold mb-1">Não foi possível guardar:</h6>

@@ -35,7 +35,7 @@
                             <h5 class="card-title mb-0">{{ $editing ? 'Editar actividade' : 'Nova Actividade' }}</h5>
                         </div>
                         <div class="card-body">
-                            <form wire:submit="save">
+                            <form wire:submit="save" method="POST">
                                 @if ($errors->any())
                                     <div class="alert alert-danger" role="alert">
                                         <h6 class="alert-heading fw-bold mb-1">Não foi possível guardar:</h6>

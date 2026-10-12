@@ -34,7 +34,12 @@ new #[Layout('layouts.guest')] class extends Component
     @endif
 
     {{-- Frontend copiado de prototipo/ui/index.html — backend auth inalterado --}}
-    <form wire:submit="login" class="form-stack" novalidate>
+    {{-- method="POST" + @csrf OBRIGATÓRIOS: sem eles, se o JS/Livewire ainda não
+         tiver carregado, o browser submete o form nativamente como GET e os
+         dados de login ficam expostos na query string da URL (falha de
+         segurança corrigida a 2026-10-12). --}}
+    <form wire:submit="login" method="POST" action="{{ route('login') }}" class="form-stack" novalidate>
+        @csrf
         @if ($errors->any() && !$errors->has('form.login') && !$errors->has('form.password'))
             <div class="field-error" style="margin-bottom: 16px;" role="alert">
                 @foreach ($errors->all() as $erro)

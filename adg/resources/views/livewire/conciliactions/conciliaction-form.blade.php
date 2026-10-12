@@ -43,7 +43,7 @@
                             <h5 class="card-title mb-0">{{ $editing ? 'Editar Conciliação' : 'Nova Conciliação' }}</h5>
                         </div>
                         <div class="card-body">
-                            <form wire:submit="save">
+                            <form wire:submit="save" method="POST">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label">Data <span class="text-danger">*</span></label>

@@ -63,7 +63,7 @@
                             <h5 class="card-title mb-0">{{ $editing ? 'Editar Comercial' : 'Novo Comercial' }}</h5>
                         </div>
                         <div class="card-body">
-                            <form wire:submit="save">
+                            <form wire:submit="save" method="POST">
                                 <div class="mb-3">
                                     <label class="form-label">Nome <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" wire:model="nome" required

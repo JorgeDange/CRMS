@@ -4,7 +4,7 @@
         <h5 class="card-title mb-0">Novo Relatório de Visita</h5>
     </div>
     <div class="card-body">
-        <form wire:submit="save">
+        <form wire:submit="save" method="POST">
             <div class="row">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Data da visita <span class="text-danger">*</span></label>
