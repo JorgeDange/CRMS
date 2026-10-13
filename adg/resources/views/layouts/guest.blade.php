@@ -150,6 +150,25 @@
             transform: scale(1.02);
         }
 
+        /* Título e subtítulo das páginas secundárias de auth
+           (recuperar / redefinir senha) — usados pelas páginas Volt */
+        .auth-guest-page .auth-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-title);
+            letter-spacing: -0.4px;
+            text-align: center;
+            margin: 0 0 8px;
+        }
+
+        .auth-guest-page .auth-subtitle {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            text-align: center;
+            margin: 0 0 26px;
+        }
+
         /* Form Fields */
         .auth-guest-page .form-stack {
             display: flex;
@@ -298,6 +317,11 @@
             justify-content: space-between;
             margin-top: 22px;
             font-size: 13.5px;
+        }
+
+        /* Variante com um único filho centrado (ex.: "← Voltar ao login") */
+        .auth-guest-page .subactions-row.is-center {
+            justify-content: center;
         }
 
         .auth-guest-page .checkbox-item {
@@ -591,6 +615,16 @@
 
             .auth-guest-page .brand-logo-img {
                 max-width: clamp(170px, 48vw, 210px);
+            }
+
+            .auth-guest-page .auth-title {
+                font-size: 20px;
+                margin-bottom: 7px;
+            }
+
+            .auth-guest-page .auth-subtitle {
+                font-size: 13.5px;
+                margin-bottom: 22px;
             }
 
             .auth-guest-page .field-group {

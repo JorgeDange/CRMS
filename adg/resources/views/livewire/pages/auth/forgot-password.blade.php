@@ -37,25 +37,49 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+    <h1 class="auth-title">Recuperar senha</h1>
+    <p class="auth-subtitle">
+        Esqueceu-se da senha? Sem problema — indique o seu email e enviaremos
+        um link de redefinição que lhe permite escolher uma nova.
+    </p>
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <!-- Estado da sessão (link enviado com sucesso) -->
+    @if (session('status'))
+        <div class="guest-status-alert" role="alert">
+            <i class="feather-check-circle"></i>
+            {{ session('status') }}
+        </div>
+    @endif
 
-    <form wire:submit="sendPasswordResetLink" method="POST">
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    {{-- method="POST" + @csrf obrigatórios (FormsSecurityTest): sem JS/Livewire,
+         o form nunca pode submeter como GET e expor o email na query string. --}}
+    <form wire:submit="sendPasswordResetLink" method="POST" class="form-stack" novalidate>
+        @csrf
+
+        <!-- Campo Email -->
+        <div class="field-group">
+            <label class="field-label" for="email">Email</label>
+            <div class="field-control-wrap">
+                <input wire:model="email" type="email"
+                       class="field-input @error('email') is-invalid @enderror"
+                       placeholder="seu.email@empresa.com" id="email" name="email"
+                       required autofocus autocomplete="username" spellcheck="false">
+            </div>
+            @error('email')
+                <div class="field-error" role="alert">{{ $message }}</div>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <!-- Botão Principal -->
+        <button type="submit" class="btn-sign-in" id="btnSendReset"
+                wire:loading.attr="disabled" wire:target="sendPasswordResetLink">
+            <span wire:loading.remove wire:target="sendPasswordResetLink">Enviar link de redefinição</span>
+            <span wire:loading wire:target="sendPasswordResetLink">A enviar…</span>
+        </button>
     </form>
+
+    <!-- Voltar ao login -->
+    <div class="subactions-row is-center">
+        <a href="{{ route('login') }}" class="link-forgot" wire:navigate>&larr; Voltar ao login</a>
+    </div>
 </div>

@@ -70,36 +70,93 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <form wire:submit="resetPassword" method="POST">
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" class="block mt-1 w-full" type="email" name="email" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+    <h1 class="auth-title">Redefinir senha</h1>
+    <p class="auth-subtitle">
+        Defina uma nova senha para a sua conta. Depois de guardar,
+        será encaminhado para o login.
+    </p>
+
+    {{-- method="POST" + @csrf obrigatórios (FormsSecurityTest): sem JS/Livewire,
+         o form nunca pode submeter como GET e expor dados na query string. --}}
+    <form wire:submit="resetPassword" method="POST" class="form-stack" novalidate>
+        @csrf
+
+        <!-- Campo Email -->
+        <div class="field-group">
+            <label class="field-label" for="email">Email</label>
+            <div class="field-control-wrap">
+                <input wire:model="email" type="email"
+                       class="field-input @error('email') is-invalid @enderror"
+                       placeholder="seu.email@empresa.com" id="email" name="email"
+                       required autofocus autocomplete="username" spellcheck="false">
+            </div>
+            @error('email')
+                <div class="field-error" role="alert">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input wire:model="password" id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <!-- Campo Nova Senha -->
+        <div class="field-group">
+            <label class="field-label" for="password">Nova senha</label>
+            <div class="field-control-wrap">
+                <input wire:model="password" type="password"
+                       class="field-input input-password @error('password') is-invalid @enderror"
+                       placeholder="Digite a nova senha" id="password" name="password"
+                       required autocomplete="new-password">
+                <button type="button" class="btn-toggle-pwd"
+                        aria-label="Mostrar ou ocultar senha"
+                        onclick="(function(b){var i=b.parentNode.querySelector('input');var v=i.type==='password';i.type=v?'text':'password';b.querySelector('.eye-open').style.display=v?'none':'';b.querySelector('.eye-off').style.display=v?'':'none';})(this)">
+                    <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                </button>
+            </div>
+            @error('password')
+                <div class="field-error" role="alert">{{ $message }}</div>
+            @enderror
         </div>
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
-
-            <x-text-input wire:model="password_confirmation" id="password_confirmation" class="block mt-1 w-full"
-                          type="password"
-                          name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
+        <!-- Campo Confirmar Nova Senha -->
+        <div class="field-group">
+            <label class="field-label" for="password_confirmation">Confirmar nova senha</label>
+            <div class="field-control-wrap">
+                <input wire:model="password_confirmation" type="password"
+                       class="field-input input-password @error('password_confirmation') is-invalid @enderror"
+                       placeholder="Repita a nova senha" id="password_confirmation" name="password_confirmation"
+                       required autocomplete="new-password">
+                <button type="button" class="btn-toggle-pwd"
+                        aria-label="Mostrar ou ocultar senha"
+                        onclick="(function(b){var i=b.parentNode.querySelector('input');var v=i.type==='password';i.type=v?'text':'password';b.querySelector('.eye-open').style.display=v?'none':'';b.querySelector('.eye-off').style.display=v?'':'none';})(this)">
+                    <svg class="eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                    </svg>
+                    <svg class="eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                    </svg>
+                </button>
+            </div>
+            @error('password_confirmation')
+                <div class="field-error" role="alert">{{ $message }}</div>
+            @enderror
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <!-- Botão Principal -->
+        <button type="submit" class="btn-sign-in" id="btnResetPwd"
+                wire:loading.attr="disabled" wire:target="resetPassword">
+            <span wire:loading.remove wire:target="resetPassword">Redefinir senha</span>
+            <span wire:loading wire:target="resetPassword">A guardar…</span>
+        </button>
     </form>
+
+    <!-- Voltar ao login -->
+    <div class="subactions-row is-center">
+        <a href="{{ route('login') }}" class="link-forgot" wire:navigate>&larr; Voltar ao login</a>
+    </div>
 </div>
