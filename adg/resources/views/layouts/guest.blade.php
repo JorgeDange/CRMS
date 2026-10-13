@@ -917,6 +917,17 @@
             }
         });
     </script>
+
+    {{-- PWA no login: registo do SW (faltava — deixa a página de login
+         instalável em qualquer versão do Chrome) + barra de instalação. --}}
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('/sw.js').catch(function () {});
+            });
+        }
+    </script>
+    <x-ui.install-pwa />
 </body>
 
 </html>

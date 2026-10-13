@@ -118,6 +118,7 @@
             });
         }
     </script>
+    <x-ui.install-pwa />
 </body>
 
 </html>
