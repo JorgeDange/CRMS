@@ -1431,6 +1431,162 @@ directos (uma proposta por oportunidade).
 
 ---
 
+### Segurança dos formulários + diagnóstico do 405 em produção (2026-10-12)
+
+**Pedido/sintoma**: em produção (`https://csangroup.tech/login`) o login respondia
+**405 Method Not Allowed**; verificar segurança dos forms.
+
+- **Diagnóstico do 405 (cadeia completa)**: `APP_DEBUG=false` → o script do Livewire
+  vem como `/livewire/livewire.min.js` → o **nginx bloqueia** esse caminho (404) → o JS
+  não carrega → `wire:submit` nunca se liga → o form submete **nativamente** a
+  `POST /login`, rota que só aceita GET → **405**. O 405 é o sintoma seguro (ver abaixo).
+- **Fix no VPS (pendente de executar pelo utilizador, por esta ordem):**
+  ```bash
+  composer install --no-dev --optimize-autoloader
+  php artisan vendor:publish --tag=livewire:assets --force   # passa a apontar ao estático /vendor/livewire/livewire.min.js (já 200)
+  npm ci && npm run build
+  php artisan optimize:clear && php artisan config:cache && php artisan route:cache
+  # reiniciar PHP-FPM
+  ```
+  Verificação: F12/Network `<script src="/vendor/livewire/livewire.min.js?id=…">` a **200**.
+- **Decisão de segurança (NÃO inverter)**: manter `method="POST"` + `@csrf` no login —
+  é a salvaguarda que, se o JS falhar, faz o browser submeter como **POST** (405) em vez
+  de **GET**, que exporia o password na query string (URL, histórico, logs).
+- **`FormsSecurityTest`** (novo, regressão permanente): (1) TODOS os `<form>` de todas
+  as views têm de declarar `method="POST"` (varredura recursiva); (2) o form de login
+  publica para `route('login')` com `@csrf`.
+- **Aplicado a todos os forms**: `method="POST"` + `@csrf` em todos os formulários do
+  systema (login, logout, perfis, listas, etc.).
+- Commit `c7af0ff`.
+
+---
+
+### Limpeza do repositório (2026-10-12)
+
+- Protótipo estático (`prototipo/`) **removido do repositório** — decisão do utilizador:
+  o repo fica só com o projecto Laravel (`adg/`) + documentação `.md`.
+- `.gitignore` na raiz: `*.rar`, `*.zip`, `*.7z` (nunca mais lixo de backup no git).
+- Regra de commits: **só ficheiros necessários** ao projecto; `coreto.md`/`problema.md`
+  (docs do utilizador) nunca são commitados. Commit `68d9235`.
+
+---
+
+### Dashboard mini-cards + detalhe da oportunidade (2026-10-12)
+
+- **Mini-cards do pipeline transbordavam** (`896fbd2`): o tema força
+  `.card .card-header{display:flex}` (`theme-extract.css` L549) e os valores em Kz
+  saíam para fora do cabeçalho. Fix com override escopado **no blade** (sem rebuild
+  Vite): `.card .card-header.mini-stat-stack{display:block}` (empilhar valor sob o
+  título) + `.kpi-money` com `clamp(15px…22px)`. E2E em **8 larguras** verde;
+  suíte 188/944.
+- **Detalhe da oportunidade** (`15c915e`): removidos o botão **"Editar"** e o menu de
+  3 pontos do header de `opportunities/show.blade.php` — eram `javascript:void(0)`,
+  **mortos** (edits fazem-se por outra via; fase mantém-se em badge, o kebab funcional
+  é o da aba Actividades). Testes 35/35.
+
+---
+
+### Login em PT-PT + perfil reconstruído com criação de utilizadores (2026-10-12)
+
+**Pedido**: mensagens de erro do login em português de Portugal; perfil no tema do
+sistema, funções a funcionar, tudo em PT-PT e **com capacidade de criar contas**.
+
+- **Locale PT**: nova pasta `adg/lang/pt/` (`auth.php`, `validation.php`,
+  `passwords.php`) + `APP_LOCALE=pt` no `.env.example` e default `'pt'` em
+  `config/app.php` (`'locale' => env('APP_LOCALE', 'pt')`).
+  - Login errado → *"As credenciais não correspondem aos nossos registos."*;
+    campo vazio → *"O campo email ou username é obrigatório."*
+  - Atenção: se o `.env` de produção tiver `APP_LOCALE=en` explicitamente, obriga a `en`
+    — garantir `APP_LOCALE=pt` no `.env` de produção.
+- **Perfil reconstruído** (`resources/views/profile.blade.php`) no tema do sistema
+  (x-app-layout, 4 cartões): **Os meus dados** (nome, username com regex
+  `.`/`-`/`_`, email) · **Alterar palavra-passe** · **Criar conta de utilizador** ·
+  **Eliminar conta** (form directo com password — modal Breeze removido).
+- **NOVO componente** `livewire/profile/create-user-form.blade.php`: cria utilizadores
+  a partir do perfil (username/email/password com regras de força).
+- Componentes Volt existentes reescritos mantendo nomes (compatibilidade com testes):
+  `update-profile-information-form`, `update-password-form`, `delete-user-form`.
+- `ProfileTest` actualizado + testes de criação de utilizador → **suíte 191/954 verdes**.
+  E2E login PT + perfil PT/tema/criar-utilizador verdes. Commit `4e9fceb`.
+
+---
+
+### PWA: barra de instalação no mobile (2026-10-13)
+
+**Sintoma**: "no celular o PWA não mostra para instalar".
+
+- **Diagnóstico**: manifesto (`manifest.webmanifest` — standalone, start_url
+  `/dashboard`, ícones 192/512/maskable), ícones e SW estavam **correctos** e ligados
+  nos 2 layouts; o que faltava era **capturar `beforeinstallprompt`** — não havia
+  QUALQUER UI de instalação no projecto (grep = 0 ocorrências). A banner automática do
+  Chrome depende de "engajamento" e é suprimível; e em **iOS/Safari** o evento nem
+  existe (só "Partilhar → Adicionar ao Ecrã Inicial").
+- **Novo componente `components/ui/install-pwa.blade.php`** (`<x-ui.install-pwa />`,
+  incluído em `layouts/app.blade.php` e `layouts/guest.blade.php`):
+  - **Android/Chrome/Edge/desktop**: captura `beforeinstallprompt` → barra fixa no
+    fundo "Instalar aplicação" (ícone + botão **INSTALAR** + ✕) → `deferredPrompt.prompt()`;
+  - **iOS/Safari**: mostra a barra logo de início e, ao tocar em INSTALAR, abre guia PT
+    (*"1. Toque no botão Partilhar 2. Toque em 'Adicionar ao Ecrã Inicial'…"*);
+  - esconde se já instalada (`display-mode: standalone`/`appinstalled`) e o fecho
+    **persiste** (`localStorage['pwa-install-dismissed']`).
+- **`layouts/guest.blade.php` ganhou o registo do SW** (`/sw.js`) — faltava no login,
+  deixando a página de login instalável em qualquer versão do Chrome.
+- **E2E `e2e-pwa-install.mjs` verde**: banner visível no login (UA iPhone), instruções
+  PT no diálogo, fecho persistente após reload, manifesto `200` com
+  `content-type: application/manifest+json`, banner no DOM do dashboard. Suíte 191/954.
+  Commit `9c1d7a1`.
+
+---
+
+### Recuperar/redefinir senha no design do sistema (2026-10-13)
+
+**Pedido**: *"em recuperar senha a tela não segue o design — melhore"*.
+
+- **Antes**: páginas `forgot-password`/`reset-password` com markup Breeze por omissão —
+  texto em inglês, botão **preto** `bg-gray-800`, inputs `border-gray-300`/`indigo-500`,
+  sem título e sem forma de voltar atrás.
+- **CSS novo no `layouts/guest.blade.php`** (escopado, **sem rebuild Vite**):
+  `.auth-title` (22px/700), `.auth-subtitle` (14px, `--text-muted`), variante
+  `.subactions-row.is-center` + ajustes mobile (20px/13.5px).
+- **`forgot-password` reescrito**: título "Recuperar senha" + subtítulo PT, campo
+  `.field-input`, botão azul `.btn-sign-in` **"Enviar link de redefinição"** (estado
+  `wire:loading` "A enviar…"), alerta verde `.guest-status-alert` no sucesso
+  (*"Enviamos por email o link…"*), erro por campo PT, link **"← Voltar ao login"**.
+- **`reset-password` reescrito**: título "Redefinir senha", email pré-preenchido do
+  link, 3 campos (**Email / Nova senha / Confirmar nova senha**) cada um com **olho**
+  mostrar/ocultar (onclick auto-contido, ícones `.eye-open`/`.eye-off`), botão
+  **"Redefinir senha"** ("A guardar…") + "← Voltar ao login". Lógica PHP **inalterada**.
+- Ambos mantêm `method="POST"` + `@csrf` (`FormsSecurityTest`) e `novalidate`
+  (validação Livewire → mensagens PT, não as do browser).
+- **Verificação**: `PasswordResetTest`+`FormsSecurityTest`+`PasswordConfirmationTest`
+  9/9; E2E desktop+mobile (`e2e-recuperar-senha.mjs`): títulos PT, botão
+  `rgb(52,84,209)`, **0 marcas Breeze**, olho a alternar `password→text`, erros PT
+  (*"O campo email é obrigatório."*, *"A confirmação de palavra-passe não
+  corresponde."*), links `/login` — verde; **suíte completa 191/954 verdes**.
+  Commit `679c2a0`.
+- **Nota**: as páginas *"Confirmar senha"* e *"Verificar email"* continuam no estilo
+  Breeze antigo (inglês) — não fazem parte do fluxo de recuperar senha; ficam pendentes
+  de pedido.
+
+---
+
+### ESTADO ACTUAL (2026-10-13)
+
+- **Commits pushed** (main = `origin/main`, último `679c2a0`): `c7af0ff` segurança forms,
+  `68d9235` limpeza repo, `896fbd2` mini-cards, `15c915e` detalhe oportunidade,
+  `4e9fceb` login PT + perfil + criar utilizador, `9c1d7a1` PWA instalação,
+  `679c2a0` recuperar/redefinir senha.
+- **Suíte: 191 testes / 954 assertions, todos verdes**; pint OK; E2Es de regressão verdes.
+- **Pendências em aberto:**
+  1. **VPS (bloqueante, acção do utilizador)**: executar os comandos do 405 acima e
+     subir os ficheiros dos commits `4e9fceb`, `9c1d7a1` e `679c2a0`;
+     garantir `APP_LOCALE=pt` no `.env` de produção; `php artisan view:clear`/`optimize:clear`.
+  2. "Confirmar senha" e "Verificar email" ainda em estilo Breeze/inglês (aguarda OK).
+  3. PWA: em Android a barra só aparece quando o Chrome disparar o evento
+     (critério de engajamento do browser); no iPhone aparece sempre.
+
+---
+
 ## HISTÓRICO DESTE DOCUMENTO
 
 | Data | Alteração |
@@ -1492,3 +1648,10 @@ directos (uma proposta por oportunidade).
 | 2026-10-11 | **Pendência 7 (fase.md) — checklist VPS completa** — `pronto.md` ganhou §4.7 firewall UFW (só SSH/HTTP/HTTPS), item de `mysqldump` no PATH e de activação do backup externo no checklist, caminho do backup corrigido (`storage/app/private/ADG/`, não `app/backups`) e tabela §9 com estados actualizados (PWA leve ✅, backup externo ✅, password ✅, 2FA fase 2); commit `71d716b`. |
 | 2026-10-11 | **`fase.md` completo + todas as pendências concluídas** — o ficheiro original cortava na Pendência 3; escrito o resto (4–7) e executado tudo pela ordem. Suíte final **186 testes / 940 assertions, todos verdes**. |
 | 2026-10-11 | **Limpeza pós-validação (alterações do cliente)** — cards "Dicas" removidos de Nova Oportunidade/Contratos/Conciliações, card "Painel Executivo" removido do analytics, sidebar "CS & AN / Lead Inteligente", imagens substituídas (logo, favicon, avatar), scripts `dev.bat`/`dev.ps1` apagados; `OpportunityCreateTest` ajustado (assert "Dicas" removido); commit `a6f99ec`. |
+| 2026-10-12 | **Segurança dos formulários + diagnóstico do 405 de produção** — todos os `<form>` com `method="POST"` + `@csrf` (antes: forms do protótipo estático sem method submetiam GET e expunham dados na query string); novo `FormsSecurityTest` (varredura recursiva de todas as views + login com route+csrf); **405 do login em produção** diagnosticado: `APP_DEBUG=false` → `/livewire/livewire.min.js` bloqueado pelo nginx (404) → JS não carrega → `wire:submit` não liga → POST nativo a rota GET-only → 405; fix no VPS = `vendor:publish --tag=livewire:assets --force` (fica no estático `/vendor/livewire/livewire.min.js`, já 200) + optimize:clear/restart; **decisão: NÃO remover method=POST** (405 é o modo seguro, GET exporia a password); commit `c7af0ff`. |
+| 2026-10-12 | **Limpeza do repositório** — protótipo estático removido (repo = só `adg/` + `.md`), `.gitignore` raiz para `*.rar/zip/7z`; regra: commits só com ficheiros do projecto, `coreto.md`/`problema.md` nunca; commit `68d9235`. |
+| 2026-10-12 | **Dashboard mini-cards sem overflow** — tema força `.card .card-header{display:flex}` (`theme-extract.css` L549) e os valores Kz saíam do cabeçalho; override escopado no blade `.mini-stat-stack{display:block}` + `.kpi-money{clamp(15-22px)}` (sem rebuild Vite); E2E 8 larguras verde; commit `896fbd2`. |
+| 2026-10-12 | **Detalhe da oportunidade: botões mortos removidos** — "Editar" e menu 3-pontos do header de `opportunities/show.blade.php` eram `javascript:void(0)`; removidos, mantendo badge de fase e kebab funcional da aba Actividades; testes 35/35; commit `15c915e`. |
+| 2026-10-12 | **Login em PT-PT + perfil reconstruído + criação de utilizadores** — `lang/pt/` (auth/validation/passwords) + `APP_LOCALE=pt` (config default `'pt'`); erros do login em PT ("As credenciais não correspondem aos nossos registos."); perfil reescrito no tema do sistema com 4 cartões (Os meus dados / Alterar palavra-passe / **Criar conta de utilizador** / Eliminar conta), novo componente `create-user-form`, username com regex `.`/`-`/`_`, delete sem modal Breeze; E2E login+perfil PT verdes; suíte **191/954**; commit `4e9fceb`. |
+| 2026-10-13 | **PWA: barra de instalação no mobile** — manifesto/ícones/SW já estavam correctos mas **não havia `beforeinstallprompt` em lado nenhum** (0 UI de instalação); novo componente `<x-ui.install-pwa />` nos 2 layouts: Android/desktop captura o prompt → barra "Instalar aplicação" no fundo com INSTALAR/✕, iOS mostra guia PT ("Partilhar → Adicionar ao Ecrã Inicial"), esconde se instalada e o fecho persiste (localStorage); registo do SW adicionado ao layout do login; E2E `e2e-pwa-install.mjs` verde (manifesto `application/manifest+json`); suíte 191/954; commit `9c1d7a1`. |
+| 2026-10-13 | **Recuperar/redefinir senha no design do sistema** — as 2 páginas estavam em markup Breeze (inglês, botão preto `bg-gray-800`, inputs indigo); CSS novo no `guest.blade` (`.auth-title`/`.auth-subtitle`/`.subactions-row.is-center` + mobile, sem rebuild Vite); `forgot-password` = título PT + campo `.field-input` + botão azul "Enviar link de redefinição" + alerta verde + "← Voltar ao login"; `reset-password` = email pré-preenchido, 3 campos com olho mostrar/ocultar, botão "Redefinir senha"; lógica PHP inalterada, `method=POST`+`@csrf` mantidos; E2E desktop+mobile verde (0 marcas Breeze, erros PT), PasswordResetTest+FormsSecurityTest 9/9, suíte **191/954**; commit `679c2a0`. Pendente: "Confirmar senha"/"Verificar email" continuam em Breeze. |
